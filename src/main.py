@@ -3,7 +3,7 @@ Main game class
 """
 
 import sys, math, random # bcl
-import helpers; from constants import * # local
+import helpers, models; from constants import * # local
 import pygame # main
 
 class RhythmDodgerGame:
@@ -12,6 +12,32 @@ class RhythmDodgerGame:
 		pygame.mixer.init()
 		self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 		pygame.display.set_caption(CAPTION)
+		self.clock = pygame.time.Clock()
+
+		self.font_small = helpers.load_font(20)
+		self.font_large = helpers.load_font(40)
+
+		self.player = models.Player()
+		self.obstacles: list[models.Obstacle] = []
+		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
+
+		self.running = True
+		self.game_over = False
+
+		self.score = 0
+		self.best_score
+		self.combo = 0
+		self.max_combo = 0
+
+		self.beat_sound = helpers.create_click_sound()
+
+	def reset(self):
+		self.player.reset()
+		self.obstacles.clear()
+		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
+		self.game_over = False
+		self.score = 0
+		self.combo = 0
 
 	# input handling
 
