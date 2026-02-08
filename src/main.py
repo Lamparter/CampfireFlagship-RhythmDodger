@@ -78,8 +78,39 @@ class RhythmDodgerGame:
 		for obs in self.obstacles:
 			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
 
-	def draw_beat_bar(self): # todo
-		pass
+	def draw_beat_bar(self):
+		bar_width = 260
+		bar_height = 16
+		margin = 20
+		x = WINDOW_WIDTH - bar_width - margin
+		y = margin
+
+		pygame.draw.rect( # background
+			self.screen,
+			BEAT_BAR_BG,
+			pygame.Rect(x, y, bar_width, bar_height),
+			border_radius=8,
+		)
+
+		# fill based on phase
+		phase = self.beat_tracker.normalised_phase()
+		fill_width = int(bar_width * phase)
+		pygame.draw.rect(
+			self.screen,
+			BEAT_BAR_COLOUR,
+			pygame.Rect(x, y, fill_width, bar_height),
+			border_radius=8,
+		)
+
+		# centre marker for beat moment
+		centre_x = x + bar_width // 2
+		pygame.draw.line(
+			self.screen,
+			(255, 255, 255),
+			(centre_x, y - 4)
+			(centre_x, y + bar_height + 4),
+			2,
+		)
 
 	def draw_hud(self): # yet another todo
 		pass
