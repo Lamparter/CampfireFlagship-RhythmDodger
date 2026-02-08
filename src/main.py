@@ -21,6 +21,8 @@ class RhythmDodgerGame:
 		self.obstacles: list[models.Obstacle] = []
 		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
 
+		self.beats_until_next_obstacle = random.randint(2, 4)
+
 		self.running = True
 		self.game_over = False
 
@@ -68,9 +70,17 @@ class RhythmDodgerGame:
 		if beat_trigerred:
 			# play beat sound
 			self.beat_sound.play()
-			# spawn obstacle every beat (change?)
-			spawn_x = WINDOW_WIDTH + 40
-			self.obstacles.append(models.Obstacle(spawn_x))
+
+			# count down until next obstacle
+			self.beats_until_next_obstacle -= 1
+
+			if self.beats_until_next_obstacle <= 0:
+				# spawn obstacle
+				spawn_x = WINDOW_WIDTH + 40
+				self.obstacles.append(models.Obstacle(spawn_x))
+
+				# reset spacing
+				self.beats_until_next_obstacle = random.randint(2, 4)
 		
 		# player jump
 		if jump_pressed:
