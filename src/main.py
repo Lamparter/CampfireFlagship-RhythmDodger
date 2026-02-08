@@ -25,7 +25,7 @@ class RhythmDodgerGame:
 		self.game_over = False
 
 		self.score = 0
-		self.best_score
+		self.best_score = 0
 		self.combo = 0
 		self.max_combo = 0
 
