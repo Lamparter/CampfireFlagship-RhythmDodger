@@ -13,10 +13,12 @@ class RhythmDodgerGame:
 		pygame.display.set_caption("Rhythm Dodger")
 		self.clock = pygame.time.Clock()
 
-		# fonts
+		# fonts (scale with window height)
 
-		self.font_small = pygame.font.Font(FONT_PATH, 14)
-		self.font_large = pygame.font.Font(FONT_PATH, 28)
+		small_size = max(12, int(WINDOW_HEIGHT * 0.02))
+		large_size = max(20, int(WINDOW_HEIGHT * 0.04))
+		self.font_small = pygame.font.Font(FONT_PATH, small_size)
+		self.font_large = pygame.font.Font(FONT_PATH, large_size)
 
 		# audio
 
@@ -196,7 +198,7 @@ class RhythmDodgerGame:
 
 			if self.beats_until_next_obstacle <= 0:
 				# spawn obstacle
-				spawn_x = WINDOW_WIDTH + 40
+				spawn_x = WINDOW_WIDTH + int(WINDOW_WIDTH * 0.05)
 				sprite = random.choice(self.obstacle_sprites)
 				self.obstacles.append(models.Obstacle(spawn_x, sprite))
 

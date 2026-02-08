@@ -15,10 +15,8 @@ class Player: # player
 		self.on_ground = True
 		self.recently_landed = False
 		self.spritesheet = spritesheet
-		# load animations: assume sheet rows: idle(0), jump(1), land(2)
-
-		self.animations = {}
-		frames = 4
+		self.animations = {} # load animations: assume sheet rows: idle(0), jump(1), land(2)
+		frames = 4 # frames per row: 4
 		for row, name, fps in [(0,"idle",6),(1,"jump",1),(2,"land",6)]:
 			strip = spritesheet.load_strip((0, row*PLAYER_H, PLAYER_W, PLAYER_H), frames)
 			self.animations[name] = sprites.AnimatedSprite(strip, fps = fps, loop = (name != "jump"))
@@ -58,10 +56,9 @@ class Player: # player
 				self.state = "land"
 		else:
 			self.on_ground = False
-		self.animations[self.state].update(dt)
+		self.animations[self.state].update(dt) # animation update
 		if self.recently_landed:
 			# small decay animation handled by animation timing; clear flag next frame
-
 			self.recently_landed = False
 
 	def draw(self, surf, scale_x = 1.0, scale_y = 1.0):
@@ -70,7 +67,7 @@ class Player: # player
 		sw = max(1, int(w * scale_x))
 		sh = max(1, int(h * scale_y))
 		img_scaled = pygame.transform.scale(img, (sw, sh))
-		draw_x = int(self.x)
+		draw_x = int(self.x) # anchor bottom left
 		draw_y = int(self.y + (h - sh))
 		surf.blit(img_scaled, (draw_x, draw_y))
 
@@ -81,7 +78,7 @@ class Obstacle:
 		self.width = sprite.get_width()
 		self.height = sprite.get_height()
 		self.y = GROUND_Y - self.height
-		if random.random() < 0.25:
+		if random.random() < 0.25: # random vertical offset for variety (floating obstacles)
 			self.y -= random.choice([24, 40])
 		self.passed = False
 
@@ -100,12 +97,13 @@ class Obstacle:
 
 class Mascot:
 	def __init__(self, sheet: sprites.SpriteSheet):
-		frames = sheet.load_strip((0,0,24,24), 3)
+		frames = sheet.load_strip((0,0,24,24), 3) # assume 3 frames in a row
 		self.anim = sprites.AnimatedSprite(frames, fps=4)
 		self.x = int(WINDOW_WIDTH * 0.02)
 		self.y = GROUND_Y - 24 - int(WINDOW_HEIGHT * 0.008)
 
 	def react(self, mood):
+		# mood: "happy", "sad", "idle"
 		if mood == "happy":
 			self.anim.fps = 10
 		elif mood == "sad":
@@ -130,7 +128,6 @@ class ParallaxLayer:
 	
 	def update(self, dt, camera_dx):
 		# camera_dx is in pixels per second; multiply by dt for per-frame offset
-
 		self.offset = (self.offset + camera_dx * self.speed * dt) % self.w
 
 	def draw(self, surf):
