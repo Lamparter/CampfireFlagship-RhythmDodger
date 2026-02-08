@@ -149,9 +149,17 @@ class RhythmDodgerGame:
 			self.draw_game_over()
 		pygame.display.flip()
 
-	# main loop (new App())
+	# main loop
 
 	def run(self):
+		while self.running:
+			dt_ms = self.clock.tick(FPS)
+			dt = dt_ms / 1000.0
+
+			jump_pressed = self.handle_events()
+			self.update(dt, jump_pressed)
+			self.render()
+
 		pygame.quit()
 		sys.exit()
 
