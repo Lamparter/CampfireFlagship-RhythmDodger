@@ -1,4 +1,4 @@
-import pygame, helpers
+import pygame, random
 from constants import *
 
 class Player:
@@ -37,3 +37,20 @@ class Player:
 		if self.on_ground:
 			self.vy = JUMP_VELOCITY
 			self.on_ground = False
+
+class Obstalce:
+	def __init__(self, x: float):
+		self.width = OBSTACLE_WIDTH
+		self.height = random.randint(OBSTACLE_MIN_HEIGHT, OBSTACLE_MAX_HEIGHT)
+		self.x = x
+		self.y = GROUND_Y - self.height
+
+	@property
+	def rect(self) -> pygame.Rect:
+		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
+	
+	def update(self, dt: float):
+		self.x -= OBSTACLE_SPEED * dt
+	
+	def is_offscreen(self) -> bool:
+		return self.x + self.width < 0
