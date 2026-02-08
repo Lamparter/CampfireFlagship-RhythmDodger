@@ -157,8 +157,8 @@ class RhythmDodgerGame:
 
 			if judgement in ("Perfect!", "Good!"):
 				self.accurate_jumps += 1
-				# trigger flash
-				self.flash_alpha = FLASH_ALPHA
+			
+			self.flash_alpha = FLASH_ALPHA
 
 			# scoring logic
 			if judgement == "Perfect!":
@@ -285,7 +285,7 @@ class RhythmDodgerGame:
 		if self.flash_alpha > 0:
 			overlay = pygame.Surface((WINDOW_WIDTH, GROUND_Y))
 			overlay.set_alpha(int(self.flash_alpha))
-			overlay.fill(FLASH_COLOUR) # soft green flash
+			overlay.fill(helpers.get_flash_colour(self.last_judgement))
 			self.screen.blit(overlay, (0, 0))
 
 			# fade out

@@ -46,6 +46,14 @@ def get_timing_judgement(clock: models.BeatTracker): # returns a string judgemen
 	else:
 		return "Late!"
 	
+def get_flash_colour(judgement: str):
+	if judgement == "Perfect!":
+		return FLASH_COLOUR_PERFECT
+	elif judgement == "Good!":
+		return FLASH_COLOUR_GOOD
+	elif judgement == "Early!" or "Late!":
+		return FLASH_COLOUR_BAD
+
 def get_accuracy_percent(accurate_jumps: int, total_jumps: int):
 	if total_jumps == 0:
 		return 0
