@@ -45,11 +45,13 @@ FLASH_ALPHA = 50
 
 # Music / track selection
 
-MUSIC_FOLDER = "music"
+MUSIC_FOLDER = "../music"
 TRACKS = [
-	("track1.ogg", 120)
-	("track2.ogg", 128)
-	("track3.ogg", 100)
+	("BackToBlack.ogg", 123),
+	("DJGotUsFallinInLove.ogg", 120),
+	("GimmeGimmeGimme.ogg", 120),
+	("OnlySoMuchOilInTheGround.ogg", 121),
+	("ShizumeruMachi.ogg", 125),
 ]
 # small calibration offset to compensate for audio playback latency
 MUSIC_LATENCY = 0.0 # to tune
