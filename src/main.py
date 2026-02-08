@@ -122,7 +122,21 @@ class RhythmDodgerGame:
 		self.screen.blit(best_text, (20, 80))
 
 	def draw_game_over(self):
-		pass
+		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
+		info = self.font_small.render("Press 'R' / 'Enter' / 'Space' to restart", True, TEXT_COLOUR)
+		score_info = self.font_small.render(
+			f"Score: {int(self.score)}    Best: {int(self.best_score)}    Max Combo: {self.max_combo}",
+			True,
+			TEXT_COLOUR,
+		)
+
+		title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
+		info_rect = info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40))
+		score_rect = score_info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 40))
+
+		self.screen.blit(title, title_rect)
+		self.screen.blit(info, info_rect)
+		self.screen.blit(score_info, score_rect)
 
 	def render(self):
 		self.screen.fill(BACKGROUND_COLOUR)
