@@ -5,7 +5,7 @@ Helper functions
 import pygame, math, random, models; from constants import *
 
 def load_font(size: int) -> pygame.font.Font:
-	return pygame.font.SysFont(FONT_NAME, size)
+	return pygame.font.Font(f"fonts/{FONT}/{FONT}.ttf", size)
 
 def create_click_sound(): # soft sine-wave beep for the beat
 	sample_rate = 44100
