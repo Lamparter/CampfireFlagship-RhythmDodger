@@ -149,7 +149,7 @@ class RhythmDodgerGame:
 		pygame.draw.line(
 			self.screen,
 			(255, 255, 255),
-			(centre_x, y - 4)
+			(centre_x, y - 4),
 			(centre_x, y + bar_height + 4),
 			2,
 		)
