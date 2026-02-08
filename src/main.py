@@ -121,11 +121,19 @@ class RhythmDodgerGame:
 		self.screen.blit(combo_text, (20, 50))
 		self.screen.blit(best_text, (20, 80))
 
-	def draw_game_over(self): # im slowly getting tired of writing the same thing over and over again
+	def draw_game_over(self):
 		pass
 
-	def render(self): # finally
-		pass
+	def render(self):
+		self.screen.fill(BACKGROUND_COLOUR)
+		self.draw_ground()
+		self.draw_player()
+		self.draw_obstacles()
+		self.draw_beat_bar()
+		self.draw_hud()
+		if self.game_over:
+			self.draw_game_over()
+		pygame.display.flip()
 
 	# main loop (new App())
 
