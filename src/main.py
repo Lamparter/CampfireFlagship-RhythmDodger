@@ -134,39 +134,22 @@ class RhythmDodgerGame:
 		if self.current_track:
 			self.start_random_track()
 
-	# music
+	# Music / beat
 
 	def start_random_track(self):
-		# choose a random track
-		self.current_track = random.choice(self.available_tracks)
-		track_path = f"{MUSIC_FOLDER}/{self.current_track.filename}"
-
-		# load and play music
-		try:
-			pygame.mixer.music.load(track_path)
-			# -1 loops indefinitely; start immediately
-			pygame.mixer.music.play(-1)
-		except Exception as e:
-			print("Failed to load music:", track_path, e)
-			# ensure game state reflects that no music is playing
-			self.current_track = None
-			pygame.mixer.music.stop()
-			self.music_started = False
-			self.music_start_time = 0.0
-			# restore beat tracker to a safe default interval
-			self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
+		if not self.available_tracks:
 			return
-		
-		# sync beat tracker to the track bpm
-		self.beat_tracker = models.BeatTracker(self.current_track.interval)
-
-		# record the start time
-		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
-		self.music_started = True
-
-		# reset beat tracker internal clock so the first beat aligns with music start
-		self.beat_tracker.time_since_last_beat = 0.0
-		self.beat_tracker.last_beat_time = 0.0
+		path, name, bpm = random.choice(self.available_tracks)
+		self.current_track = {"path": path, "name": name, "bpm": bpm}
+		try:
+			self.audio.load_music(path)
+			self.audio.play_music(-1)
+			self.music_started = True
+			self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+			self.beat_tracker = models.BeatTracker(60.0 / bpm)
+		except Exception as e:
+			print("Music start failed:", e)
+			self.music_started = False
 
 	# input handling
 
