@@ -41,9 +41,20 @@ class RhythmDodgerGame:
 
 	# input handling
 
-	def handle_events(self): # todo
+	def handle_events(self):
 		jump_pressed = False
-		# implement keys
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				self.running = False # Why are you running? Why are you running?
+
+			elif event.type == pygame.KEYDOWN:
+				if event.key in (pygame.K_ESCAPE, pygame.K_q):
+					self.running = False
+				if event.key in (pygame.K_SPACE, pygame.K_UP):
+					jump_pressed = True
+				if self.game_over and event.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
+					self.reset()
+
 		return jump_pressed
 	
 	# game update
