@@ -93,7 +93,7 @@ class RhythmDodgerGame:
 				self.max_combo = max(self.max_combo, self.combo)
 
 				# trigger flash
-				self.flash_alpha = 180 # 0-255
+				self.flash_alpha = FLASH_ALPHA
 			else:
 				self.combo = 0 # break combo if off-beat
 
@@ -179,9 +179,9 @@ class RhythmDodgerGame:
 
 	def draw_flash(self):
 		if self.flash_alpha > 0:
-			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+			overlay = pygame.Surface((WINDOW_WIDTH, GROUND_Y))
 			overlay.set_alpha(int(self.flash_alpha))
-			overlay.fill((120, 255, 160)) # soft green flash
+			overlay.fill(FLASH_COLOUR) # soft green flash
 			self.screen.blit(overlay, (0, 0))
 
 			# fade out
