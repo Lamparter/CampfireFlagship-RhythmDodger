@@ -72,6 +72,20 @@ class RhythmDodgerGame:
 			spawn_x = WINDOW_WIDTH + 40
 			self.obstacles.append(models.Obstacle(spawn_x))
 		
+		# player jump
+		if jump_pressed:
+			on_beat = self.beat_tracker.is_on_beat()
+			self.player.try_jump()
+			if on_beat:
+				self.combo += 1
+				self.score += 10 + self.combo # reward combo
+				self.max_combo = max(self.max_combo, self.combo)
+			else:
+				self.combo = 0 # break combo if off-beat
+
+		# update player physics
+		self.player.update(dt)
+
 		# update obstacles
 		for obs in self.obstacles:
 			obs.update(dt)
