@@ -42,3 +42,16 @@ BEAT_BAR_COLOUR = (120, 255, 160)
 BEAT_BAR_BG = (40, 70, 60)
 FLASH_COLOUR = (120, 255, 160)
 FLASH_ALPHA = 50
+
+# Music / track selection
+
+MUSIC_FOLDER = "music"
+TRACKS = [
+	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
+	("DJGotUsFallinInLove.ogg", "Usher - DJ Got Us Fallin' In Love", 120),
+	("GimmeGimmeGimme.ogg", "ABBA - Gimme Gimme Gimme!", 120),
+	("OnlySoMuchOilInTheGround.ogg", "Stefanie Heinzmann - Only So Much Oil In The Ground", 121),
+	("ShizumeruMachi.ogg", "YOEKO - Sinking Town", 125),
+]
+# small calibration offset to compensate for audio playback latency
+MUSIC_LATENCY = 0.0 # to tune

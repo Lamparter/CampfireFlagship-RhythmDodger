@@ -21,6 +21,11 @@ class RhythmDodgerGame:
 		self.obstacles: list[models.Obstacle] = []
 		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
 
+		self.available_tracks = [models.Track(fn, name, bpm) for fn, name, bpm in TRACKS]
+		self.current_track: models.Track | None = None
+		self.music_started = False
+		self.music_start_time = 0.0 # pygame time in seconds when music started
+
 		self.beats_until_next_obstacle = helpers.space_obstacle()
 
 		self.running = True
@@ -39,6 +44,8 @@ class RhythmDodgerGame:
 		self.last_judgement = ""
 		self.judgement_timer = 0.0
 
+		self.start_random_track()
+
 	def reset(self):
 		self.player.reset()
 		self.obstacles.clear()
@@ -48,6 +55,44 @@ class RhythmDodgerGame:
 		self.combo = 0
 		self.total_jumps = 0
 		self.accurate_jumps = 0
+
+		# restart music track
+		if self.current_track:
+			self.start_random_track()
+
+	# music
+
+	def start_random_track(self):
+		# choose a random track
+		self.current_track = random.choice(self.available_tracks)
+		track_path = f"{MUSIC_FOLDER}/{self.current_track.filename}"
+
+		# load and play music
+		try:
+			pygame.mixer.music.load(track_path)
+			# -1 loops indefinitely; start immediately
+			pygame.mixer.music.play(-1)
+		except Exception as e:
+			print("Failed to load music:", track_path, e)
+			# ensure game state reflects that no music is playing
+			self.current_track = None
+			pygame.mixer.music.stop()
+			self.music_started = False
+			self.music_start_time = 0.0
+			# restore beat tracker to a safe default interval
+			self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
+			return
+		
+		# sync beat tracker to the track bpm
+		self.beat_tracker = models.BeatTracker(self.current_track.interval)
+
+		# record the start time
+		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+		self.music_started = True
+
+		# reset beat tracker internal clock so the first beat aligns with music start
+		self.beat_tracker.time_since_last_beat = 0.0
+		self.beat_tracker.last_beat_time = 0.0
 
 	# input handling
 
@@ -73,9 +118,17 @@ class RhythmDodgerGame:
 		if self.game_over:
 			return
 		
-		# update beat tracker
-		beat_trigerred = self.beat_tracker.update(dt)
-		if beat_trigerred:
+		# compute absolute time if music started
+		absolute_time = None
+		if self.music_started and self.current_track is not None:
+			absolute_time = (pygame.time.get_ticks() / 1000.0) - self.music_start_time
+			# keep absolute_time positive
+			if absolute_time < 0:
+				absolute_time = 0.0
+
+		# update beat tracker with absolute time if available
+		beat_triggered = self.beat_tracker.update(dt, absolute_time)
+		if beat_triggered:
 			# play beat sound
 			self.beat_sound.play()
 
@@ -199,6 +252,17 @@ class RhythmDodgerGame:
 			y = 50 # just under the beat bar
 			self.screen.blit(text, (x, y))
 
+	def draw_track_info(self):
+		if self.current_track:
+			text = f"{self.current_track.display_name} ({self.current_track.bpm} BPM)"
+			surf = self.font_small.render(text, True, TEXT_COLOUR)
+
+			# position: top-right, under the beat bar
+			x = WINDOW_WIDTH - surf.get_width() - 20
+			y = GROUND_Y + 25 # slightly below the beat bar and judgement text
+
+			self.screen.blit(surf, (x, y))
+
 	def draw_hud(self):
 		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
 		combo_text = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
@@ -247,6 +311,7 @@ class RhythmDodgerGame:
 		self.draw_obstacles()
 		self.draw_beat_bar()
 		self.draw_judgement()
+		self.draw_track_info()
 		self.draw_hud()
 		self.draw_flash()
 		if self.game_over:

@@ -66,16 +66,36 @@ class BeatTracker: # internal clock
 		self.last_beat_time = 0.0
 		self.beat_count = 0
 	
-	def update(self, dt: float):
-		self.time_since_last_beat += dt
+	def update(self, dt: float, absolute_time: float | None = None):
+		"""
+		If absolute_time is provided (seconds since music start / global music clock,
+		e.g. the current playback position including any MUSIC_LATENCY adjustment),
+		align beats to that clock. Otherwise fall back to incremental dt accumulation.
+		Returns True if a beat was triggered this update.
+		"""
 		beat_triggered = False
-		while self.time_since_last_beat >= self.interval:
-			self.time_since_last_beat -= self.interval
-			self.last_beat_time = 0.0
-			self.beat_count += 1
-			beat_triggered = True
-		# track time since last beat for input timing
-		self.last_beat_time += dt
+
+		if absolute_time is not None:
+			# compute phase relative to the interval
+			phase = (absolute_time % self.interval)
+			# last_beat_time is time since last beat
+			self.last_beat_time = phase
+			# determine if a beat boundary was crossed during current frame
+			# it can be approximated by checking if phase is small (~0) or if dt is large enough to cross boundary
+			prev_phase = ((absolute_time - dt) % self.interval)
+			# if prev_phase > phase, a beat occurred
+			if prev_phase > phase:
+				self.beat_count += 1
+				beat_triggered = True
+		else:
+			self.time_since_last_beat += dt
+			while self.time_since_last_beat >= self.interval:
+				self.time_since_last_beat -= self.interval
+				self.last_beat_time = 0.0
+				self.beat_count += 1
+				beat_triggered = True
+			self.last_beat_time += dt
+
 		return beat_triggered
 	
 	def is_on_beat(self) -> bool:
@@ -85,3 +105,10 @@ class BeatTracker: # internal clock
 	
 	def normalised_phase(self) -> float:
 		return min(1.0, self.last_beat_time / self.interval)
+	
+class Track:
+	def __init__(self, filename: str, display_name: str, bpm: float):
+		self.filename = filename
+		self.display_name = display_name
+		self.bpm = bpm
+		self.interval = 60.0 / bpm
