@@ -134,7 +134,7 @@ class RhythmDodgerGame:
 		if self.current_track:
 			self.start_random_track()
 
-	# Music / beat
+	# music / beat
 
 	def start_random_track(self):
 		if not self.available_tracks:

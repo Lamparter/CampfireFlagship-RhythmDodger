@@ -37,14 +37,16 @@ def get_timing_judgement(clock: models.BeatTracker): # returns a string judgemen
 	t = clock.last_beat_time
 	dist = min(abs(t), abs(clock.interval - t))
 
-	if dist <= PERFECT_WINDOW:
+	if dist <= BEAT_TOLERANCE_PERFECT:
 		return "Perfect!"
-	elif dist <= GOOD_WINDOW:
+	elif dist <= BEAT_TOLERANCE_GOOD:
 		return "Good!"
-	elif t < clock.interval / 2:
-		return "Early!"
 	else:
-		return "Late!"
+		# early vs late
+		if t < clock.interval / 2:
+			return "Early!"
+		else:
+			return "Late!"
 	
 def get_flash_colour(judgement: str):
 	if judgement == "Perfect!":
