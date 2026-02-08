@@ -85,3 +85,9 @@ class BeatTracker: # internal clock
 	
 	def normalised_phase(self) -> float:
 		return min(1.0, self.last_beat_time / self.interval)
+	
+class Track:
+	def __init__(self, filename: str, bpm: float):
+		self.filename = filename
+		self.bpm = bpm
+		self.interval = 60.0 / bpm
