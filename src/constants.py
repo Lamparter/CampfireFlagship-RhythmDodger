@@ -42,3 +42,14 @@ BEAT_BAR_COLOUR = (120, 255, 160)
 BEAT_BAR_BG = (40, 70, 60)
 FLASH_COLOUR = (120, 255, 160)
 FLASH_ALPHA = 50
+
+# Music / track selection
+
+MUSIC_FOLDER = "music"
+TRACKS = [
+	("track1.ogg", 120)
+	("track2.ogg", 128)
+	("track3.ogg", 100)
+]
+# small calibration offset to compensate for audio playback latency
+MUSIC_LATENCY = 0.05 # to tune
