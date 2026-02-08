@@ -45,6 +45,8 @@ class RhythmDodgerGame:
 		self.last_judgement = ""
 		self.judgement_timer = 0.0
 
+		self.start_random_track()
+
 	def reset(self):
 		self.player.reset()
 		self.obstacles.clear()
@@ -54,6 +56,34 @@ class RhythmDodgerGame:
 		self.combo = 0
 		self.total_jumps = 0
 		self.accurate_jumps = 0
+
+	# music
+
+	def start_random_track(self):
+		# choose a random track
+		self.current_track = random.choice(self.available_tracks)
+		track_path = f"{MUSIC_FOLDER}/{self.current_track.filename}"
+
+		# load and play music
+		try:
+			pygame.mixer.music.load(track_path)
+			# -1 loops indefinitely; start immediately
+			pygame.mixer.music.play(-1)
+		except Exception as e:
+			print("Failed to load music:", track_path, e)
+			self.current_track = None
+			return
+		
+		# sync beat tracker to the track bpm
+		self.beat_tracker = models.BeatTracker(self.current_track.interval)
+
+		# record the start time
+		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+		self.music_started = True
+
+		# reset beat tracker internal clock so the first beat aligns with music start
+		self.beat_tracker.time_since_last_beat = 0.0
+		self.beat_tracker.last_beat_time = 0.0
 
 	# input handling
 
