@@ -112,8 +112,14 @@ class RhythmDodgerGame:
 			2,
 		)
 
-	def draw_hud(self): # yet another todo
-		pass
+	def draw_hud(self):
+		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
+		combo_text = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
+		best_text = self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR)
+
+		self.screen.blit(score_text, (20, 20))
+		self.screen.blit(combo_text, (20, 50))
+		self.screen.blit(best_text, (20, 80))
 
 	def draw_game_over(self): # im slowly getting tired of writing the same thing over and over again
 		pass
