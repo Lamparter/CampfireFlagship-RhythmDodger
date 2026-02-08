@@ -2,6 +2,8 @@
 Configuration/constants
 """
 
+CAPTION = "One-Button Rhythm Dodger"
+
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 450
 FPS = 60
