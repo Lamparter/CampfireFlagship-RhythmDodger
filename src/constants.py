@@ -1,8 +1,3 @@
-import sys
-import math
-import random
-import pygame
-
 # Constants
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 450
