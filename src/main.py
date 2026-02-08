@@ -2,47 +2,121 @@
 Main game class
 """
 
-import sys, math, random # bcl
-import helpers, models; from constants import * # local
+import sys, os, math, random # bcl
+import helpers, models, sprites, particles, audio, ui; from constants import * # local
 import pygame # main
 
 class RhythmDodgerGame:
 	def __init__(self):
 		pygame.init()
-		pygame.mixer.init()
 		self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-		pygame.display.set_caption(CAPTION)
+		pygame.display.set_caption("Rhythm Dodger")
 		self.clock = pygame.time.Clock()
 
-		self.font_small = helpers.load_font(20)
-		self.font_large = helpers.load_font(40)
+		# fonts
 
-		self.player = models.Player()
-		self.obstacles: list[models.Obstacle] = []
-		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
+		self.font_small = pygame.font.Font(FONT_PATH, 14)
+		self.font_large = pygame.font.Font(FONT_PATH, 28)
 
-		self.available_tracks = [models.Track(fn, name, bpm) for fn, name, bpm in TRACKS]
-		self.current_track: models.Track | None = None
+		# audio
+
+		self.audio = audio.AudioManager()
+
+		# preload sfx
+		self.audio.load_sfx("perfect", os.path.join(SFX_DIR, "beat_perfect.wav"))
+		self.audio.load_sfx("good", os.path.join(SFX_DIR, "beat_good.wav"))
+		self.audio.load_sfx("miss", os.path.join(SFX_DIR, "beat_miss.wav"))
+		self.audio.load_sfx("jump", os.path.join(SFX_DIR, "jump.wav"))
+		self.audio.load_sfx("land", os.path.join(SFX_DIR, "land.wav"))
+
+		# sprites
+
+		self.player_sheet = sprites.SpriteSheet(PLAYER_SHEET)
+		self.player = models.Player(self.player_sheet, self.font_small)
+		self.tileset = pygame.image.load(TILESET).convert_alpha()
+		self.obstacles_img = pygame.image.load(OBSTACLES_SPR).convert_alpha()
+
+		# split obstacles into frames (assume horizontal strip)
+		self.obstacle_sprites = []
+		obs_w = 24
+		obs_h = 24
+		count = max(1, self.obstacles_img.get_width() // obs_w)
+		for i in range(count):
+			surf = pygame.Surface((obs_w, obs_h), pygame.SRCALPHA)
+			surf.blit(self.obstacles_img, (0,0), (i*obs_w, 0, obs_w, obs_h))
+			self.obstacle_sprites.append(surf)
+		
+		# mascot
+
+		self.mascot_sheet = sprites.SpriteSheet(MASCOT_SHEET)
+		self.mascot = models.Mascot(self.mascot_sheet)
+
+		# parallax
+
+		self.bg_layers = [
+			models.ParallaxLayer(BG_LAYER0, 0.08),
+			models.ParallaxLayer(BG_LAYER1, 0.18),
+			models.ParallaxLayer(BG_LAYER2, 0.35),
+		]
+		self.fg_layer = models.ParallaxLayer(FG_LAYER, 0.6)
+
+		# particles
+
+		self.particles = particles.ParticleSystem(300)
+
+		# beat / music
+
+		self.current_track = None
+		self.beat_tracker = models.BeatTracker(60.0 / DEFAULT_BPM)
 		self.music_started = False
-		self.music_start_time = 0.0 # pygame time in seconds when music started
-
+		self.music_start_time = 0.0
 		self.beats_until_next_obstacle = helpers.space_obstacle()
+
+		# game state
 
 		self.running = True
 		self.game_over = False
-
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
 		self.max_combo = 0
-		self.total_jumps = 0
-		self.accurate_jumps = 0
 
-		self.beat_sound = helpers.create_click_sound()
-		self.flash_alpha = 0.0
+		# judgement
 
 		self.last_judgement = ""
 		self.judgement_timer = 0.0
+
+		# accuracy counters
+
+		self.total_jumps = 0
+		self.accurate_jumps = 0
+
+		# obstacles
+
+		self.obstacles = []
+
+		# UI / shake
+
+		self.shake_time = 0.0
+		self.shake_intensity = 0.0
+
+		# day/night
+
+		self.time_of_day = random.random()
+
+		# weather
+
+		self.raining = False
+		self.rain_timer = 0.0
+
+		# load tracks list
+
+		self.available_tracks = []
+		for fn, name, bpm in TRACKS:
+			path = os.path.join(MUSIC_DIR, fn)
+			self.available_tracks.append((path, name, bpm))
+
+		# start a random track
 
 		self.start_random_track()
 
