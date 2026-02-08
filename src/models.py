@@ -59,6 +59,24 @@ class Obstacle: # enemy
 	def is_offscreen(self) -> bool:
 		return self.x + self.width < 0
 
+class ParallaxLayer:
+	def __init__(self, path, speed):
+		self.image = pygame.image.load(path).convert_alpha()
+		self.speed = speed
+		self.offset = 0.0
+		self.w = self.image.get_width()
+	
+	def update(self, dt, camera_dx):
+		# camera_dx is in pixels per second; multiply by dt for per-frame offset
+
+		self.offset = (self.offset + camera_dx * self.speed * dt) % self.w
+
+	def draw(self, surf):
+		x = -int(self.offset)
+		surf.blit(self.image, (x, 0))
+		if x + self.w < surf.get_width():
+			surf.blit(self.image, (x + self.w, 0))
+
 class BeatTracker: # internal clock
 	def __init__(self, interval: float):
 		self.interval = interval
