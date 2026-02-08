@@ -54,3 +54,30 @@ class Obstalce:
 	
 	def is_offscreen(self) -> bool:
 		return self.x + self.width < 0
+
+class BeatTracker: # internal clock
+	def __init__(self, interval: float):
+		self.interval = interval
+		self.time_since_last_beat = 0.0 # isn't this kind of like how wakatime works ? lol
+		self.last_beat_time = 0.0
+		self.beat_count = 0
+	
+	def update(self, dt: float):
+		self.time_since_last_beat += dt
+		beat_triggered = False
+		while self.time_since_last_beat >= self.interval:
+			self.time_since_last_beat -= self.interval
+			self.last_beat_time = 0.0
+			self.beat_count += 1
+			beat_triggered = True
+		# track time since last beat for input timing
+		self.last_beat_time += dt
+		return beat_triggered
+	
+	def is_on_beat(self) -> bool:
+		# ~close to the beat moment
+		return abs(self.last_beat_time) <= BEAT_TOLERANCE or \
+			abs(self.interval - self.last_beat_time) <= BEAT_TOLERANCE
+	
+	def normalised_phase(self) -> float:
+		return min(1.0, self.last_beat_time / self.interval)
