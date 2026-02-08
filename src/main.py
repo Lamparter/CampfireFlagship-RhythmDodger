@@ -71,11 +71,12 @@ class RhythmDodgerGame:
 			pygame.Rect(0, GROUND_Y, WINDOW_WIDTH, WINDOW_HEIGHT - GROUND_Y),
 		)
 
-	def draw_player(self): # todo
-		pass
+	def draw_player(self):
+		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
 
-	def draw_obstacles(self): # todo
-		pass
+	def draw_obstacles(self):
+		for obs in self.obstacles:
+			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
 
 	def draw_beat_bar(self): # todo
 		pass
