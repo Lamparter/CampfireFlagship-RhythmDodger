@@ -126,7 +126,8 @@ class RhythmDodgerGame:
 		x = WINDOW_WIDTH - bar_width - margin
 		y = margin
 
-		pygame.draw.rect( # background
+		# background
+		pygame.draw.rect(
 			self.screen,
 			BEAT_BAR_BG,
 			pygame.Rect(x, y, bar_width, bar_height),
