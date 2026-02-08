@@ -5,6 +5,8 @@ Game objects
 import pygame, random, sprites
 from constants import *
 
+# Game objects
+
 class Player: # player
 	def __init__(self, spritesheet: sprites.SpriteSheet, font):
 		self.x = PLAYER_X
@@ -96,6 +98,29 @@ class Obstacle:
 	def offscreen(self):
 		return self.x + self.width < 0
 
+class Mascot:
+	def __init__(self, sheet: sprites.SpriteSheet):
+		frames = sheet.load_strip((0,0,24,24), 3)
+		self.anim = sprites.AnimatedSprite(frames, fps=4)
+		self.x = int(WINDOW_WIDTH * 0.02)
+		self.y = GROUND_Y - 24 - int(WINDOW_HEIGHT * 0.008)
+
+	def react(self, mood):
+		if mood == "happy":
+			self.anim.fps = 10
+		elif mood == "sad":
+			self.anim.fps = 2
+		else:
+			self.anim.fps = 4
+	
+	def update(self, dt):
+		self.anim.update(dt)
+	
+	def draw(self, surf):
+		surf.blit(self.anim.get_image(), (self.x, self.y))
+
+# Helper classes
+
 class ParallaxLayer:
 	def __init__(self, path, speed):
 		self.image = pygame.image.load(path).convert_alpha()
@@ -160,10 +185,3 @@ class BeatTracker: # internal clock
 	
 	def normalised_phase(self) -> float:
 		return min(1.0, self.last_beat_time / self.interval)
-	
-class Track:
-	def __init__(self, filename: str, display_name: str, bpm: float):
-		self.filename = filename
-		self.display_name = display_name
-		self.bpm = bpm
-		self.interval = 60.0 / bpm
