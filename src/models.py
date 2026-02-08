@@ -38,7 +38,7 @@ class Player:
 			self.vy = JUMP_VELOCITY
 			self.on_ground = False
 
-class Obstalce:
+class Obstacle:
 	def __init__(self, x: float):
 		self.width = OBSTACLE_WIDTH
 		self.height = random.randint(OBSTACLE_MIN_HEIGHT, OBSTACLE_MAX_HEIGHT)
