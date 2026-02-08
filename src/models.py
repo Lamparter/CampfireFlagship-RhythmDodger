@@ -66,17 +66,47 @@ class BeatTracker: # internal clock
 		self.last_beat_time = 0.0
 		self.beat_count = 0
 	
-	def update(self, dt: float):
-		self.time_since_last_beat += dt
+	def update(self, dt: float, absolute_time: float | None = None):
+		"""
+		If absolute_time is provided (seconds since pygame start), align beats to that clock.
+		Otherwise fall back to incremental dt accumulation.
+        Returns True if a beat was triggered this update.
+		"""
 		beat_triggered = False
-		while self.time_since_last_beat >= self.interval:
-			self.time_since_last_beat -= self.interval
-			self.last_beat_time = 0.0
-			self.beat_count += 1
-			beat_triggered = True
-		# track time since last beat for input timing
-		self.last_beat_time += dt
+
+		if absolute_time is not None:
+			# compute phase relative to the interval
+			phase = (absolute_time % self.interval)
+			# last_beat_time is time since last beat
+			self.last_beat_time = phase
+			# determine if a beat boundary was crossed during current frame
+			# it can be approximated by checking if phase is small (~0) or if dt is large enough to cross boundary
+			prev_phase = ((absolute_time - dt) % self.interval)
+			# if prev_phase > phase, a beat occured
+			if prev_phase > phase:
+				self.beat_count += 1
+				beat_triggered = True
+		else:
+			self.time_since_last_beat += dt
+			while self.time_since_last_beat >= self.interval:
+				self.time_since_last_beat -= self.interval
+				self.last_beat_time = 0.0
+				self.beat_count += 1
+				beat_triggered = True
+			self.last_beat_time += dt
+
 		return beat_triggered
+	
+		#self.time_since_last_beat += dt
+		#beat_triggered = False
+		#while self.time_since_last_beat >= self.interval:
+		#	self.time_since_last_beat -= self.interval
+		#	self.last_beat_time = 0.0
+		#	self.beat_count += 1
+		#	beat_triggered = True
+		# track time since last beat for input timing
+		#self.last_beat_time += dt
+		#return beat_triggered
 	
 	def is_on_beat(self) -> bool:
 		# ~close to the beat moment
