@@ -32,6 +32,7 @@ class RhythmDodgerGame:
 		self.max_combo = 0
 
 		self.beat_sound = helpers.create_click_sound()
+		self.flash_alpha = 0.0
 
 	def reset(self):
 		self.player.reset()
@@ -90,6 +91,9 @@ class RhythmDodgerGame:
 				self.combo += 1
 				self.score += 10 + self.combo # reward combo
 				self.max_combo = max(self.max_combo, self.combo)
+
+				# trigger flash
+				self.flash_alpha = 180 # 0-255
 			else:
 				self.combo = 0 # break combo if off-beat
 
@@ -173,6 +177,16 @@ class RhythmDodgerGame:
 		self.screen.blit(combo_text, (20, 50))
 		self.screen.blit(best_text, (20, 80))
 
+	def draw_flash(self):
+		if self.flash_alpha > 0:
+			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+			overlay.set_alpha(int(self.flash_alpha))
+			overlay.fill((120, 255, 160)) # soft green flash
+			self.screen.blit(overlay, (0, 0))
+
+			# fade out
+			self.flash_alpha -= 6 # adjust?
+
 	def draw_game_over(self):
 		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
 		info = self.font_small.render("Press 'R' / 'Enter' / 'Space' to restart", True, TEXT_COLOUR)
@@ -197,6 +211,7 @@ class RhythmDodgerGame:
 		self.draw_obstacles()
 		self.draw_beat_bar()
 		self.draw_hud()
+		self.draw_flash()
 		if self.game_over:
 			self.draw_game_over()
 		pygame.display.flip()
