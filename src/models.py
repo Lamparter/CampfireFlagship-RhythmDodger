@@ -72,21 +72,28 @@ class Player: # player
 		draw_y = int(self.y + (h - sh))
 		surf.blit(img_scaled, (draw_x, draw_y))
 
-class Obstacle: # enemy
-	def __init__(self, x: float):
-		self.width = OBSTACLE_WIDTH
-		self.height = random.randint(OBSTACLE_MIN_HEIGHT, OBSTACLE_MAX_HEIGHT)
+class Obstacle:
+	def __init__(self, x, sprite):
 		self.x = x
+		self.sprite = sprite
+		self.width = sprite.get_width()
+		self.height = sprite.get_height()
 		self.y = GROUND_Y - self.height
+		if random.random() < 0.25:
+			self.y -= random.choice([24, 40])
+		self.passed = False
 
 	@property
-	def rect(self) -> pygame.Rect:
+	def rect(self):
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 	
-	def update(self, dt: float):
+	def update(self, dt):
 		self.x -= OBSTACLE_SPEED * dt
 	
-	def is_offscreen(self) -> bool:
+	def draw(self, surf):
+		surf.blit(self.sprite, (int(self.x), int(self.y)))
+	
+	def offscreen(self):
 		return self.x + self.width < 0
 
 class ParallaxLayer:
