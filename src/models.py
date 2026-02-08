@@ -1,7 +1,11 @@
+"""
+Game objects
+"""
+
 import pygame, random
 from constants import *
 
-class Player:
+class Player: # player
 	def __init__(self):
 		self.width = PLAYER_WIDTH
 		self.height = PLAYER_HEIGHT
@@ -20,11 +24,11 @@ class Player:
 		self.on_ground = True
 
 	def update(self, dt: float):
-		# Apply gravity
+		# apply gravity
 		self.vy += GRAVITY * dt
 		self.y += self.vy * dt
 
-		# Ground collision
+		# ground collision
 		ground_y = GROUND_Y - self.height
 		if self.y >= ground_y:
 			self.y = ground_y
@@ -38,7 +42,7 @@ class Player:
 			self.vy = JUMP_VELOCITY
 			self.on_ground = False
 
-class Obstacle:
+class Obstacle: # enemy
 	def __init__(self, x: float):
 		self.width = OBSTACLE_WIDTH
 		self.height = random.randint(OBSTACLE_MIN_HEIGHT, OBSTACLE_MAX_HEIGHT)

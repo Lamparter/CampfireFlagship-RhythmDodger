@@ -1,4 +1,7 @@
-# Constants
+"""
+Configuration/constants
+"""
+
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 450
 FPS = 60

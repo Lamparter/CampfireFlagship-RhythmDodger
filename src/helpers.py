@@ -1,9 +1,13 @@
+"""
+Helper functions
+"""
+
 import pygame, constants, math
 
 def load_font(size: int) -> pygame.font.Font:
 	return pygame.font.SysFont(constants.FONT_NAME, size)
 
-def create_click_sound():
+def create_click_sound(): # a short click sound
 	sample_rate = 44100
 	duration = 0.05
 	frequency = 1000
