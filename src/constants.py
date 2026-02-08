@@ -24,7 +24,7 @@ OBSTACLE_SPEED = 400.0
 OBSTACLE_SPACING_MIN = 2 
 OBSTACLE_SPACING_MAX = 4
 
-BPM = 120
+BPM = 90
 BEAT_INTERVAL = 60.0 / BPM
 BEAT_TOLERANCE = 0.12 # the time window for 'on beat'/perfect timing
 
