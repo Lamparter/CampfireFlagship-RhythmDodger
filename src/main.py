@@ -57,6 +57,10 @@ class RhythmDodgerGame:
 		self.total_jumps = 0
 		self.accurate_jumps = 0
 
+		# restart music track
+		if self.current_track:
+			self.start_random_track()
+
 	# music
 
 	def start_random_track(self):
