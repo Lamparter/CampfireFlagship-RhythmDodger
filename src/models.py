@@ -82,7 +82,7 @@ class BeatTracker: # internal clock
 			# determine if a beat boundary was crossed during current frame
 			# it can be approximated by checking if phase is small (~0) or if dt is large enough to cross boundary
 			prev_phase = ((absolute_time - dt) % self.interval)
-			# if prev_phase > phase, a beat occured
+			# if prev_phase > phase, a beat occurred
 			if prev_phase > phase:
 				self.beat_count += 1
 				beat_triggered = True

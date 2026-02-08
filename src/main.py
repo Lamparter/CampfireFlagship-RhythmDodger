@@ -122,8 +122,8 @@ class RhythmDodgerGame:
 				absolute_time = 0.0
 
 		# update beat tracker with absolute time if available
-		beat_trigerred = self.beat_tracker.update(dt, absolute_time)
-		if beat_trigerred:
+		beat_triggered = self.beat_tracker.update(dt, absolute_time)
+		if beat_triggered:
 			# play beat sound
 			self.beat_sound.play()
 
