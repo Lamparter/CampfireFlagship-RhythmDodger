@@ -52,4 +52,4 @@ TRACKS = [
 	("track3.ogg", 100)
 ]
 # small calibration offset to compensate for audio playback latency
-MUSIC_LATENCY = 0.05 # to tune
+MUSIC_LATENCY = 0.0 # to tune
