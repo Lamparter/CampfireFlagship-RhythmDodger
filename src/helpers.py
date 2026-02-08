@@ -2,7 +2,7 @@
 Helper functions
 """
 
-import pygame, math, random; from constants import *
+import pygame, math, random, models; from constants import *
 
 def load_font(size: int) -> pygame.font.Font:
 	return pygame.font.SysFont(FONT_NAME, size)
@@ -32,3 +32,16 @@ def create_click_sound(): # soft sine-wave beep for the beat
 
 def space_obstacle() -> int:
 	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
+
+def get_timing_judgement(clock: models.BeatTracker): # returns a string judgement based on how close the jump was to the beat
+	t = clock.last_beat_time
+	dist = min(abs(t), abs(clock.interval - t))
+
+	if dist <= PERFECT_WINDOW:
+		return "Perfect!"
+	elif dist <= GOOD_WINDOW:
+		return "Good!"
+	elif t < clock.interval / 2:
+		return "Early!"
+	else:
+		return "Late!"

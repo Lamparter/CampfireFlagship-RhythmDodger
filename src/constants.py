@@ -28,6 +28,9 @@ BPM = 90
 BEAT_INTERVAL = 60.0 / BPM
 BEAT_TOLERANCE = 0.12 # the time window for 'on beat'/perfect timing
 
+PERFECT_WINDOW = 0.05
+GOOD_WINDOW = 0.10
+
 FONT_NAME = "arial"
 
 BACKGROUND_COLOUR = (15, 15, 15)

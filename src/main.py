@@ -34,6 +34,9 @@ class RhythmDodgerGame:
 		self.beat_sound = helpers.create_click_sound()
 		self.flash_alpha = 0.0
 
+		self.last_judgement = ""
+		self.judgement_timer = 0.0
+
 	def reset(self):
 		self.player.reset()
 		self.obstacles.clear()
@@ -85,12 +88,24 @@ class RhythmDodgerGame:
 		
 		# player jump
 		if jump_pressed:
-			on_beat = self.beat_tracker.is_on_beat()
 			self.player.try_jump()
-			if on_beat:
+
+			# determine judgement
+			judgement = helpers.get_timing_judgement(self.beat_tracker)
+			self.last_judgement = judgement
+			self.judgement_timer = 0.6 # show for 0.6s
+
+			# scoring logic
+			if judgement == "Perfect!":
 				self.combo += 1
-				self.score += 10 + self.combo # reward combo
-				self.max_combo = max(self.max_combo, self.combo)
+				self.score += 15 + self.combo
+				#self.max_combo = max(self.max_combo, self.combo)
+
+				# trigger flash
+				self.flash_alpha = FLASH_ALPHA
+			elif judgement == "Good!":
+				self.combo += 1
+				self.score += 8 + self.combo
 
 				# trigger flash
 				self.flash_alpha = FLASH_ALPHA
@@ -116,6 +131,9 @@ class RhythmDodgerGame:
 		# passive score over time
 		if not self.game_over:
 			self.score += dt * 2 # small survival score
+
+		if self.judgement_timer > 0:
+			self.judgement_timer -= dt
 	
 	# rendering
 
@@ -168,6 +186,13 @@ class RhythmDodgerGame:
 			2,
 		)
 
+	def draw_judgement(self):
+		if self.judgement_timer > 0:
+			text = self.font_small.render(self.last_judgement, True, (255, 255, 255))
+			x = WINDOW_WIDTH - 170
+			y = 50 # just under the beat bar
+			self.screen.blit(text, (x, y))
+
 	def draw_hud(self):
 		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
 		combo_text = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
@@ -210,6 +235,7 @@ class RhythmDodgerGame:
 		self.draw_player()
 		self.draw_obstacles()
 		self.draw_beat_bar()
+		self.draw_judgement()
 		self.draw_hud()
 		self.draw_flash()
 		if self.game_over:
