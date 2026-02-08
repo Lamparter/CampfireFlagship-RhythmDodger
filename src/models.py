@@ -97,17 +97,6 @@ class BeatTracker: # internal clock
 
 		return beat_triggered
 	
-		#self.time_since_last_beat += dt
-		#beat_triggered = False
-		#while self.time_since_last_beat >= self.interval:
-		#	self.time_since_last_beat -= self.interval
-		#	self.last_beat_time = 0.0
-		#	self.beat_count += 1
-		#	beat_triggered = True
-		# track time since last beat for input timing
-		#self.last_beat_time += dt
-		#return beat_triggered
-	
 	def is_on_beat(self) -> bool:
 		# ~close to the beat moment
 		return abs(self.last_beat_time) <= BEAT_TOLERANCE or \
