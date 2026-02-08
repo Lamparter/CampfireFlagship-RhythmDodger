@@ -59,8 +59,35 @@ class RhythmDodgerGame:
 	
 	# game update
 
-	def update(self, dt: float, jump_pressed: bool): # todo
-		pass
+	def update(self, dt: float, jump_pressed: bool):
+		if self.game_over:
+			return
+		
+		# update beat tracker
+		beat_trigerred = self.beat_tracker.update(dt)
+		if beat_trigerred:
+			# play beat sound
+			self.beat_sound.play()
+			# spawn obstacle every beat (change?)
+			spawn_x = WINDOW_WIDTH + 40
+			self.obstacles.append(models.Obstacle(spawn_x))
+		
+		# update obstacles
+		for obs in self.obstacles:
+			obs.update(dt)
+		self.obstacles = [o for o in self.obstacles if not o.is_offscreen()]
+
+		# collision detection
+		player_rect = self.player.rect
+		for obs in self.obstacles:
+			if player_rect.colliderect(obs.rect):
+				self.game_over = True
+				self.best_score = max(self.best_score, self.score)
+				break
+		
+		# passive score over time
+		if not self.game_over:
+			self.score += dt * 2 # small survival score
 	
 	# rendering
 
