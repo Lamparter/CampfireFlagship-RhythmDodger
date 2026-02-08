@@ -246,11 +246,20 @@ class RhythmDodgerGame:
 		)
 
 	def draw_judgement(self):
-		if self.judgement_timer > 0:
-			text = self.font_small.render(self.last_judgement, True, (255, 255, 255))
-			x = WINDOW_WIDTH - 170
-			y = 50 # just under the beat bar
-			self.screen.blit(text, (x, y))
+		if self.judgement_timer > 0 and self.last_judgement:
+			surf = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
+
+			bar_width = 260
+			bar_height = 16
+			margin = 20
+
+			bar_x = WINDOW_WIDTH - bar_width - margin
+			bar_y = margin
+		
+			x = bar_x + bar_width - surf.get_width()
+			y = bar_y + bar_height + 15 # small gap below bar
+
+			self.screen.blit(surf, (x, y))
 
 	def draw_track_info(self):
 		if self.current_track:
