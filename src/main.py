@@ -30,6 +30,8 @@ class RhythmDodgerGame:
 		self.best_score = 0
 		self.combo = 0
 		self.max_combo = 0
+		self.total_jumps = 0
+		self.accurate_jumps = 0
 
 		self.beat_sound = helpers.create_click_sound()
 		self.flash_alpha = 0.0
@@ -44,6 +46,8 @@ class RhythmDodgerGame:
 		self.game_over = False
 		self.score = 0
 		self.combo = 0
+		self.total_jumps = 0
+		self.accurate_jumps = 0
 
 	# input handling
 
@@ -90,25 +94,27 @@ class RhythmDodgerGame:
 		if jump_pressed:
 			self.player.try_jump()
 
+			# count jumps
+			self.total_jumps += 1
+
 			# determine judgement
 			judgement = helpers.get_timing_judgement(self.beat_tracker)
 			self.last_judgement = judgement
 			self.judgement_timer = 0.6 # show for 0.6s
+
+			if judgement in ("Perfect!", "Good!"):
+				self.accurate_jumps += 1
+				# trigger flash
+				self.flash_alpha = FLASH_ALPHA
 
 			# scoring logic
 			if judgement == "Perfect!":
 				self.combo += 1
 				self.score += 15 + self.combo
 				#self.max_combo = max(self.max_combo, self.combo)
-
-				# trigger flash
-				self.flash_alpha = FLASH_ALPHA
 			elif judgement == "Good!":
 				self.combo += 1
 				self.score += 8 + self.combo
-
-				# trigger flash
-				self.flash_alpha = FLASH_ALPHA
 			else:
 				self.combo = 0 # break combo if off-beat
 
@@ -213,6 +219,8 @@ class RhythmDodgerGame:
 			self.flash_alpha -= 6 # adjust?
 
 	def draw_game_over(self):
+		accuracy = helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)
+
 		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
 		info = self.font_small.render("Press 'R' / 'Enter' / 'Space' to restart", True, TEXT_COLOUR)
 		score_info = self.font_small.render(
@@ -220,14 +228,17 @@ class RhythmDodgerGame:
 			True,
 			TEXT_COLOUR,
 		)
+		accuracy_text = self.font_small.render(f"Beat Accuracy: {accuracy}%", True, TEXT_COLOUR)
 
 		title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
 		info_rect = info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
 		score_rect = score_info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+		accuracy_rect = accuracy_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 80))
 
 		self.screen.blit(title, title_rect)
 		self.screen.blit(info, info_rect)
 		self.screen.blit(score_info, score_rect)
+		self.screen.blit(accuracy_text, accuracy_rect)
 
 	def render(self):
 		self.screen.fill(BACKGROUND_COLOUR)

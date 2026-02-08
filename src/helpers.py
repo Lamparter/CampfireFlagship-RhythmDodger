@@ -45,3 +45,8 @@ def get_timing_judgement(clock: models.BeatTracker): # returns a string judgemen
 		return "Early!"
 	else:
 		return "Late!"
+	
+def get_accuracy_percent(accurate_jumps: int, total_jumps: int):
+	if total_jumps == 0:
+		return 0
+	return int((accurate_jumps / total_jumps) * 100)
