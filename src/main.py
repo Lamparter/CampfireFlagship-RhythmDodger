@@ -74,7 +74,13 @@ class RhythmDodgerGame:
 			pygame.mixer.music.play(-1)
 		except Exception as e:
 			print("Failed to load music:", track_path, e)
+			# ensure game state reflects that no music is playing
 			self.current_track = None
+			pygame.mixer.music.stop()
+			self.music_started = False
+			self.music_start_time = 0.0
+			# restore beat tracker to a safe default interval
+			self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
 			return
 		
 		# sync beat tracker to the track bpm
