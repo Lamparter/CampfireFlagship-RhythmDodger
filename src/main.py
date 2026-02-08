@@ -171,8 +171,11 @@ class RhythmDodgerGame:
 	
 	# game update
 
-	def update(self, dt: float, jump_pressed: bool):
+	def update(self, dt, jump_pressed):
 		if self.game_over:
+			# still update particles and mascot
+			self.particles.update(dt)
+			self.mascot.update(dt)
 			return
 		
 		# compute absolute time if music started
@@ -180,14 +183,13 @@ class RhythmDodgerGame:
 		if self.music_started and self.current_track is not None:
 			absolute_time = (pygame.time.get_ticks() / 1000.0) - self.music_start_time
 			# keep absolute_time positive
-			if absolute_time < 0:
-				absolute_time = 0.0
+			if absolute_time < 0: absolute_time = 0.0
 
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 		if beat_triggered:
-			# play beat sound
-			self.beat_sound.play()
+			# play soft metronome (use good sound)
+			self.audio.play_sfx("good", 0.6)
 
 			# count down until next obstacle
 			self.beats_until_next_obstacle -= 1
@@ -195,7 +197,8 @@ class RhythmDodgerGame:
 			if self.beats_until_next_obstacle <= 0:
 				# spawn obstacle
 				spawn_x = WINDOW_WIDTH + 40
-				self.obstacles.append(models.Obstacle(spawn_x))
+				sprite = random.choice(self.obstacle_sprites)
+				self.obstacles.append(models.Obstacle(spawn_x, sprite))
 
 				# reset spacing
 				self.beats_until_next_obstacle = helpers.space_obstacle()
@@ -212,21 +215,29 @@ class RhythmDodgerGame:
 			self.last_judgement = judgement
 			self.judgement_timer = 0.6 # show for 0.6s
 
-			if judgement in ("Perfect!", "Good!"):
-				self.accurate_jumps += 1
-			
-			self.flash_alpha = FLASH_ALPHA
-
-			# scoring logic
 			if judgement == "Perfect!":
 				self.combo += 1
 				self.score += 15 + self.combo
-				#self.max_combo = max(self.max_combo, self.combo)
+				self.accurate_jumps += 1
+				self.audio.play_sfx("perfect", 0.9)
+
+				# particles + mascot
+				cx = self.player.x + self.player.width / 2
+				cy = self.player.y + self.player.height / 2
+				self.particles.emit(cx, cy, count = 12, colour = (255, 230, 180))
+				self.mascot.react("happy")
 			elif judgement == "Good!":
 				self.combo += 1
 				self.score += 8 + self.combo
+				self.accurate_jumps += 1
+				self.audio.play_sfx("good", 0.8)
+				self.particles.emit(self.player.x + 12, self.player.y + 12, count = 6, colour = (220, 200, 160))
+				self.mascot.react("happy")
 			else:
-				self.combo = 0 # break combo if off-beat
+				self.combo = 0
+				self.audio.play_sfx("miss", 0.6)
+				self.mascot.react("sad")
+			self.max_combo = max(self.max_combo, self.combo)
 
 		# update player physics
 		self.player.update(dt)
@@ -234,22 +245,42 @@ class RhythmDodgerGame:
 		# update obstacles
 		for obs in self.obstacles:
 			obs.update(dt)
-		self.obstacles = [o for o in self.obstacles if not o.is_offscreen()]
-
-		# collision detection
-		player_rect = self.player.rect
+		
+		# collision
 		for obs in self.obstacles:
-			if player_rect.colliderect(obs.rect):
+			if self.player.rect.colliderect(obs.rect):
+				# collision -> game over unless ghost powerup (todo)
 				self.game_over = True
 				self.best_score = max(self.best_score, self.score)
+				self.audio.play_sfx("miss", 0.8)
+				self.apply_screen_shake(6, 0.18)
 				break
 		
+		# remove offscreen
+		self.obstacles = [o for o in self.obstacles if not o.is_offscreen()]
+		
 		# passive score over time
-		if not self.game_over:
-			self.score += dt * 2 # small survival score
+		self.score += dt * 2 # small survival score
 
+		# particles and mascot update
+		self.particles.update(dt)
+		self.mascot.update(dt)
+
+		# judgement timer
 		if self.judgement_timer > 0:
 			self.judgement_timer -= dt
+
+		# day/night
+		self.time_of_day += dt * 0.01
+		if self.time_of_day > 1.0: self.time_of_day -= 1.0
+
+		# toggle rain occasionally
+		self.rain_timer -= dt
+		if self.rain_timer <= 0:
+			self.rain_timer = random.uniform(8.0, 20.0)
+			self.raining = random.random() < 0.25
+			if self.raining:
+				self.particles.emit_rain(WINDOW_WIDTH, WINDOW_HEIGHT, count = 60)
 	
 	# rendering
 
