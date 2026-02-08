@@ -2,45 +2,75 @@
 Game objects
 """
 
-import pygame, random
+import pygame, random, sprites
 from constants import *
 
 class Player: # player
-	def __init__(self):
-		self.width = PLAYER_WIDTH
-		self.height = PLAYER_HEIGHT
+	def __init__(self, spritesheet: sprites.SpriteSheet, font):
 		self.x = PLAYER_X
-		self.y = float(GROUND_Y - self.height)
+		self.y = float(GROUND_Y - PLAYER_H)
 		self.vy = 0.0
 		self.on_ground = True
+		self.recently_landed = False
+		self.spritesheet = spritesheet
+		# load animations: assume sheet rows: idle(0), jump(1), land(2)
 
+		self.animations = {}
+		frames = 4
+		for row, name, fps in [(0,"idle",6),(1,"jump",1),(2,"land",6)]:
+			strip = spritesheet.load_strip((0, row*PLAYER_H, PLAYER_W, PLAYER_H), frames)
+			self.animations[name] = sprites.AnimatedSprite(strip, fps = fps, loop = (name != "jump"))
+		self.state = "idle"
+		self.font = font
+		self.width = PLAYER_W
+		self.height = PLAYER_H
+	
 	@property
-	def rect(self) -> pygame.Rect:
+	def rect(self):
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 	
 	def reset(self):
-		self.y = float(GROUND_Y - self.height)
+		self.y = float(GROUND_Y - PLAYER_H)
 		self.vy = 0.0
 		self.on_ground = True
-
-	def update(self, dt: float):
-		# apply gravity
-		self.vy += GRAVITY * dt
-		self.y += self.vy * dt
-
-		# ground collision
-		ground_y = GROUND_Y - self.height
-		if self.y >= ground_y:
-			self.y = ground_y
-			self.vy = 0.0
-			self.on_ground = True
-		else:
-			self.on_ground = False
+		self.recently_landed = False
+		self.state = "idle"
 	
 	def try_jump(self):
 		if self.on_ground:
 			self.vy = JUMP_VELOCITY
 			self.on_ground = False
+			self.state = "jump"
+	
+	def update(self, dt):
+		self.vy += GRAVITY * dt
+		self.y += self.vy * dt
+		ground_y = GROUND_Y - self.height
+		if self.y >= ground_y:
+			if not self.on_ground:
+				self.recently_landed = True
+			self.y = ground_y
+			self.vy = 0.0
+			self.on_ground = True
+			if self.recently_landed:
+				self.state = "land"
+		else:
+			self.on_ground = False
+		self.animations[self.state].update(dt)
+		if self.recently_landed:
+			# small decay animation handled by animation timing; clear flag next frame
+
+			self.recently_landed = False
+
+	def draw(self, surf, scale_x = 1.0, scale_y = 1.0):
+		img = self.animations[self.state].get_image()
+		w,h = img.get_size()
+		sw = max(1, int(w * scale_x))
+		sh = max(1, int(h * scale_y))
+		img_scaled = pygame.transform.scale(img, (sw, sh))
+		draw_x = int(self.x)
+		draw_y = int(self.y + (h - sh))
+		surf.blit(img_scaled, (draw_x, draw_y))
 
 class Obstacle: # enemy
 	def __init__(self, x: float):
