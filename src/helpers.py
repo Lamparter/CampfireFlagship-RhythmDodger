@@ -2,10 +2,10 @@
 Helper functions
 """
 
-import pygame, constants, math
+import pygame, math, random; from constants import *
 
 def load_font(size: int) -> pygame.font.Font:
-	return pygame.font.SysFont(constants.FONT_NAME, size)
+	return pygame.font.SysFont(FONT_NAME, size)
 
 def create_click_sound(): # a short click sound
 	sample_rate = 44100
@@ -25,3 +25,6 @@ def create_click_sound(): # a short click sound
 	
 	sound = pygame.mixer.Sound(buffer=buf)
 	return sound
+
+def space_obstacle() -> int:
+	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
