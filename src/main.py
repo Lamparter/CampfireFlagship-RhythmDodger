@@ -284,12 +284,17 @@ class RhythmDodgerGame:
 	
 	# rendering
 
-	def draw_ground(self):
-		pygame.draw.rect(
-			self.screen,
-			GROUND_COLOUR,
-			pygame.Rect(0, GROUND_Y, WINDOW_WIDTH, WINDOW_HEIGHT - GROUND_Y),
-		)
+	def draw_ground(self, surf):
+		# draw repeating tiles across bottom
+		tile = self.tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
+		x = 0
+		while x < WINDOW_WIDTH:
+			surf.blit(tile, (x, GROUND_Y))
+			x += TILE_SIZE
+
+		# ground overlay
+		pygame.draw.rect(surf, GROUND_COLOUR, pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE)))
+		
 
 	def draw_player(self):
 		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
