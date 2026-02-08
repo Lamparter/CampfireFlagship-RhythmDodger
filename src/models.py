@@ -117,7 +117,8 @@ class BeatTracker: # internal clock
 		return min(1.0, self.last_beat_time / self.interval)
 	
 class Track:
-	def __init__(self, filename: str, bpm: float):
+	def __init__(self, filename: str, display_name: str, bpm: float):
 		self.filename = filename
+		self.display_name = display_name
 		self.bpm = bpm
 		self.interval = 60.0 / bpm

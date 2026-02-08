@@ -21,7 +21,7 @@ class RhythmDodgerGame:
 		self.obstacles: list[models.Obstacle] = []
 		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
 
-		self.available_tracks = [models.Track(fn, bpm) for fn, bpm in TRACKS]
+		self.available_tracks = [models.Track(fn, name, bpm) for fn, name, bpm in TRACKS]
 		self.current_track: models.Track | None = None
 		self.music_started = False
 		self.music_start_time = 0.0 # pygame time in seconds when music started
@@ -247,6 +247,17 @@ class RhythmDodgerGame:
 			y = 50 # just under the beat bar
 			self.screen.blit(text, (x, y))
 
+	def draw_track_info(self):
+		if self.current_track:
+			text = f"{self.current_track.display_name} ({self.current_track.bpm} BPM)"
+			surf = self.font_small.render(text, True, TEXT_COLOUR)
+
+			# position: top-right, under the beat bar
+			x = WINDOW_WIDTH - surf.get_width() - 20
+			y = GROUND_Y + 25 # slightly below the beat bar and judgement text
+
+			self.screen.blit(surf, (x, y))
+
 	def draw_hud(self):
 		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
 		combo_text = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
@@ -295,6 +306,7 @@ class RhythmDodgerGame:
 		self.draw_obstacles()
 		self.draw_beat_bar()
 		self.draw_judgement()
+		self.draw_track_info()
 		self.draw_hud()
 		self.draw_flash()
 		if self.game_over:
