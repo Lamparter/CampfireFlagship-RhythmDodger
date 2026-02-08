@@ -68,9 +68,10 @@ class BeatTracker: # internal clock
 	
 	def update(self, dt: float, absolute_time: float | None = None):
 		"""
-		If absolute_time is provided (seconds since pygame start), align beats to that clock.
-		Otherwise fall back to incremental dt accumulation.
-        Returns True if a beat was triggered this update.
+		If absolute_time is provided (seconds since music start / global music clock,
+		e.g. the current playback position including any MUSIC_LATENCY adjustment),
+		align beats to that clock. Otherwise fall back to incremental dt accumulation.
+		Returns True if a beat was triggered this update.
 		"""
 		beat_triggered = False
 
