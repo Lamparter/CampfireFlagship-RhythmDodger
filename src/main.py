@@ -21,6 +21,12 @@ class RhythmDodgerGame:
 		self.obstacles: list[models.Obstacle] = []
 		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
 
+		self.available_tracks = [models.Track(fn, bpm) for fn, bpm in TRACKS]
+		self.current_track: models.Track | None = None
+		self.music_started = False
+		self.music_start_time = 0.0 # pygame time in seconds when music started
+		pygame.mixer.music.set_endevent() # ?
+
 		self.beats_until_next_obstacle = helpers.space_obstacle()
 
 		self.running = True
