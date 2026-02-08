@@ -78,13 +78,13 @@ class ParallaxLayer:
 			surf.blit(self.image, (x + self.w, 0))
 
 class BeatTracker: # internal clock
-	def __init__(self, interval: float):
+	def __init__(self, interval):
 		self.interval = interval
-		self.time_since_last_beat = 0.0 # isn't this kind of like how wakatime works ? lol
 		self.last_beat_time = 0.0
 		self.beat_count = 0
+		self.time_acc = 0.0
 	
-	def update(self, dt: float, absolute_time: float | None = None):
+	def update(self, dt, absolute_time = None):
 		"""
 		If absolute_time is provided (seconds since music start / global music clock,
 		e.g. the current playback position including any MUSIC_LATENCY adjustment),
@@ -106,9 +106,9 @@ class BeatTracker: # internal clock
 				self.beat_count += 1
 				beat_triggered = True
 		else:
-			self.time_since_last_beat += dt
-			while self.time_since_last_beat >= self.interval:
-				self.time_since_last_beat -= self.interval
+			self.time_acc += dt
+			while self.time_acc >= self.interval:
+				self.time_acc -= self.interval
 				self.last_beat_time = 0.0
 				self.beat_count += 1
 				beat_triggered = True
@@ -116,10 +116,10 @@ class BeatTracker: # internal clock
 
 		return beat_triggered
 	
-	def is_on_beat(self) -> bool:
+	def is_on_beat(self, tolerance = BEAT_TOLERANCE_GOOD) -> bool:
 		# ~close to the beat moment
-		return abs(self.last_beat_time) <= BEAT_TOLERANCE or \
-			abs(self.interval - self.last_beat_time) <= BEAT_TOLERANCE
+		return abs(self.last_beat_time) <= tolerance or \
+			abs(self.interval - self.last_beat_time) <= tolerance
 	
 	def normalised_phase(self) -> float:
 		return min(1.0, self.last_beat_time / self.interval)
