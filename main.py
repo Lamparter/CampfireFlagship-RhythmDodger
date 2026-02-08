@@ -1,6 +1,3 @@
-import sys
-import math
-import random
-import pygame
-
-FONT_NAME = "arial"
+import sys, math, random # bcl
+import helpers, constants # local
+import pygame # main

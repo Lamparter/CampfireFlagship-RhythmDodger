@@ -1,7 +1,7 @@
-import pygame, main, math
+import pygame, constants, math
 
 def load_font(size: int) -> pygame.font.Font:
-	return pygame.font.SysFont(main.FONT_NAME, size)
+	return pygame.font.SysFont(constants.FONT_NAME, size)
 
 def create_click_sound():
 	sample_rate = 44100
