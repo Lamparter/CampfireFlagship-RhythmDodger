@@ -60,3 +60,9 @@ def get_accuracy_percent(accurate_jumps: int, total_jumps: int):
 	if total_jumps == 0:
 		return 0
 	return int((accurate_jumps / total_jumps) * 100)
+
+def get_rank(accuracy):
+	if accuracy >= 95: return "S"
+	if accuracy >= 85: return "A"
+	if accuracy >= 70: return "B"
+	return "C"
