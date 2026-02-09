@@ -336,21 +336,24 @@ class RhythmDodgerGame:
 
 			surf.blit(surf_text, (x, y))
 
+	def draw_hud(self, surf):
+		# info cluster (left)
+		left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+		surf.blit(self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
+		surf.blit(self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
+		surf.blit(self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
+
+		# beat cluster (right)
+		self.draw_beat_bar(surf)
+		self.draw_judgement(surf)
+		self.draw_track_info(surf)
+
 	def draw_player(self):
 		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
 
 	def draw_obstacles(self):
 		for obs in self.obstacles:
 			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
-
-	def draw_hud(self):
-		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
-		combo_text = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
-		best_text = self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR)
-
-		self.screen.blit(score_text, (20, 20))
-		self.screen.blit(combo_text, (20, 50))
-		self.screen.blit(best_text, (20, 80))
 
 	def draw_flash(self):
 		if self.flash_alpha > 0:
