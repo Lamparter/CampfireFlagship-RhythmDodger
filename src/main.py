@@ -325,23 +325,23 @@ class RhythmDodgerGame:
 			surf_text = self.font_small.render(self.last_judgement, True, colour)
 			surf.blit(surf_text, (x, y))
 
+	def draw_track_info(self, surf):
+		if self.current_track:
+			text = f"{self.current_track['name']} ({self.current_track['bpm']} BPM)"
+			surf_text = self.font_small.render(text, True, TEXT_COLOUR)
+
+			# position: top-right, under the beat bar
+			x = WINDOW_WIDTH - surf.get_width() - int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+			y = int(WINDOW_HEIGHT * 0.11) # slightly below the beat bar and judgement text
+
+			surf.blit(surf_text, (x, y))
+
 	def draw_player(self):
 		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
 
 	def draw_obstacles(self):
 		for obs in self.obstacles:
 			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
-
-	def draw_track_info(self):
-		if self.current_track:
-			text = f"{self.current_track.display_name} ({self.current_track.bpm} BPM)"
-			surf = self.font_small.render(text, True, TEXT_COLOUR)
-
-			# position: top-right, under the beat bar
-			x = WINDOW_WIDTH - surf.get_width() - 20
-			y = GROUND_Y + 25 # slightly below the beat bar and judgement text
-
-			self.screen.blit(surf, (x, y))
 
 	def draw_hud(self):
 		score_text = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
