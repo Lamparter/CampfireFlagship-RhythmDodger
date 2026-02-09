@@ -312,28 +312,25 @@ class RhythmDodgerGame:
 		cx = x + bar_width // 2
 		pygame.draw.line(surf, (255, 255, 255), (cx, y-4), (cx, y+bar_height+4), max(1, int(WINDOW_WIDTH * 0.002)))
 
+	def draw_judgement(self, surf):
+		if self.judgement_timer > 0 and self.last_judgement:
+			surf_text = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
+			bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
+			margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+			bar_x = WINDOW_WIDTH - bar_width - margin
+			bar_y = margin
+			x = bar_x + bar_width - surf_text.get_width()
+			y = bar_y + BEAT_BAR_HEIGHT + int(WINDOW_HEIGHT * 0.01)
+			colour = (200, 255, 200) if "Perfect" in self.last_judgement else (220, 220, 180) if "Good" in self.last_judgement else (255, 200, 180) # colour code
+			surf_text = self.font_small.render(self.last_judgement, True, colour)
+			surf.blit(surf_text, (x, y))
+
 	def draw_player(self):
 		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
 
 	def draw_obstacles(self):
 		for obs in self.obstacles:
 			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
-
-	def draw_judgement(self):
-		if self.judgement_timer > 0 and self.last_judgement:
-			surf = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
-
-			bar_width = 260
-			bar_height = 16
-			margin = 20
-
-			bar_x = WINDOW_WIDTH - bar_width - margin
-			bar_y = margin
-		
-			x = bar_x + bar_width - surf.get_width()
-			y = bar_y + bar_height + 15 # small gap below bar
-
-			self.screen.blit(surf, (x, y))
 
 	def draw_track_info(self):
 		if self.current_track:
