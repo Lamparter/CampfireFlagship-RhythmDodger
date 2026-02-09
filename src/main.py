@@ -368,18 +368,82 @@ class RhythmDodgerGame:
 		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(WINDOW_HEIGHT * 0.32)))
 
+	# render
+
 	def render(self):
-		self.screen.fill(BACKGROUND_COLOUR)
-		self.draw_ground()
-		self.draw_player()
-		self.draw_obstacles()
-		self.draw_beat_bar()
-		self.draw_judgement()
-		self.draw_track_info()
-		self.draw_hud()
-		self.draw_flash()
+		# draw to scene surface for shake
+		scene = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+		scene.fill(BACKGROUND_COLOUR)
+
+		# camera_dx: use obstacle speed as camera reference (pixels/sec)
+		camera_dx = OBSTACLE_SPEED
+
+		for layer in self.bg_layers:
+			layer.update(1.0 / FPS, camera_dx)
+			layer.draw(scene)
+		
+		# ground and foreground
+		self.draw_ground(scene)
+
+		# obstacles
+		for obs in self.obstacles:
+			obs.draw(scene)
+		
+		# player squash/stretch
+		scale_x, scale_y = 1.0, 1.0
+		if self.player.vy < -50:
+			scale_y = 1.06; scale_x = 0.96
+		elif self.player.on_ground and self.player.recently_landed:
+			scale_y = 0.9; scale_x = 1.12
+		self.player.draw(scene, scale_x, scale_y)
+
+		# mascot
+		self.mascot.draw(scene)
+
+		# particles
+		self.particles.draw(scene)
+
+		# foreground layer
+		self.fg_layer.update(1.0 / FPS, camera_dx)
+		self.fg_layer.draw(scene)
+
+		# day/night tint
+		t = abs(math.sin(self.time_of_day * math.pi * 2))
+		tint = (int(255 - 120 * t), int(255 - 120 * t), int(255 - 120 * t))
+		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+		overlay.fill(tint)
+		overlay.set_alpha(18)
+		scene.blit(overlay, (0, 0))
+
+		# subtle rain overlay
+		if self.raining:
+			rain_overlay = pygame.surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			rain_overlay.fill((180, 200, 230, 20))
+			scene.blit(rain_overlay, (0, 0))
+		
+		# HUD
+		self.draw_hud(scene)
+
+		# subtle judgement flash on perfect
+		if "Perfect" in self.last_judgement and self.judgement_timer > 0:
+			flash = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			alpha = int(120 * (self.judgement_timer / 0.6))
+			flash.fill((220, 255, 200, alpha))
+			scene.blit(flash, (0, 0))
+
+		# screen shake
+		if self.shake_time > 0:
+			self.shake_time -= 1.0 / FPS
+			dx = random.uniform(-1, 1) * self.shake_intensity
+			dy = random.uniform(-1, 1) * self.shake_intensity
+			self.screen.blit(scene, (int(dx), int(dy)))
+		else:
+			self.screen.blit(scene, (0, 0))
+		
+		# game over overlay
 		if self.game_over:
-			self.draw_game_over()
+			self.draw_game_over(self.screen)
+
 		pygame.display.flip()
 
 	# main loop
