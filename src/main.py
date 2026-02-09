@@ -122,20 +122,6 @@ class RhythmDodgerGame:
 
 		self.start_random_track()
 
-	def reset(self):
-		self.player.reset()
-		self.obstacles.clear()
-		self.beat_tracker = models.BeatTracker(BEAT_INTERVAL)
-		self.game_over = False
-		self.score = 0
-		self.combo = 0
-		self.total_jumps = 0
-		self.accurate_jumps = 0
-
-		# restart music track
-		if self.current_track:
-			self.start_random_track()
-
 	# music / beat
 
 	def start_random_track(self):
@@ -445,6 +431,29 @@ class RhythmDodgerGame:
 			self.draw_game_over(self.screen)
 
 		pygame.display.flip()
+
+	# reset
+	
+	def reset(self):
+		self.player.reset()
+		self.obstacles.clear()
+		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
+		self.game_over = False
+		self.score = 0
+		self.combo = 0
+		self.max_combo = 0
+		self.total_jumps = 0
+		self.accurate_jumps = 0
+		self.beats_until_next_obstacle = helpers.space_obstacle()
+
+		# restart music
+		if self.current_track:
+			try:
+				self.audio.play_music(-1)
+				self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+				self.music_started = True
+			except Exception:
+				self.music_started = False
 
 	# main loop
 
