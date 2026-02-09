@@ -368,23 +368,6 @@ class RhythmDodgerGame:
 		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(WINDOW_HEIGHT * 0.32)))
 
-	def draw_player(self):
-		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
-
-	def draw_obstacles(self):
-		for obs in self.obstacles:
-			pygame.draw.rect(self.screen, OBSTACLE_COLOUR, obs.rect)
-
-	def draw_flash(self):
-		if self.flash_alpha > 0:
-			overlay = pygame.Surface((WINDOW_WIDTH, GROUND_Y))
-			overlay.set_alpha(int(self.flash_alpha))
-			overlay.fill(helpers.get_flash_colour(self.last_judgement))
-			self.screen.blit(overlay, (0, 0))
-
-			# fade out
-			self.flash_alpha -= 6 # adjust?
-
 	def render(self):
 		self.screen.fill(BACKGROUND_COLOUR)
 		self.draw_ground()
