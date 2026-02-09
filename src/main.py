@@ -352,6 +352,22 @@ class RhythmDodgerGame:
 		self.shake_time = duration
 		self.shake_intensity = intensity
 
+	def draw_game_over(self, surf):
+		panel_w = int(WINDOW_WIDTH * 0.7)
+		panel_h = int(WINDOW_HEIGHT * 0.45)
+		panel_x = (WINDOW_WIDTH - panel_w) // 2
+		panel_y = int(WINDOW_HEIGHT * 0.12)
+		ui.draw_panel(surf, pygame.Rect(panel_x, panel_y, panel_w, panel_h), (40, 36, 44), (120, 100, 90))
+		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
+		surf.blit(title, (WINDOW_WIDTH // 2 - title.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.03)))
+		score_info = self.font_small.render(f"Score: {int(self.score)}    Best: {int(self.best_score)}    Max Combo: {self.max_combo}", True, TEXT_COLOUR)
+		surf.blit(score_info, (WINDOW_WIDTH // 2 - score_info.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.12)))
+		accuracy = helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)
+		acc_text = self.font_small.render(f"Beat Accuracy: {accuracy}%", True, TEXT_COLOUR)
+		surf.blit(acc_text, (WINDOW_WIDTH // 2 - acc_text.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.24)))
+		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
+		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(WINDOW_HEIGHT * 0.32)))
+
 	def draw_player(self):
 		pygame.draw.rect(self.screen, PLAYER_COLOUR, self.player.rect)
 
@@ -368,28 +384,6 @@ class RhythmDodgerGame:
 
 			# fade out
 			self.flash_alpha -= 6 # adjust?
-
-	def draw_game_over(self):
-		accuracy = helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)
-
-		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
-		info = self.font_small.render("Press 'R' / 'Enter' / 'Space' to restart", True, TEXT_COLOUR)
-		score_info = self.font_small.render(
-			f"Score: {int(self.score)}    Best: {int(self.best_score)}    Max Combo: {self.max_combo}",
-			True,
-			TEXT_COLOUR,
-		)
-		accuracy_text = self.font_small.render(f"Beat Accuracy: {accuracy}%", True, TEXT_COLOUR)
-
-		title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 40))
-		info_rect = info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 10))
-		score_rect = score_info.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
-		accuracy_rect = accuracy_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 80))
-
-		self.screen.blit(title, title_rect)
-		self.screen.blit(info, info_rect)
-		self.screen.blit(score_info, score_rect)
-		self.screen.blit(accuracy_text, accuracy_rect)
 
 	def render(self):
 		self.screen.fill(BACKGROUND_COLOUR)
