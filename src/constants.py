@@ -38,7 +38,7 @@ MUSIC_LATENCY = 0.05
 
 # Assets
 
-ASSET_DIR = "assets"
+ASSET_DIR = ""
 FONTS_DIR = os.path.join(ASSET_DIR, "fonts")
 MUSIC_DIR = os.path.join(ASSET_DIR, "music")
 SFX_DIR = os.path.join(ASSET_DIR, "sfx")
