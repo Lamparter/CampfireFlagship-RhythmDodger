@@ -245,7 +245,7 @@ class RhythmDodgerGame:
 				break
 		
 		# remove offscreen
-		self.obstacles = [o for o in self.obstacles if not o.is_offscreen()]
+		self.obstacles = [o for o in self.obstacles if not o.offscreen()]
 		
 		# passive score over time
 		self.score += dt * 2 # small survival score
