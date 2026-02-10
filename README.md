@@ -12,4 +12,4 @@
 
 ### Disclaimer
 
-**This game uses copyrighted audio, as found in the `music/` folder, which is justifiable given that the game is intended for *personal use only*. Do NOT publish the game with these audio files present, and instead use royalty-free ones.**
+**This game may use copyrighted audio, as found in the `music/` and `sfx/` folders, which is justifiable given that the game is intended for *personal use only*. Do NOT publish the game with these audio files present, and instead use royalty-free ones.**
