@@ -175,7 +175,7 @@ class BeatTracker: # internal clock
 
 		return beat_triggered
 	
-	def is_on_beat(self, tolerance = BEAT_TOLERANCE_GOOD) -> bool:
+	def is_on_beat(self, tolerance: float = BEAT_TOLERANCE_GOOD) -> bool:
 		# ~close to the beat moment
 		return abs(self.last_beat_time) <= tolerance or \
 			abs(self.interval - self.last_beat_time) <= tolerance
