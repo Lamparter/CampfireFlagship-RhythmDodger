@@ -16,18 +16,33 @@ GROUND_FRACTION = 0.82 # fraction of window height where ground top sits
 
 GROUND_Y = int(WINDOW_HEIGHT * GROUND_FRACTION)
 
-PLAYER_W = 24
-PLAYER_H = 24
-PLAYER_X = int(WINDOW_WIDTH * 0.15) # relative horizontal player position
+# Base sprite frame sizes (pixel-art native sizes)
 
-TILE_SIZE = 16 # keep tile size for pixel art fidelity
+NATIVE_TILE = 16
+NATIVE_PLAYER = 24
+NATIVE_MASCOT = 24
+NATIVE_OBS = 24
 
-GRAVITY = 2000.0
-JUMP_VELOCITY = -900.0
+# Sprite scale factor (integer) derived from window height to keep pixel-art crisp
+# For 720 height this yields scale 2; for larger heights it increases proportionally.
 
-OBSTACLE_SPEED = 400.0
-OBSTACLE_SPACING_MIN = 3
-OBSTACLE_SPACING_MAX = 5
+SPRITE_SCALE = max(1, int(WINDOW_HEIGHT / 360))
+
+# Scaled sizes used for rendering
+
+TILE_SIZE = NATIVE_TILE * SPRITE_SCALE
+PLAYER_W = NATIVE_PLAYER * SPRITE_SCALE
+PLAYER_H = NATIVE_PLAYER * SPRITE_SCALE
+MASCOT_SIZE = NATIVE_MASCOT * SPRITE_SCALE
+
+PLAYER_X = int(WINDOW_WIDTH * 0.12) # relative horizontal player position
+
+GRAVITY = 2000.0 * SPRITE_SCALE
+JUMP_VELOCITY = -900.0 * SPRITE_SCALE
+
+OBSTACLE_SPEED = 400.0 * SPRITE_SCALE
+OBSTACLE_SPACING_MIN = 3 # * SPRITE_SCALE
+OBSTACLE_SPACING_MAX = 5 # * SPRITE_SCALE
 
 # Timing / beat
 
@@ -68,8 +83,6 @@ TRACKS = [
 
 BACKGROUND_COLOUR = (30, 34, 45)
 GROUND_COLOUR = (120, 100, 80)
-PLAYER_COLOUR = (245, 235, 220)
-OBSTACLE_COLOUR = (200, 80, 80)
 TEXT_COLOUR = (240, 240, 235)
 BEAT_BAR_BG = (60, 50, 40)
 BEAT_BAR_COLOUR = (212, 163, 115)
