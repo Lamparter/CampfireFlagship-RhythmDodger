@@ -24,7 +24,6 @@ NATIVE_MASCOT = 24
 NATIVE_OBS = 24
 
 # Sprite scale factor (integer) derived from window height to keep pixel-art crisp
-# For 720 height this yields scale 2; for larger heights it increases proportionally.
 
 SPRITE_SCALE = max(1, int(WINDOW_HEIGHT / 240))
 
