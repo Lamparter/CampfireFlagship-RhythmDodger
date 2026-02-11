@@ -302,27 +302,19 @@ class RhythmDodgerGame:
 		# draw grass edge
 		if len(tiles) > 1:
 			grass = tiles[1]
-			y_grass = GROUND_Y - TILE_SIZE
 			x = 0
 			while x < WINDOW_WIDTH:
-				surf.blit(grass, (x, y_grass))
+				surf.blit(grass, (x, GROUND_Y))
 				x += TILE_SIZE
-		
-		# draw ground tile row
-		ground = tiles[0]
-		x = 0
-		while x < WINDOW_WIDTH:
-			surf.blit(ground, (x, GROUND_Y))
-			x += TILE_SIZE
-		
-		# draw shadow/subsoil tiles below ground to bottom of screen
+
+		# draw tiles below ground to bottom of screen
 		if len(tiles) > 2:
-			shadow = tiles[2]
+			ground = tiles[0]
 			y = GROUND_Y + TILE_SIZE
 			while y < WINDOW_HEIGHT:
 				x = 0
 				while x < WINDOW_WIDTH:
-					surf.blit(shadow, (x, y))
+					surf.blit(ground, (x, y))
 					x += TILE_SIZE
 				y += TILE_SIZE
 		else:
