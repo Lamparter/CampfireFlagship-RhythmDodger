@@ -26,7 +26,7 @@ NATIVE_OBS = 24
 # Sprite scale factor (integer) derived from window height to keep pixel-art crisp
 # For 720 height this yields scale 2; for larger heights it increases proportionally.
 
-SPRITE_SCALE = max(1, int(WINDOW_HEIGHT / 360))
+SPRITE_SCALE = max(1, int(WINDOW_HEIGHT / 240))
 
 # Scaled sizes used for rendering
 
@@ -54,7 +54,7 @@ FONT_LARGE = max(28, int(WINDOW_HEIGHT * 0.06))
 DEFAULT_BPM = 120
 BEAT_TOLERANCE_PERFECT = 0.05
 BEAT_TOLERANCE_GOOD = 0.10
-MUSIC_LATENCY = 0.05
+MUSIC_LATENCY = -0.35
 
 # Assets
 
