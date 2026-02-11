@@ -4,9 +4,6 @@ Helper functions
 
 import pygame, math, random, models; from constants import *
 
-def load_font(size: int) -> pygame.font.Font:
-	return pygame.font.Font(FONT_PATH, size)
-
 def space_obstacle() -> int:
 	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
 
