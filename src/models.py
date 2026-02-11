@@ -9,6 +9,7 @@ from constants import *
 
 class Player: # player
 	def __init__(self, spritesheet: sprites.SpriteSheet, font):
+		# store native frames then scale for rendering
 		self.x = PLAYER_X
 		self.y = float(GROUND_Y - PLAYER_H)
 		self.vy = 0.0
@@ -17,9 +18,11 @@ class Player: # player
 		self.spritesheet = spritesheet
 		self.animations = {} # load animations: assume sheet rows: idle(0), jump(1), land(2)
 		frames = 4 # frames per row: 4
-		for row, name, fps in [(0,"idle",6),(1,"jump",1),(2,"land",6)]:
-			strip = spritesheet.load_strip((0, row*PLAYER_H, PLAYER_W, PLAYER_H), frames)
-			self.animations[name] = sprites.AnimatedSprite(strip, fps = fps, loop = (name != "jump"))
+		# load native frames (24x24) and scale them to PLAYER_W/PLAYER_H
+		for row, name, fps in [(0,"idle",6),(1,"jump",1),(2,"land",8)]:
+			native_frames = spritesheet.load_strip((0, row * NATIVE_PLAYER, NATIVE_PLAYER, NATIVE_PLAYER), frames)
+			scaled_frames = [pygame.transform.scale(f, (PLAYER_W, PLAYER_H)) for f in native_frames]
+			self.animations[name] = sprites.AnimatedSprite(scaled_frames, fps=fps, loop=(name!="jump"))
 		self.state = "idle"
 		self.font = font
 		self.width = PLAYER_W
@@ -58,11 +61,12 @@ class Player: # player
 			self.on_ground = False
 		self.animations[self.state].update(dt) # animation update
 		if self.recently_landed:
-			# small decay animation handled by animation timing; clear flag next frame
+			# clear flag after one update so land animation can play briefly
 			self.recently_landed = False
 
 	def draw(self, surf, scale_x = 1.0, scale_y = 1.0):
 		img = self.animations[self.state].get_image()
+		# img already scaled to PLAYER_W/PLAYER_H; apply micro squash/stretch via transform
 		w,h = img.get_size()
 		sw = max(1, int(w * scale_x))
 		sh = max(1, int(h * scale_y))
@@ -73,13 +77,14 @@ class Player: # player
 
 class Obstacle:
 	def __init__(self, x, sprite):
+		# sprite is native 24x24; scale to OBS_W/OBS_H
 		self.x = x
-		self.sprite = sprite
-		self.width = sprite.get_width()
-		self.height = sprite.get_height()
+		self.sprite = pygame.transform.scale(sprite, (OBS_W, OBS_H))
+		self.width = self.sprite.get_width()
+		self.height = self.sprite.get_height()
 		self.y = GROUND_Y - self.height
 		if random.random() < 0.25: # random vertical offset for variety (floating obstacles)
-			self.y -= random.choice([24, 40])
+			self.y -= random.choice([24 * SPRITE_SCALE, 40 * SPRITE_SCALE])
 		self.passed = False
 
 	@property
@@ -96,26 +101,34 @@ class Obstacle:
 		return self.x + self.width < 0
 
 class Mascot:
-	def __init__(self, sheet: sprites.SpriteSheet):
-		frames = sheet.load_strip((0,0,24,24), 3) # assume 3 frames in a row
-		self.anim = sprites.AnimatedSprite(frames, fps=4)
+	def __init__(self, sheet: sprites.SpriteSheet, font_small):
+		# load native frames and scale to MASCOT_SIZE
+		native_frames = sheet.load_strip((0,0,NATIVE_MASCOT,NATIVE_MASCOT), 3)
+		scaled = [pygame.transform.scale(f, (MASCOT_SIZE,MASCOT_SIZE)) for f in native_frames]
+		self.anim = sprites.AnimatedSprite(scaled, fps=3) # slower default fps so it doesn't animate too fast
 		self.x = int(WINDOW_WIDTH * 0.02)
-		self.y = GROUND_Y - 24 - int(WINDOW_HEIGHT * 0.008)
+		self.y = int(WINDOW_HEIGHT * 0.02)
+		self.font_small = font_small
 
 	def react(self, mood):
 		# mood: "happy", "sad", "idle"
 		if mood == "happy":
-			self.anim.fps = 10
+			self.anim.fps = 5
 		elif mood == "sad":
 			self.anim.fps = 2
 		else:
-			self.anim.fps = 4
+			self.anim.fps = 3
 	
 	def update(self, dt):
 		self.anim.update(dt)
 	
-	def draw(self, surf):
-		surf.blit(self.anim.get_image(), (self.x, self.y))
+	def draw(self, surf, x = None, y = None, size = None):
+		img = self.anim.get_image()
+		if size and (img.get_width() != size or img.get_height() != size):
+			img = pygame.transform.scale(img, (size, size))
+			draw_x = self.x if x is None else x
+			draw_y = self.y if y is None else y
+			surf.blit(img, (draw_x, draw_y))
 
 # Helper classes
 
