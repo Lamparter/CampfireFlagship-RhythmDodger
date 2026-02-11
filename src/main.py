@@ -15,16 +15,15 @@ class RhythmDodgerGame:
 
 		# fonts (scale with window height)
 
-		small_size = max(12, int(WINDOW_HEIGHT * 0.02))
-		large_size = max(20, int(WINDOW_HEIGHT * 0.04))
-		self.font_small = pygame.font.Font(FONT_PATH, small_size)
-		self.font_large = pygame.font.Font(FONT_PATH, large_size)
+		self.font_small = pygame.font.Font(FONT_PATH, FONT_SMALL)
+		self.font_large = pygame.font.Font(FONT_PATH, FONT_LARGE)
 
 		# audio
 
 		self.audio = audio.AudioManager()
 
 		# preload sfx
+		# TODO: move to constants
 		self.audio.load_sfx("perfect", os.path.join(SFX_DIR, "beat_perfect.wav"))
 		self.audio.load_sfx("good", os.path.join(SFX_DIR, "beat_good.wav"))
 		self.audio.load_sfx("miss", os.path.join(SFX_DIR, "beat_miss.wav"))
@@ -35,23 +34,31 @@ class RhythmDodgerGame:
 
 		self.player_sheet = sprites.SpriteSheet(PLAYER_SHEET)
 		self.player = models.Player(self.player_sheet, self.font_small)
-		self.tileset = pygame.image.load(TILESET).convert_alpha()
+
+		self.tileset_native = pygame.image.load(TILESET).convert_alpha()
+		self.tiles_native = []
+		native_tiles_count = max(3, self.tileset_native.get_width() // NATIVE_TILE)
+		for i in range(native_tiles_count):
+			surf = pygame.Surface((NATIVE_TILE, NATIVE_TILE), pygame.SRCALPHA)
+			surf.blit(self.tileset_native, (0,0), (i * NATIVE_TILE, 0, NATIVE_TILE, NATIVE_TILE))
+			self.tiles_native.append(pygame.transform.scale(surf, (TILE_SIZE, TILE_SIZE))) # scale to TILE_SIZE
+		
+		# obstacles
+
 		self.obstacles_img = pygame.image.load(OBSTACLES_SPR).convert_alpha()
 
 		# split obstacles into frames (assume horizontal strip)
 		self.obstacle_sprites = []
-		obs_w = 24
-		obs_h = 24
-		count = max(1, self.obstacles_img.get_width() // obs_w)
+		count = max(1, self.obstacles_img.get_width() // NATIVE_OBS)
 		for i in range(count):
-			surf = pygame.Surface((obs_w, obs_h), pygame.SRCALPHA)
-			surf.blit(self.obstacles_img, (0,0), (i*obs_w, 0, obs_w, obs_h))
+			surf = pygame.Surface((NATIVE_OBS, NATIVE_OBS), pygame.SRCALPHA)
+			surf.blit(self.obstacles_img, (0,0), (i * NATIVE_OBS, 0, NATIVE_OBS, NATIVE_OBS))
 			self.obstacle_sprites.append(surf)
 		
 		# mascot
 
 		self.mascot_sheet = sprites.SpriteSheet(MASCOT_SHEET)
-		self.mascot = models.Mascot(self.mascot_sheet)
+		self.mascot = models.Mascot(self.mascot_sheet, self.font_small)
 
 		# parallax
 
@@ -122,6 +129,15 @@ class RhythmDodgerGame:
 
 		self.start_random_track()
 
+		# hud
+
+		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
+
+		# mascot position in top-left near HUD
+		self.mascot.x = self.left_margin
+		self.mascot.y = self.top_margin
+
 	# music / beat
 
 	def start_random_track(self):
@@ -168,7 +184,7 @@ class RhythmDodgerGame:
 		
 		# compute absolute time if music started
 		absolute_time = None
-		if self.music_started and self.current_track is not None:
+		if self.music_started and self.current_track:
 			absolute_time = (pygame.time.get_ticks() / 1000.0) - self.music_start_time
 			# keep absolute_time positive
 			if absolute_time < 0: absolute_time = 0.0
@@ -248,7 +264,7 @@ class RhythmDodgerGame:
 		self.obstacles = [o for o in self.obstacles if not o.offscreen()]
 		
 		# passive score over time
-		self.score += dt * 2 # small survival score
+		self.score += dt * 2 * SPRITE_SCALE # small survival score
 
 		# particles and mascot update
 		self.particles.update(dt)
@@ -273,15 +289,44 @@ class RhythmDodgerGame:
 	# rendering
 
 	def draw_ground(self, surf):
-		# draw repeating tiles across bottom
-		tile = self.tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
+		# tiles_native[0] = ground tile (top soil)
+		# tiles_native[1] = grass edge (drawn above ground)
+		# tiles_native[2] = shadow/subsoil (drawn below ground repeatedly)
+
+		tiles = self.tiles_native
+
+		# ensure tiles exist
+		if not tiles:
+			return
+		
+		# draw grass edge
+		if len(tiles) > 1:
+			grass = tiles[1]
+			y_grass = GROUND_Y - TILE_SIZE
+			x = 0
+			while x < WINDOW_WIDTH:
+				surf.blit(grass, (x, y_grass))
+				x += TILE_SIZE
+		
+		# draw ground tile row
+		ground = tiles[0]
 		x = 0
 		while x < WINDOW_WIDTH:
-			surf.blit(tile, (x, GROUND_Y))
+			surf.blit(ground, (x, GROUND_Y))
 			x += TILE_SIZE
-
-		# ground overlay
-		pygame.draw.rect(surf, GROUND_COLOUR, pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE)))
+		
+		# draw shadow/subsoil tiles below ground to bottom of screen
+		if len(tiles) > 2:
+			shadow = tiles[2]
+			y = GROUND_Y + TILE_SIZE
+			while y < WINDOW_HEIGHT:
+				x = 0
+				while x < WINDOW_WIDTH:
+					surf.blit(shadow, (x, y))
+					x += TILE_SIZE
+				y += TILE_SIZE
+		else:
+			pygame.draw.rect(surf, (40, 36, 32), pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE))) # fallback
 		
 	def draw_beat_bar(self, surf):
 		bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
@@ -312,22 +357,42 @@ class RhythmDodgerGame:
 			surf.blit(surf_text, (x, y))
 
 	def draw_track_info(self, surf):
-		if self.current_track:
-			text = f"{self.current_track['name']} ({self.current_track['bpm']} BPM)"
-			surf_text = self.font_small.render(text, True, TEXT_COLOUR)
+		if not self.current_track:
+			return
+		
+		text = f"{self.current_track['name']} ({self.current_track['bpm']} BPM)"
+		surf_text = self.font_small.render(text, True, TEXT_COLOUR)
 
-			# position: top-right, under the beat bar
-			x = WINDOW_WIDTH - surf.get_width() - int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-			y = int(WINDOW_HEIGHT * 0.11) # slightly below the beat bar and judgement text
+		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+		bottom_tile_top = GROUND_Y + TILE_SIZE
 
-			surf.blit(surf_text, (x, y))
+		# position: above bottom shadow tiles, aligned to bottom-right tile grid
+
+		x = WINDOW_WIDTH - surf_text.get_width() - margin
+		y = max(bottom_tile_top - surf_text.get_height() - int(WINDOW_HEIGHT * 0.01), WINDOW_HEIGHT - surf_text.get_height() - margin)
+		surf.blit(surf_text, (x, y))
 
 	def draw_hud(self, surf):
+		# mascot, scaled to match text height (left)
+		mascot_size = max(MASCOT_SIZE, int(self.font_small.get_height() * 1.2))
+		mascot_x = self.left_margin
+		mascot_y = self.top_margin
+		self.mascot.draw(surf, x=mascot_x, y=mascot_y, size=mascot_size)
+
 		# info cluster (left)
-		left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		surf.blit(self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
-		surf.blit(self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
-		surf.blit(self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR), (left_margin, int(WINDOW_HEIGHT * 0.03)))
+		text_x = mascot_x + mascot_size + int(WINDOW_WIDTH * 0.01)
+		line_h = self.font_small.get_height() + int(WINDOW_HEIGHT * 0.008)
+		y0 = mascot_y
+
+		# score
+		score_surf = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
+		surf.blit(score_surf, (text_x, y0))
+		# combo
+		combo_surf = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
+		surf.blit(combo_surf, (text_x, y0 + line_h))
+		# best
+		best_surf = self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR)
+		surf.blit(best_surf, (text_x, y0 + line_h * 2))
 
 		# beat cluster (right)
 		self.draw_beat_bar(surf)
@@ -339,20 +404,23 @@ class RhythmDodgerGame:
 		self.shake_intensity = intensity
 
 	def draw_game_over(self, surf):
-		panel_w = int(WINDOW_WIDTH * 0.7)
+		panel_w = int(WINDOW_WIDTH * 0.6) # centre panel in the middle of the window
 		panel_h = int(WINDOW_HEIGHT * 0.45)
 		panel_x = (WINDOW_WIDTH - panel_w) // 2
-		panel_y = int(WINDOW_HEIGHT * 0.12)
-		ui.draw_panel(surf, pygame.Rect(panel_x, panel_y, panel_w, panel_h), (40, 36, 44), (120, 100, 90))
+		panel_y = (WINDOW_HEIGHT - panel_h) // 2
+		ui.draw_panel(surf, pygame.Rect(panel_x, panel_y, panel_w, panel_h), (40,36,44), (120,100,90))
 		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
-		surf.blit(title, (WINDOW_WIDTH // 2 - title.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.03)))
-		score_info = self.font_small.render(f"Score: {int(self.score)}    Best: {int(self.best_score)}    Max Combo: {self.max_combo}", True, TEXT_COLOUR)
-		surf.blit(score_info, (WINDOW_WIDTH // 2 - score_info.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.12)))
+		surf.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, panel_y + int(panel_h * 0.06)))
+		score_info = self.font_small.render(f"Score: {int(self.score)}   Best: {int(self.best_score)}   Max Combo: {self.max_combo}", True, TEXT_COLOUR)
+		surf.blit(score_info, (WINDOW_WIDTH//2 - score_info.get_width()//2, panel_y + int(panel_h * 0.22)))
 		accuracy = helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)
 		acc_text = self.font_small.render(f"Beat Accuracy: {accuracy}%", True, TEXT_COLOUR)
-		surf.blit(acc_text, (WINDOW_WIDTH // 2 - acc_text.get_width() // 2, panel_y + int(WINDOW_HEIGHT * 0.24)))
+		surf.blit(acc_text, (WINDOW_WIDTH//2 - acc_text.get_width()//2, panel_y + int(panel_h * 0.34)))
+		rank = helpers.get_rank(accuracy)
+		rank_text = self.font_small.render(f"Rank: {rank}", True, TEXT_COLOUR)
+		surf.blit(rank_text, (WINDOW_WIDTH//2 - rank_text.get_width()//2, panel_y + int(panel_h * 0.44)))
 		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
-		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(WINDOW_HEIGHT * 0.32)))
+		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 	# render
 
@@ -368,34 +436,34 @@ class RhythmDodgerGame:
 			layer.update(1.0 / FPS, camera_dx)
 			layer.draw(scene)
 		
-		# ground and foreground
+		# ground and tiles (scaled)
 		self.draw_ground(scene)
 
 		# obstacles
 		for obs in self.obstacles:
 			obs.draw(scene)
 		
-		# player squash/stretch
+		# player squash/stretch micro-animations
 		scale_x, scale_y = 1.0, 1.0
-		if self.player.vy < -50:
+		if self.player.vy < -50 * SPRITE_SCALE:
 			scale_y = 1.06; scale_x = 0.96
 		elif self.player.on_ground and self.player.recently_landed:
 			scale_y = 0.9; scale_x = 1.12
 		self.player.draw(scene, scale_x, scale_y)
 
 		# mascot
-		self.mascot.draw(scene)
+		#self.mascot.draw(scene)
 
 		# particles
 		self.particles.draw(scene)
 
-		# foreground layer
+		# foreground parallax
 		self.fg_layer.update(1.0 / FPS, camera_dx)
 		self.fg_layer.draw(scene)
 
 		# day/night tint
 		t = abs(math.sin(self.time_of_day * math.pi * 2))
-		tint = (int(255 - 120 * t), int(255 - 120 * t), int(255 - 120 * t))
+		tint = (int(255 - 120 * t), int(255 - 120 * t), int(255 - 100 * t))
 		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 		overlay.fill(tint)
 		overlay.set_alpha(18)
@@ -403,11 +471,11 @@ class RhythmDodgerGame:
 
 		# subtle rain overlay
 		if self.raining:
-			rain_overlay = pygame.surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			rain_overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
 			rain_overlay.fill((180, 200, 230, 20))
 			scene.blit(rain_overlay, (0, 0))
 		
-		# HUD
+		# HUD (incl. mascot)
 		self.draw_hud(scene)
 
 		# subtle judgement flash on perfect
