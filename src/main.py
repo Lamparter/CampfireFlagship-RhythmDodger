@@ -192,8 +192,8 @@ class RhythmDodgerGame:
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 		if beat_triggered:
-			# play soft metronome (use good sound)
-			self.audio.play_sfx("good", 0.6)
+			# play soft metronome (use good sound) TODO: add this back via a feature switch in settings
+			# self.audio.play_sfx("good", 0.6)
 
 			# count down until next obstacle
 			self.beats_until_next_obstacle -= 1
