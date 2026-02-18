@@ -76,6 +76,8 @@ FG_LAYER = os.path.join(SPRITES_DIR, "fg_layer.png")
 MASCOT_SHEET = os.path.join(SPRITES_DIR, "mascot_sheet_24x24.png")
 TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
 TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.ogg")
+BEAT_ICON = os.path.join(SPRITES_DIR, "ui_beat_icon_16x16.png")
+BEAT_MARKER = os.path.join(SPRITES_DIR, "ui_beat_marker_8x8.png")
 
 TRACKS = [
 	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
