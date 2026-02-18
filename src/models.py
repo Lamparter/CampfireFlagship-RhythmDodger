@@ -2,7 +2,7 @@
 Game objects
 """
 
-import pygame, random, sprites, particles
+import os, pygame, random, sprites, particles
 from constants import *
 
 # Game objects
