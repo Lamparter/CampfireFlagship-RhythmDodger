@@ -376,19 +376,82 @@ class RhythmDodgerGame:
 			pygame.draw.rect(surf, (40, 36, 32), pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE))) # fallback
 		
 	def draw_beat_bar(self, surf):
-		bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
-		bar_height = BEAT_BAR_HEIGHT
+		"""
+		Cute beat bar:
+		- Rounded pastel pill background
+		- Soft left-to-right gradient fill showing phase
+		- Small icon that bounces on beat
+		- Tiny centre marker sprite
+		- Compact layout so it fits UI
+		"""
+		# layout
+		bar_w = int(WINDOW_WIDTH * 0.28)
+		bar_h = max(14, int(WINDOW_HEIGHT * 0.028))
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		x = WINDOW_WIDTH - bar_width - margin
+		x = WINDOW_WIDTH - bar_w - margin
 		y = margin
-		pygame.draw.rect(surf, BEAT_BAR_BG, pygame.Rect(x, y, bar_width, bar_height), border_radius = 6)
+
+		# base pill background (soft pastel)
+		base_colour = (245, 235, 230) # very light cream
+		border_colour = (220, 200, 190)
+		pygame.draw.rect(surf, border_colour, pygame.Rect(x-2, y-2, bar_w+4, bar_h+4), border_radius=bar_h//2)
+		pygame.draw.rect(surf, base_colour, pygame.Rect(x, y, bar_w, bar_h), border_radius=bar_h//2)
+
+		# gradient fill (cute sand -> warm)
 		phase = self.beat_tracker.normalised_phase()
-		fill_w = int(bar_width * phase)
-		pygame.draw.rect(surf, BEAT_BAR_COLOUR, pygame.Rect(x, y, fill_w, bar_height), border_radius = 6)
+		fill_w = int(bar_w * phase)
+		if fill_w > 0:
+			# draw a soft gradient by drawing a few blended rects
+			left = x
+			right = x + fill_w
+
+			# gradient stops
+			grad_colours = [(255, 245, 230), (255, 230, 190), (245, 200, 150)]
+			steps = len(grad_colours)
+			for i, col in enumerate(grad_colours):
+				step_x = left + int((right - left) * (i / steps))
+				step_w = max(1, int((right - left) / steps))
+				pygame.draw.rect(surf, col, pygame.Rect(step_x, y, step_w, bar_h), border_radius=bar_h//2)
+		
+		# subtle inner shine (thin highlight)
+		shine = pygame.Surface((bar_w, bar_h), pygame.SRCALPHA)
+		pygame.draw.rect(shine, (255,255,255,24), pygame.Rect(0,0,bar_w, bar_h//2), border_radius=bar_h//2)
+		surf.blit(shine, (x, y))
 
 		# centre marker
-		cx = x + bar_width // 2
-		pygame.draw.line(surf, (255, 255, 255), (cx, y-4), (cx, y+bar_height+4), max(1, int(WINDOW_WIDTH * 0.002)))
+		cx = x + bar_w // 2
+		if self.beat_marker_img:
+			marker_w = self.beat_marker_img.get_width()
+			surf.blit(self.beat_marker_img, (cx - marker_w//2, y + bar_h//2 - marker_w//2))
+		else:
+			pygame.draw.line(surf, (255,255,255,200), (cx, y-4), (cx, y+bar_h+4), max(1, int(WINDOW_WIDTH * 0.0015)))
+		
+		# animated beat icon (left side of fill, or if no fill, at left edge)
+		icon_x = x + max(6, int(bar_h * 0.2))
+		icon_y = y + bar_h//2
+
+		# computer icon scale from animation state
+		if self.beat_icon_img:
+			# update animation interpolation
+			t = min(1.0, max(0.0, self.beat_icon_anim_time / max(0.0001, self.beat_icon_anim_duration)))
+
+			# ease out bounce
+			s = self.beat_icon_scale + (self.beat_icon_target_scale - self.beat_icon_scale) * (1 - (1 - t)**2)
+			iw = int(self.beat_icon_img.get_width() * s)
+			ih = int(self.beat_icon_img.get_height() * s)
+			img = pygame.transform.smoothscale(self.beat_icon_img, (iw, ih))
+			surf.blit(img, (icon_x - iw//2, icon_y - ih//2))
+		else:
+			# fallback: cute circle
+			r = max(6, int(bar_h * 0.45))
+			pygame.draw.circle(surf, (255,200,200), (icon_x, icon_y), r)
+			pygame.draw.circle(surf, (255,240,240), (icon_x - r//3, icon_y - r//3), max(2, r//3))
+
+		# small label under the bar (tiny, unobtrusive)
+		if self.current_track:
+			label = f"{self.current_track['bpm']} BPM"
+			lbl = self.font_small.render(label, True, (120, 110, 100))
+			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(WINDOW_HEIGHT * 0.006)))
 
 	def draw_judgement(self, surf):
 		if self.judgement_timer > 0 and self.last_judgement:
