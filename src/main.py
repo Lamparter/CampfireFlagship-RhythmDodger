@@ -542,6 +542,7 @@ class RhythmDodgerGame:
 		self.player.reset()
 		self.obstacles.clear()
 		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
+		self.state = "playing"
 		self.game_over = False
 		self.score = 0
 		self.combo = 0
