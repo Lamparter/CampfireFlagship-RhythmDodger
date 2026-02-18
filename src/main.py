@@ -85,7 +85,6 @@ class RhythmDodgerGame:
 
 		self.running = True
 		self.state = "title" # title | options | playing | gameover
-		self.game_over = False
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
@@ -282,7 +281,7 @@ class RhythmDodgerGame:
 		for obs in self.obstacles:
 			if self.player.rect.colliderect(obs.rect):
 				# collision -> game over unless ghost powerup (todo)
-				self.game_over = True
+				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
@@ -531,7 +530,7 @@ class RhythmDodgerGame:
 			self.screen.blit(scene, (0, 0))
 		
 		# game over overlay
-		if self.game_over:
+		if self.state == "gameover":
 			self.draw_game_over(self.screen)
 
 		pygame.display.flip()
@@ -543,7 +542,6 @@ class RhythmDodgerGame:
 		self.obstacles.clear()
 		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
 		self.state = "playing"
-		self.game_over = False
 		self.score = 0
 		self.combo = 0
 		self.max_combo = 0
