@@ -163,18 +163,32 @@ class RhythmDodgerGame:
 	# input handling
 
 	def handle_events(self):
+		events = pygame.event.get()
 		jump_pressed = False
-		for event in pygame.event.get():
+		
+		for event in events:
 			if event.type == pygame.QUIT:
-				self.running = False # Why are you running? Why are you running?
-
+				self.running = False
 			elif event.type == pygame.KEYDOWN:
 				if event.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.running = False
-				if event.key in (pygame.K_SPACE, pygame.K_UP):
+				# only allow gameplay jump when playing
+				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP):
 					jump_pressed = True
-				if self.game_over and event.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
+		
+		# route events to state-specific handlers
+		if self.state == "title":
+			self.title_screen.handle_input(events)
+		elif self.state == "options":
+			# simple options: press escape to return
+			for e in events:
+				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
+					self.state = "title"
+		elif self.state == "gameover":
+			for e in events:
+				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
 					self.reset()
+					self.state = "playing"
 
 		return jump_pressed
 	
