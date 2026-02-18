@@ -445,6 +445,22 @@ class RhythmDodgerGame:
 	# render
 
 	def render(self):
+		# title screen
+		if self.state == "title":
+			self.title_screen.draw()
+			pygame.display.flip()
+			return
+
+		if self.state == "options":
+			self.screen.fill(BACKGROUND_COLOUR)
+			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90))
+			title = self.font_large.render("Options", True, TEXT_COLOUR)
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
+			hint = self.font_small.render("Press ESC to return", True, TEXT_COLOUR)
+			self.screen.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, int(WINDOW_HEIGHT*0.8)))
+			pygame.display.flip()
+			return
+
 		# draw to scene surface for shake
 		scene = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 		scene.fill(BACKGROUND_COLOUR)
