@@ -2,7 +2,7 @@
 Game objects
 """
 
-import pygame, random, sprites
+import pygame, random, sprites, particles
 from constants import *
 
 # Game objects
@@ -129,6 +129,171 @@ class Mascot:
 		draw_x = self.x if x is None else x
 		draw_y = self.y if y is None else y
 		surf.blit(img, (draw_x, draw_y))
+
+class TitleScreen:
+	def __init__(self, game):
+		self.game = game
+		self.screen = game.screen
+		self.clock = game.clock
+		self.font_small = game.font_small
+		self.font_large = game.font_large
+		self.bg_layers = getattr(game, "bg_layers", [])
+
+		# load logo if present
+		self.logo = None
+		if os.path.exists(TITLE_LOGO):
+			try:
+				logo_img = pygame.image.load(TITLE_LOGO).convert_alpha()
+				target_w = int(WINDOW_WIDTH * 0.5)
+				scale = target_w / logo_img.get_width()
+				target_h = int(logo_img.get_height() * scale)
+				self.logo = pygame.transform.smoothscale(logo_img, (target_w, target_h))
+			except Exception:
+				self.logo = None
+
+		
+		# load music if present
+		self.title_music_loaded = False
+		if os.path.exists(TITLE_MUSIC):
+			try:
+				pygame.mixer.music.load(TITLE_MUSIC)
+				self.title_music_loaded = True
+			except Exception:
+				self.title_music_loaded = False
+		
+		# menu
+		self.menu_items = ["Start", "Options", "Quit"]
+		self.selected = 0
+
+		# pulse for 'press key'
+		self.pulse = 0.0
+		self.pulse_dir = 1
+
+		# mascot reference
+		self.mascot = game.mascot
+
+		# ambient particles
+		self.particles = particles.ParticleSystem(200)
+
+		# start title music if available
+		if self.title_music_loaded:
+			try:
+				pygame.mixer.music.play(-1)
+				pygame.mixer.music.set_volume(0.6)
+			except Exception:
+				pass
+	
+	def handle_input(self, events):
+		for event in events:
+			if event.type == pygame.KEYDOWN:
+				if event.key in (pygame.K_RETURN, pygame.K_SPACE):
+					sel = self.menu_items[self.selected]
+					if sel == "Start":
+						# fade title music and start gameplay
+						if self.title_music_loaded:
+							try:
+								pygame.mixer.music.fadeout(400)
+							except Exception:
+								pass
+						self.game.start_random_track()
+						self.game.state = "playing"
+					elif sel == "Options":
+						self.game.state = "options"
+					elif sel == "Quit":
+						self.game.running = False
+				elif event.key in (pygame.K_UP,):
+					self.selected = (self.selected - 1) % len(self.menu_items)
+				elif event.key in (pygame.K_DOWN,):
+					self.selected = (self.selected + 1) % len(self.menu_items)
+			elif event.type == pygame.MOUSEBUTTONDOWN:
+				mx,my = event.pos
+				self._try_click_menu(mx,my)
+		
+	def _try_click_menu(self, mx, my):
+		centre_x = WINDOW_WIDTH // 2
+		base_y = int(WINDOW_HEIGHT * 0.62)
+		spacing = int(self.font_large.get_height() * 1.6)
+		for i, item in enumerate(self.menu_items):
+			text = self.font_large.render(item, True, TEXT_COLOUR)
+			tx = centre_x - text.get_width() // 2
+			ty = base_y + i * spacing
+			rect = pygame.Rect(tx, ty, text.get_width(), text.get_height())
+			if rect.collidepoint(mx,my):
+				self.selected = i
+				if item == "Start":
+					if self.title_music_loaded:
+						try:
+							pygame.mixer.music.fadeout(400)
+						except Exception:
+							pass
+						self.game.start_random_track()
+						self.game.state = "playing"
+					elif item == "Options":
+						self.game.state = "options"
+					elif item == "Quit":
+						self.game.running = False
+	
+	def update(self, dt):
+		# pulse animation
+		self.pulse += dt * 2.0 * self.pulse_dir
+		if self.pulse > 1.0:
+			self.pulse = 1.0
+			self.pulse_dir = -1
+		elif self.pulse < 0.0:
+			self.pulse = 0.0
+			self.pulse_dir = -1
+		
+		# ambient particles
+		if random.random() < 0.02:
+			x = random.uniform(WINDOW_WIDTH*0.2, WINDOW_WIDTH*0.8)
+			y = random.uniform(WINDOW_HEIGHT*0.2, WINDOW_HEIGHT*0.6)
+			self.particles.emit(x,y, count=4, colour=(255,240,200))
+		self.particles.update(dt)
+		self.mascot.update(dt)
+
+	def draw(self):
+		surf = self.screen
+		surf.fill(BACKGROUND_COLOUR)
+
+		# draw background layers (static)
+		for layer in self.bg_layers:
+			layer.draw(surf)
+		
+		# logo or fallback text (because i haven't designed logo yet)
+		if self.logo:
+			logo_x = WINDOW_WIDTH // 2 - self.logo.get_width() // 2
+			logo_y = int(WINDOW_HEIGHT * 0.12)
+			surf.blit(self.logo, (logo_x, logo_y))
+		else:
+			title_text = self.font_large.render("Campfire Flagship Rhythm Dodger", True, TEXT_COLOUR)
+			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.12)))
+		
+		# mascot near logo
+		mascot_size = max(MASCOT_SIZE, int(self.font_large.get_height() * 0.9))
+		mascot_x = int(WINDOW_WIDTH * 0.12)
+		mascot_y = int(WINDOW_HEIGHT * 0.12)
+		self.mascot.draw(surf, x=mascot_x, y=mascot_y, size=mascot_size)
+
+		# menu
+		centre_x = WINDOW_WIDTH // 2
+		base_y = int(WINDOW_HEIGHT * 0.62)
+		spacing = int(self.font_large.get_height() * 1.6)
+		for i, item in enumerate(self.menu_items):
+			colour = (255, 230, 200) if i == self.selected else TEXT_COLOUR
+			text = self.font_large.render(item, True, colour)
+			tx = centre_x - text.get_width() // 2
+			ty = base_y + i * spacing
+			surf.blit(text, (tx,ty))
+		
+		# press key text (pulsing alpha)
+		press_text = self.font_small.render("Press Enter or Space to select", True, TEXT_COLOUR)
+		alpha = int(160 + 95 * self.pulse)
+		press_surf = press_text.copy()
+		press_surf.set_alpha(alpha)
+		surf.blit(press_surf, (WINDOW_WIDTH//2 - press_text.get_width()//2, int(WINDOW_HEIGHT * 0.9)))
+
+		# particles
+		self.particles.draw(surf)
 
 # Helper classes
 
