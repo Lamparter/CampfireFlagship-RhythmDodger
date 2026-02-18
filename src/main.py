@@ -195,8 +195,17 @@ class RhythmDodgerGame:
 	# game update
 
 	def update(self, dt, jump_pressed):
-		if self.game_over:
-			# still update particles and mascot
+		# title screen update
+		if self.state == "title":
+			self.title_screen.update(dt)
+			return
+		
+		# options screen (placeholder)
+		if self.state == "options":
+			return
+		
+		# gameover state: keep particles/mascot animating
+		if self.state == "gameover":
 			self.particles.update(dt)
 			self.mascot.update(dt)
 			return
