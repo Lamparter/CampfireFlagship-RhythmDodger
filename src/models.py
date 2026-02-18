@@ -126,9 +126,9 @@ class Mascot:
 		img = self.anim.get_image()
 		if size and (img.get_width() != size or img.get_height() != size):
 			img = pygame.transform.scale(img, (size, size))
-			draw_x = self.x if x is None else x
-			draw_y = self.y if y is None else y
-			surf.blit(img, (draw_x, draw_y))
+		draw_x = self.x if x is None else x
+		draw_y = self.y if y is None else y
+		surf.blit(img, (draw_x, draw_y))
 
 # Helper classes
 
