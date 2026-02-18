@@ -141,7 +141,7 @@ class RhythmDodgerGame:
 
 		# title screen
 
-		self.title_screen = None
+		self.title_screen = models.TitleScreen(self)
 
 	# music / beat
 
