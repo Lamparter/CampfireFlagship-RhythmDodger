@@ -84,6 +84,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
+		self.state = "title" # title | options | playing | gameover
 		self.game_over = False
 		self.score = 0
 		self.best_score = 0
@@ -137,6 +138,10 @@ class RhythmDodgerGame:
 		# mascot position in top-left near HUD
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
+
+		# title screen
+
+		self.title_screen = None
 
 	# music / beat
 
