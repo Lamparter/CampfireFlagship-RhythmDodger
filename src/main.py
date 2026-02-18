@@ -84,7 +84,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
-		self.game_over = False
+		self.state = "title" # title | options | playing | gameover
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
@@ -138,6 +138,10 @@ class RhythmDodgerGame:
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
 
+		# title screen
+
+		self.title_screen = models.TitleScreen(self)
+
 	# music / beat
 
 	def start_random_track(self):
@@ -158,26 +162,49 @@ class RhythmDodgerGame:
 	# input handling
 
 	def handle_events(self):
+		events = pygame.event.get()
 		jump_pressed = False
-		for event in pygame.event.get():
+		
+		for event in events:
 			if event.type == pygame.QUIT:
-				self.running = False # Why are you running? Why are you running?
-
+				self.running = False
 			elif event.type == pygame.KEYDOWN:
 				if event.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.running = False
-				if event.key in (pygame.K_SPACE, pygame.K_UP):
+				# only allow gameplay jump when playing
+				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP):
 					jump_pressed = True
-				if self.game_over and event.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
+		
+		# route events to state-specific handlers
+		if self.state == "title":
+			self.title_screen.handle_input(events)
+		elif self.state == "options":
+			# simple options: press escape to return
+			for e in events:
+				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
+					self.state = "title"
+		elif self.state == "gameover":
+			for e in events:
+				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
 					self.reset()
+					self.state = "playing"
 
 		return jump_pressed
 	
 	# game update
 
 	def update(self, dt, jump_pressed):
-		if self.game_over:
-			# still update particles and mascot
+		# title screen update
+		if self.state == "title":
+			self.title_screen.update(dt)
+			return
+		
+		# options screen (placeholder)
+		if self.state == "options":
+			return
+		
+		# gameover state: keep particles/mascot animating
+		if self.state == "gameover":
 			self.particles.update(dt)
 			self.mascot.update(dt)
 			return
@@ -254,7 +281,7 @@ class RhythmDodgerGame:
 		for obs in self.obstacles:
 			if self.player.rect.colliderect(obs.rect):
 				# collision -> game over unless ghost powerup (todo)
-				self.game_over = True
+				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
@@ -417,6 +444,22 @@ class RhythmDodgerGame:
 	# render
 
 	def render(self):
+		# title screen
+		if self.state == "title":
+			self.title_screen.draw()
+			pygame.display.flip()
+			return
+
+		if self.state == "options":
+			self.screen.fill(BACKGROUND_COLOUR)
+			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90))
+			title = self.font_large.render("Options", True, TEXT_COLOUR)
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
+			hint = self.font_small.render("Press ESC to return", True, TEXT_COLOUR)
+			self.screen.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, int(WINDOW_HEIGHT*0.8)))
+			pygame.display.flip()
+			return
+
 		# draw to scene surface for shake
 		scene = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 		scene.fill(BACKGROUND_COLOUR)
@@ -487,7 +530,7 @@ class RhythmDodgerGame:
 			self.screen.blit(scene, (0, 0))
 		
 		# game over overlay
-		if self.game_over:
+		if self.state == "gameover":
 			self.draw_game_over(self.screen)
 
 		pygame.display.flip()
@@ -498,7 +541,7 @@ class RhythmDodgerGame:
 		self.player.reset()
 		self.obstacles.clear()
 		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
-		self.game_over = False
+		self.state = "playing"
 		self.score = 0
 		self.combo = 0
 		self.max_combo = 0
