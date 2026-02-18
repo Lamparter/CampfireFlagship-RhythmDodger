@@ -228,10 +228,10 @@ class TitleScreen:
 							pass
 						self.game.start_random_track()
 						self.game.state = "playing"
-					elif item == "Options":
-						self.game.state = "options"
-					elif item == "Quit":
-						self.game.running = False
+				elif item == "Options":
+					self.game.state = "options"
+				elif item == "Quit":
+					self.game.running = False
 	
 	def update(self, dt):
 		# pulse animation
