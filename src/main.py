@@ -261,6 +261,24 @@ class RhythmDodgerGame:
 
 				# reset spacing
 				self.beats_until_next_obstacle = helpers.space_obstacle()
+
+			# cute beat bar reactions
+
+			# icon bounce: set target scale and reset anim timer
+			self.beat_icon_scale = 1.0
+			self.beat_icon_target_scale = 1.45 # pop scale on beat
+			self.beat_icon_anim_time = 0.0
+
+			# small pulse for the bar background
+			self.beat_bar_pulse = 1.0
+
+			# subtle particle burst at the icon position (only a few)
+			try:
+				icon_x = WINDOW_WIDTH - int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC) - int(WINDOW_WIDTH * UI_MARGIN_FRAC) + max(6, int(BEAT_BAR_HEIGHT * 0.2))
+				icon_y = int(UI_MARGIN_FRAC * WINDOW_HEIGHT) + BEAT_BAR_HEIGHT // 2
+				self.particles.emit(icon_x, icon_y, count=6, colour=(255,230, 200))
+			except Exception:
+				pass
 		
 		# player jump
 		if jump_pressed:
