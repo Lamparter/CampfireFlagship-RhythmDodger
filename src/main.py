@@ -303,6 +303,10 @@ class RhythmDodgerGame:
 				cy = self.player.y + self.player.height / 2
 				self.particles.emit(cx, cy, count = 12, colour = (255, 230, 180))
 				self.mascot.react("happy")
+
+				# small extra icon pop
+				self.beat_icon_target_scale = 1.9
+				self.beat_icon_anim_time = 0.0
 			elif judgement == "Good!":
 				self.combo += 1
 				self.score += 8 + self.combo
