@@ -60,6 +60,34 @@ class RhythmDodgerGame:
 		self.mascot_sheet = sprites.SpriteSheet(MASCOT_SHEET)
 		self.mascot = models.Mascot(self.mascot_sheet, self.font_small)
 
+		# beat bar
+
+		self.beat_icon_img = None
+		self.beat_marker_img = None
+
+		if os.path.exists(BEAT_ICON):
+			try:
+				img = pygame.img.load(BEAT_ICON).convert_alpha()
+				# scale icon to match UI scale (use small multiple of font height)
+				target = max(12, int(self.font_small.get_height() * 0.9))
+				self.beat_icon_img = pygame.transform.smoothscale(img, (target, target))
+			except Exception:
+				self.beat_icon_img = None
+		
+		if os.path.exists(BEAT_MARKER):
+			try:
+				img = pygame.image.load(BEAT_MARKER).convert_alpha()
+				self.beat_marker_img = pygame.transform.smoothscale(img, (max(6, int(self.font_small.get_height()*0.45)),) * 2)
+			except Exception:
+				self.beat_marker_img = None
+		
+		# beat bar animation state
+		self.beat_icon_scale = 1.0
+		self.beat_icon_target_scale = 1.0
+		self.beat_icon_anim_time = 0.0
+		self.beat_icon_anim_duration = 0.22
+		self.bar_pulse = 0.0
+
 		# parallax
 
 		self.bg_layers = [
