@@ -86,7 +86,7 @@ class RhythmDodgerGame:
 		self.beat_icon_target_scale = 1.0
 		self.beat_icon_anim_time = 0.0
 		self.beat_icon_anim_duration = 0.22
-		self.bar_pulse = 0.0
+		self.beat_bar_pulse = 0.0
 
 		# parallax
 
