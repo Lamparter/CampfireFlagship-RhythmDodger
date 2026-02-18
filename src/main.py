@@ -358,6 +358,25 @@ class RhythmDodgerGame:
 			self.raining = random.random() < 0.25
 			if self.raining:
 				self.particles.emit_rain(WINDOW_WIDTH, WINDOW_HEIGHT, count = 60)
+		
+		# advance beat icon animation
+
+		if self.beat_icon_anim_time < self.beat_icon_anim_duration:
+			self.beat_icon_anim_time += dt
+			# when animation completes, return target scale to 1.0 smoothly
+			if self.beat_icon_anim_time >= self.beat_icon_anim_duration:
+				self.beat_icon_scale = self.beat_icon_target_scale
+				# schedule return to normal
+				self.beat_icon_target_scale = 1.0
+				self.beat_icon_anim_time = 0.0
+		else:
+			# small decay to ensure scale returns to 1.0
+			self.beat_icon_scale += (1.0 - self.beat_icon_scale) * min(1.0, dt * 8.0)
+		
+		# beat bar pulse decay
+
+		if self.beat_bar_pulse > 0:
+			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * 2.8)
 	
 	# rendering
 
