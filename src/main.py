@@ -364,7 +364,7 @@ class RhythmDodgerGame:
 		# beat bar pulse decay
 
 		if self.beat_bar_pulse > 0:
-			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * 2.8)
+			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * BEAT_BAR_PULSE_DECAY)
 	
 	# rendering
 
@@ -417,7 +417,7 @@ class RhythmDodgerGame:
 		y = margin
 
 		# apply pulse scale (cute pop)
-		pulse_scale = 1.0 + 0.08 * self.beat_bar_pulse # 8% pop
+		pulse_scale = 1.0 + BEAT_BAR_PULSE_SCALE * self.beat_bar_pulse
 		scaled_w = int(bar_w * pulse_scale)
 		scaled_h = int(bar_h * pulse_scale)
 
