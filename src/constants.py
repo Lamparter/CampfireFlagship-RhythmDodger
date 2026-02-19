@@ -79,7 +79,7 @@ BG_LAYER2 = os.path.join(SPRITES_DIR, "bg_layer2.png")
 FG_LAYER = os.path.join(SPRITES_DIR, "fg_layer.png")
 MASCOT_SHEET = os.path.join(SPRITES_DIR, "mascot_sheet_24x24.png")
 TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
-TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.ogg")
+TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.wav")
 BEAT_ICON = os.path.join(SPRITES_DIR, "beat_icon_48x48.png")
 
 TRACKS = [
