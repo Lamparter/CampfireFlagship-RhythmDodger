@@ -38,7 +38,9 @@ class Player: # player
 		self.font = font
 		self.width = PLAYER_W
 		self.height = PLAYER_H
-	
+
+		self._mask_cache = {}
+
 	@property
 	def rect(self):
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
@@ -56,6 +58,18 @@ class Player: # player
 			self.on_ground = False
 			self.state = "jump"
 			self.land_time_remaining = 0.0
+	
+	def get_mask(self):
+		# get the current frame surface from the AnimatedSprite
+		img = self.animations[self.state].get_image()
+		if img is None:
+			return None
+		key = id(img)
+		mask = self._mask_cache.get(key)
+		if mask is None:
+			mask = pygame.mask.from_surface(img)
+			self._mask_cache[key] = mask
+		return mask
 	
 	def update(self, dt):
 		self.vy += GRAVITY * dt
