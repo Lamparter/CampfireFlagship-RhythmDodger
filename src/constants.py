@@ -100,13 +100,13 @@ TEXT_COLOUR = (240, 240, 235)
 BEAT_BAR_BG_COLOUR = (60, 50, 40) # (245, 235, 230) very light cream
 BEAT_BAR_BORDER_COLOUR = (220, 200, 190)
 BEAT_BAR_COLOUR = (212, 163, 115)
-BEAT_MARKER_COLOUR = (255, 255, 255, 200)
+BEAT_MARKER_COLOUR = (255, 255, 255)
 
 # UI relative sizes
 
-BEAT_BAR_WIDTH_FRAC = 0.325 # fraction of window width
+BEAT_BAR_WIDTH = int(WINDOW_WIDTH * 0.28)
+BEAT_BAR_HEIGHT = max(14, int(WINDOW_HEIGHT * 0.028))
 
-BEAT_BAR_HEIGHT = max(12, int(WINDOW_HEIGHT * 0.022))
 UI_MARGIN_FRAC = 0.025 # fraction of window width for margins
 
 # CAPTION = "One-Button Rhythm Dodger"

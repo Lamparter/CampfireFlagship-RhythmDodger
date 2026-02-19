@@ -418,8 +418,8 @@ class RhythmDodgerGame:
 		- Compact layout so it fits UI
 		"""
 		# layout
-		bar_w = int(WINDOW_WIDTH * 0.28)
-		bar_h = max(14, int(WINDOW_HEIGHT * 0.028))
+		bar_w = BEAT_BAR_WIDTH
+		bar_h = BEAT_BAR_HEIGHT
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
 		x = WINDOW_WIDTH - bar_w - margin
 		y = margin
