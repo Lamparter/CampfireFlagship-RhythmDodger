@@ -14,15 +14,26 @@ class Player: # player
 		self.y = float(GROUND_Y - PLAYER_H)
 		self.vy = 0.0
 		self.on_ground = True
+		self.land_time_remaining = 0.0
 		self.recently_landed = False
 		self.spritesheet = spritesheet
-		self.animations = {} # load animations: assume sheet rows: idle(0), jump(1), land(2)
-		frames = 4 # frames per row: 4
+		self.animations = {}
+		self.anim_durations = {}
+		frames = 4
+
+		anim_rows = [
+			(0, "idle", 6),
+			(1, "jump", 4),
+			(2, "land", 8),
+		]
+
 		# load native frames (24x24) and scale them to PLAYER_W/PLAYER_H
-		for row, name, fps in [(0,"idle",6),(1,"jump",1),(2,"land",8)]:
+		for row, name, fps in anim_rows:
 			native_frames = spritesheet.load_strip((0, row * NATIVE_PLAYER, NATIVE_PLAYER, NATIVE_PLAYER), frames)
 			scaled_frames = [pygame.transform.scale(f, (PLAYER_W, PLAYER_H)) for f in native_frames]
-			self.animations[name] = sprites.AnimatedSprite(scaled_frames, fps=fps, loop=(name!="jump"))
+			self.animations[name] = sprites.AnimatedSprite(scaled_frames, fps=fps, loop=True)
+			self.anim_durations[name] = frames / float(fps)
+
 		self.state = "idle"
 		self.font = font
 		self.width = PLAYER_W
@@ -44,6 +55,7 @@ class Player: # player
 			self.vy = JUMP_VELOCITY
 			self.on_ground = False
 			self.state = "jump"
+			self.land_time_remaining = 0.0
 	
 	def update(self, dt):
 		self.vy += GRAVITY * dt
@@ -57,9 +69,19 @@ class Player: # player
 			self.on_ground = True
 			if self.recently_landed:
 				self.state = "land"
+				self.land_time_remaining = self.anim_durations.get("land", 0.25)
 		else:
 			self.on_ground = False
+
 		self.animations[self.state].update(dt) # animation update
+
+		if self.state == "land":
+			# decrement timer
+			self.land_time_remaining -= dt
+			if self.land_time_remaining <= 0.0:
+				self.state = "idle"
+				self.land_time_remaining = 0.0
+
 		if self.recently_landed:
 			# clear flag after one update so land animation can play briefly
 			self.recently_landed = False
