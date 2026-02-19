@@ -74,15 +74,8 @@ class RhythmDodgerGame:
 			except Exception:
 				self.beat_icon_img = None
 		
-		if os.path.exists(BEAT_MARKER):
-			try:
-				img = pygame.image.load(BEAT_MARKER).convert_alpha()
-				self.beat_marker_img = pygame.transform.smoothscale(img, (max(6, int(self.font_small.get_height()*0.45)),) * 2)
-			except Exception:
-				self.beat_marker_img = None
-		
 		# beat bar animation state
-		self.beat_icon_scale = 1.0
+		self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
 		self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
 		self.beat_icon_anim_time = 0.0
 		self.beat_icon_anim_duration = 0.22
@@ -265,7 +258,7 @@ class RhythmDodgerGame:
 			# cute beat bar reactions
 
 			# icon bounce: set target scale and reset anim timer
-			self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
+			#self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
 			self.beat_icon_target_scale = BEAT_ICON_SCALE_BEAT # pop scale on beat
 			self.beat_icon_anim_time = 0.0
 
@@ -366,8 +359,8 @@ class RhythmDodgerGame:
 				self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
 				self.beat_icon_anim_time = 0.0
 		else:
-			# small decay to ensure scale returns to 1.0
-			self.beat_icon_scale += (1.0 - self.beat_icon_scale) * min(1.0, dt * 8.0)
+			# small decay to ensure scale returns to default
+			self.beat_icon_scale += (BEAT_ICON_SCALE_DEFAULT - self.beat_icon_scale) * min(1.0, dt * 8.0)
 		
 		# beat bar pulse decay
 
@@ -462,7 +455,7 @@ class RhythmDodgerGame:
 		s = self.beat_icon_scale + (self.beat_icon_target_scale - self.beat_icon_scale) * (1 - (1 - t)**2)
 		iw = int(self.beat_icon_img.get_width() * s)
 		ih = int(self.beat_icon_img.get_height() * s)
-		img = pygame.transform.smoothscale(self.beat_icon_img, (iw, ih))
+		img = pygame.transform.scale(self.beat_icon_img, (iw, ih))
 		surf.blit(img, (icon_x - iw//2, icon_y - ih//2))
 
 		# small label under the bar (tiny, unobtrusive)
