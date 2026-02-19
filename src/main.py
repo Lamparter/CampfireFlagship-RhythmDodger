@@ -67,9 +67,9 @@ class RhythmDodgerGame:
 
 		if os.path.exists(BEAT_ICON):
 			try:
-				img = pygame.img.load(BEAT_ICON).convert_alpha()
+				img = pygame.image.load(BEAT_ICON).convert_alpha()
 				# scale icon to match UI scale (use small multiple of font height)
-				target = max(12, int(self.font_small.get_height() * 0.9))
+				target = 48
 				self.beat_icon_img = pygame.transform.smoothscale(img, (target, target))
 			except Exception:
 				self.beat_icon_img = None
@@ -83,7 +83,7 @@ class RhythmDodgerGame:
 		
 		# beat bar animation state
 		self.beat_icon_scale = 1.0
-		self.beat_icon_target_scale = 1.0
+		self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
 		self.beat_icon_anim_time = 0.0
 		self.beat_icon_anim_duration = 0.22
 		self.beat_bar_pulse = 0.0
@@ -265,8 +265,8 @@ class RhythmDodgerGame:
 			# cute beat bar reactions
 
 			# icon bounce: set target scale and reset anim timer
-			self.beat_icon_scale = 1.0
-			self.beat_icon_target_scale = 1.45 # pop scale on beat
+			self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
+			self.beat_icon_target_scale = BEAT_ICON_SCALE_BEAT # pop scale on beat
 			self.beat_icon_anim_time = 0.0
 
 			# small pulse for the bar background
@@ -297,7 +297,7 @@ class RhythmDodgerGame:
 				self.mascot.react("happy")
 
 				# small extra icon pop
-				self.beat_icon_target_scale = 1.9
+				self.beat_icon_target_scale = BEAT_ICON_SCALE_PERFECT
 				self.beat_icon_anim_time = 0.0
 			elif judgement == "Good!":
 				self.combo += 1
@@ -359,11 +359,11 @@ class RhythmDodgerGame:
 
 		if self.beat_icon_anim_time < self.beat_icon_anim_duration:
 			self.beat_icon_anim_time += dt
-			# when animation completes, return target scale to 1.0 smoothly
+			# when animation completes, return to target scale smoothly
 			if self.beat_icon_anim_time >= self.beat_icon_anim_duration:
 				self.beat_icon_scale = self.beat_icon_target_scale
 				# schedule return to normal
-				self.beat_icon_target_scale = 1.0
+				self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
 				self.beat_icon_anim_time = 0.0
 		else:
 			# small decay to ensure scale returns to 1.0

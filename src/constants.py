@@ -48,6 +48,10 @@ OBSTACLE_SPACING_MAX = 5 # * SPRITE_SCALE
 FONT_SMALL = max(14, int(WINDOW_HEIGHT * 0.035))
 FONT_LARGE = max(28, int(WINDOW_HEIGHT * 0.06))
 
+BEAT_ICON_SCALE_DEFAULT = 0.75
+BEAT_ICON_SCALE_BEAT = 1.0
+BEAT_ICON_SCALE_PERFECT = 1.5
+
 # Timing / beat
 
 DEFAULT_BPM = 120
@@ -76,8 +80,8 @@ FG_LAYER = os.path.join(SPRITES_DIR, "fg_layer.png")
 MASCOT_SHEET = os.path.join(SPRITES_DIR, "mascot_sheet_24x24.png")
 TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
 TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.ogg")
-BEAT_ICON = os.path.join(SPRITES_DIR, "ui_beat_icon_16x16.png")
-BEAT_MARKER = os.path.join(SPRITES_DIR, "ui_beat_marker_8x8.png")
+BEAT_ICON = os.path.join(SPRITES_DIR, "beat_icon_48x48.png")
+BEAT_MARKER = os.path.join(SPRITES_DIR, "beat_marker_8x8.png")
 
 TRACKS = [
 	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
