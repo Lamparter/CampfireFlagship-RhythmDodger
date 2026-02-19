@@ -109,6 +109,9 @@ class Obstacle:
 			self.y -= random.choice([24 * SPRITE_SCALE, 40 * SPRITE_SCALE])
 		self.passed = False
 
+		# create a mask from the scaled surface for pixel-perfect collision
+		self.mask = pygame.mask.from_surface(self.sprite)
+
 	@property
 	def rect(self):
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
