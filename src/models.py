@@ -2,7 +2,7 @@
 Game objects
 """
 
-import os, pygame, random, sprites, particles
+import os, pygame, random, sprites, particles, ui
 from constants import *
 
 # Game objects
@@ -177,6 +177,7 @@ class TitleScreen:
 		self.font_small = game.font_small
 		self.font_large = game.font_large
 		self.bg_layers = getattr(game, "bg_layers", [])
+		self.mascot = game.mascot
 
 		# load logo if present
 		self.logo = None
@@ -190,87 +191,103 @@ class TitleScreen:
 			except Exception:
 				self.logo = None
 
-		
 		# load music if present
 		self.title_music_loaded = False
 		if os.path.exists(TITLE_MUSIC):
 			try:
 				pygame.mixer.music.load(TITLE_MUSIC)
+				pygame.mixer.music.set_volume(0.32)
+				pygame.mixer.music.play(-1)
 				self.title_music_loaded = True
 			except Exception:
 				self.title_music_loaded = False
 		
-		# menu
-		self.menu_items = ["Start", "Options", "Quit"]
-		self.selected = 0
+		# UI buttons
+		self.menu_buttons = []
+		self._create_menu_buttons()
+
+		self.press_text_y = int(WINDOW_HEIGHT * 0.88)
 
 		# pulse for 'press key'
 		self.pulse = 0.0
 		self.pulse_dir = 1
 
-		# mascot reference
-		self.mascot = game.mascot
-
 		# ambient particles
 		self.particles = particles.ParticleSystem(200)
 
-		# start title music if available
+		# initial keyboard focus on first button
+		if self.menu_buttons:
+			self.menu_buttons[0].focus = True
+	
+	def _create_menu_buttons(self):
+		# compute size and positions
+		btn_w = int(WINDOW_WIDTH * 0.28)
+		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
+		centre_x = WINDOW_WIDTH // 2
+		base_y = int(WINDOW_HEIGHT * 0.48)
+		spacing = btn_h + int(WINDOW_HEIGHT * 0.02)
+
+		def make_btn(text, idx, cb):
+			rect = (centre_x - btn_w // 2, base_y + idx * spacing, btn_w, btn_h)
+			b = ui.Button(rect, text, self.font_large, cb)
+			return b
+		
+		self.menu_buttons.append(make_btn("Start", 0, lambda b: self.open_song_select()))
+		self.menu_buttons.append(make_btn("Settings", 1, lambda b: self.game.set_state("options")))
+		self.menu_buttons.append(make_btn("Quit", 2, lambda b: setattr(self.game, "running", False)))
+	
+	def open_song_select(self):
+		# play decide sfx and switch to song select screen
+		try:
+			self.game.audio.play_sfx("ui_decide_title")
+		except Exception:
+			pass
+
+		# fade out title music gently if present
 		if self.title_music_loaded:
 			try:
-				pygame.mixer.music.play(-1)
-				pygame.mixer.music.set_volume(0.6)
+				pygame.mixer.music.fadeout(300)
 			except Exception:
 				pass
-	
-	def handle_input(self, events):
-		for event in events:
-			if event.type == pygame.KEYDOWN:
-				if event.key in (pygame.K_RETURN, pygame.K_SPACE):
-					sel = self.menu_items[self.selected]
-					if sel == "Start":
-						# fade title music and start gameplay
-						if self.title_music_loaded:
-							try:
-								pygame.mixer.music.fadeout(400)
-							except Exception:
-								pass
-						self.game.start_random_track()
-						self.game.state = "playing"
-					elif sel == "Options":
-						self.game.state = "options"
-					elif sel == "Quit":
-						self.game.running = False
-				elif event.key in (pygame.K_UP,):
-					self.selected = (self.selected - 1) % len(self.menu_items)
-				elif event.key in (pygame.K_DOWN,):
-					self.selected = (self.selected + 1) % len(self.menu_items)
-			elif event.type == pygame.MOUSEBUTTONDOWN:
-				mx,my = event.pos
-				self._try_click_menu(mx,my)
 		
-	def _try_click_menu(self, mx, my):
-		centre_x = WINDOW_WIDTH // 2
-		base_y = int(WINDOW_HEIGHT * 0.62)
-		spacing = int(self.font_large.get_height() * 1.6)
-		for i, item in enumerate(self.menu_items):
-			text = self.font_large.render(item, True, TEXT_COLOUR)
-			tx = centre_x - text.get_width() // 2
-			ty = base_y + i * spacing
-			rect = pygame.Rect(tx, ty, text.get_width(), text.get_height())
-			if rect.collidepoint(mx,my):
-				self.selected = i
-				if item == "Start":
-					if self.title_music_loaded:
-						try:
-							pygame.mixer.music.fadeout(400)
-						except Exception:
-							pass
-						self.game.start_random_track()
-						self.game.state = "playing"
-				elif item == "Options":
-					self.game.state = "options"
-				elif item == "Quit":
-					self.game.running = False
+		# switch to song select state
+		self.game.set_state("song_select")
+	
+	def _focus_next(self):
+		if not self.menu_buttons:
+			return
+		idx = next((i for i, b in enumerate(self.menu_buttons) if b.focus), -1)
+		if idx >= 0:
+			self.menu_buttons[idx].focus = False
+		idx = (idx + 1) % len(self.menu_buttons)
+		self.menu_buttons[idx].focus = True
+	
+	def _focus_prev(self):
+		if not self.menu_buttons:
+			return
+		idx = next((i for i, b in enumerate(self.menu_buttons) if b.focus), -1)
+		if idx >= 0:
+			self.menu_buttons[idx].focus = False
+		idx = (idx - 1) % len(self.menu_buttons)
+		self.menu_buttons[idx].focus = True
+
+	def handle_input(self, events):
+		for e in events:
+			if e.type == pygame.KEYDOWN:
+				if e.key in (pygame.K_UP,):
+					self._focus_prev()
+				elif e.key in (pygame.K_DOWN,):
+					self._focus_next()
+				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+					focused = next((b for b in self.menu_buttons if b.focus), None)
+					if focused:
+						focused._click()
+				elif e.key in (pygame.K_q,):
+					pass
+			elif e.type == pygame.MOUSEMOTION:
+				# update hover states so buttons show hover visuals
+				for b in self.menu_buttons:
+					b.hover = b.rect.collidepoint(e.pos)
 	
 	def update(self, dt):
 		# pulse animation
@@ -297,15 +314,20 @@ class TitleScreen:
 		# draw background layers (static)
 		for layer in self.bg_layers:
 			layer.draw(surf)
+
+		# dim background to focus UI
+		dim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+		dim.fill((8, 8, 10, 200))
+		surf.blit(dim, (0, 0))
 		
 		# logo or fallback text (because i haven't designed logo yet)
 		if self.logo:
 			logo_x = WINDOW_WIDTH // 2 - self.logo.get_width() // 2
-			logo_y = int(WINDOW_HEIGHT * 0.12)
+			logo_y = int(WINDOW_HEIGHT * 0.10)
 			surf.blit(self.logo, (logo_x, logo_y))
 		else:
 			title_text = self.font_large.render("Campfire Flagship Rhythm Dodger", True, TEXT_COLOUR)
-			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.12)))
+			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.10)))
 		
 		# mascot near logo
 		mascot_size = max(MASCOT_SIZE, int(self.font_large.get_height() * 0.9))
@@ -314,22 +336,15 @@ class TitleScreen:
 		self.mascot.draw(surf, x=mascot_x, y=mascot_y, size=mascot_size)
 
 		# menu
-		centre_x = WINDOW_WIDTH // 2
-		base_y = int(WINDOW_HEIGHT * 0.62)
-		spacing = int(self.font_large.get_height() * 1.6)
-		for i, item in enumerate(self.menu_items):
-			colour = (255, 230, 200) if i == self.selected else TEXT_COLOUR
-			text = self.font_large.render(item, True, colour)
-			tx = centre_x - text.get_width() // 2
-			ty = base_y + i * spacing
-			surf.blit(text, (tx,ty))
+		for b in self.menu_buttons:
+			b.draw(surf)
 		
 		# press key text (pulsing alpha)
 		press_text = self.font_small.render("Press Enter or Space to select", True, TEXT_COLOUR)
 		alpha = int(160 + 95 * self.pulse)
 		press_surf = press_text.copy()
 		press_surf.set_alpha(alpha)
-		surf.blit(press_surf, (WINDOW_WIDTH//2 - press_text.get_width()//2, int(WINDOW_HEIGHT * 0.9)))
+		surf.blit(press_surf, (WINDOW_WIDTH//2 - press_text.get_width()//2, self.press_text_y))
 
 		# particles
 		self.particles.draw(surf)
