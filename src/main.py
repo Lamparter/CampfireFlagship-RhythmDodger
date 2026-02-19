@@ -60,6 +60,27 @@ class RhythmDodgerGame:
 		self.mascot_sheet = sprites.SpriteSheet(MASCOT_SHEET)
 		self.mascot = models.Mascot(self.mascot_sheet, self.font_small)
 
+		# beat bar
+
+		self.beat_icon_img = None
+		self.beat_marker_img = None
+
+		if os.path.exists(BEAT_ICON):
+			try:
+				img = pygame.image.load(BEAT_ICON).convert_alpha()
+				# scale icon to match UI scale (use small multiple of font height)
+				target = 48
+				self.beat_icon_img = pygame.transform.smoothscale(img, (target, target))
+			except Exception:
+				self.beat_icon_img = None
+		
+		# beat bar animation state
+		self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
+		self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
+		self.beat_icon_anim_time = 0.0
+		self.beat_icon_anim_duration = 0.22
+		self.beat_bar_pulse = 0.0
+
 		# parallax
 
 		self.bg_layers = [
@@ -233,7 +254,16 @@ class RhythmDodgerGame:
 
 				# reset spacing
 				self.beats_until_next_obstacle = helpers.space_obstacle()
-		
+
+			# cute beat bar reactions
+
+			# icon bounce: set target scale and reset anim timer
+			self.beat_icon_target_scale = BEAT_ICON_SCALE_BEAT # pop scale on beat
+			self.beat_icon_anim_time = 0.0
+
+			# small pulse for the bar background
+			self.beat_bar_pulse = 1.0
+
 		# player jump
 		if jump_pressed:
 			self.player.try_jump()
@@ -257,6 +287,10 @@ class RhythmDodgerGame:
 				cy = self.player.y + self.player.height / 2
 				self.particles.emit(cx, cy, count = 12, colour = (255, 230, 180))
 				self.mascot.react("happy")
+
+				# small extra icon pop
+				self.beat_icon_target_scale = BEAT_ICON_SCALE_PERFECT
+				self.beat_icon_anim_time = 0.0
 			elif judgement == "Good!":
 				self.combo += 1
 				self.score += 8 + self.combo
@@ -312,6 +346,25 @@ class RhythmDodgerGame:
 			self.raining = random.random() < 0.25
 			if self.raining:
 				self.particles.emit_rain(WINDOW_WIDTH, WINDOW_HEIGHT, count = 60)
+		
+		# advance beat icon animation
+
+		if self.beat_icon_anim_time < self.beat_icon_anim_duration:
+			self.beat_icon_anim_time += dt
+			# when animation completes, return to target scale smoothly
+			if self.beat_icon_anim_time >= self.beat_icon_anim_duration:
+				self.beat_icon_scale = self.beat_icon_target_scale
+				# schedule return to normal
+				self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
+				self.beat_icon_anim_time = 0.0
+		else:
+			# small decay to ensure scale returns to default
+			self.beat_icon_scale += (BEAT_ICON_SCALE_DEFAULT - self.beat_icon_scale) * min(1.0, dt * 8.0)
+		
+		# beat bar pulse decay
+
+		if self.beat_bar_pulse > 0:
+			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * BEAT_BAR_PULSE_DECAY)
 	
 	# rendering
 
@@ -348,29 +401,77 @@ class RhythmDodgerGame:
 			pygame.draw.rect(surf, (40, 36, 32), pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE))) # fallback
 		
 	def draw_beat_bar(self, surf):
-		bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
-		bar_height = BEAT_BAR_HEIGHT
+		"""
+		Cute beat bar:
+		- Rounded pastel pill background
+		- Soft left-to-right gradient fill showing phase
+		- Small icon that bounces on beat
+		- Tiny centre marker sprite
+		- Compact layout so it fits UI
+		"""
+		# layout
+		bar_w = BEAT_BAR_WIDTH
+		bar_h = BEAT_BAR_HEIGHT
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		x = WINDOW_WIDTH - bar_width - margin
+		x = WINDOW_WIDTH - bar_w - margin
 		y = margin
-		pygame.draw.rect(surf, BEAT_BAR_BG, pygame.Rect(x, y, bar_width, bar_height), border_radius = 6)
+
+		# apply pulse scale (cute pop)
+		pulse_scale = 1.0 + BEAT_BAR_PULSE_SCALE * self.beat_bar_pulse
+		scaled_w = int(bar_w * pulse_scale)
+		scaled_h = int(bar_h * pulse_scale)
+
+		# recentre the scaled bar
+		x -= (scaled_w - bar_w) // 2
+		y -= (scaled_h - bar_h) // 2
+		bar_w = scaled_w
+		bar_h = scaled_h
+		self.beat_bar_w = bar_w
+		self.beat_bar_h = bar_h
+		self.beat_bar_x = x
+		self.beat_bar_y = y
+
+		# base pill background (soft pastel)
+		pygame.draw.rect(surf, BEAT_BAR_BORDER_COLOUR, pygame.Rect(x-2, y-2, bar_w+4, bar_h+4), border_radius=bar_h//2)
+		pygame.draw.rect(surf, BEAT_BAR_BG_COLOUR, pygame.Rect(x, y, bar_w, bar_h), border_radius=bar_h//2)
+
 		phase = self.beat_tracker.normalised_phase()
-		fill_w = int(bar_width * phase)
-		pygame.draw.rect(surf, BEAT_BAR_COLOUR, pygame.Rect(x, y, fill_w, bar_height), border_radius = 6)
+		fill_w = int(bar_w * phase)
+		pygame.draw.rect(surf, BEAT_BAR_COLOUR, pygame.Rect(x, y, fill_w, bar_h), border_radius = 6)
 
 		# centre marker
-		cx = x + bar_width // 2
-		pygame.draw.line(surf, (255, 255, 255), (cx, y-4), (cx, y+bar_height+4), max(1, int(WINDOW_WIDTH * 0.002)))
+		cx = x + bar_w // 2
+		pygame.draw.line(surf, BEAT_MARKER_COLOUR, (cx, y-4), (cx, y+bar_h+4), max(1, int(WINDOW_WIDTH * 0.0015)))
+		
+		# animated beat icon (left side of fill, or if no fill, at left edge)
+		icon_x = x + max(6, int(bar_h * 0.2))
+		icon_y = y + bar_h//2
+
+		# update animation interpolation
+		t = min(1.0, max(0.0, self.beat_icon_anim_time / max(0.0001, self.beat_icon_anim_duration)))
+
+		# ease out bounce
+		s = self.beat_icon_scale + (self.beat_icon_target_scale - self.beat_icon_scale) * (1 - (1 - t)**2)
+		iw = int(self.beat_icon_img.get_width() * s)
+		ih = int(self.beat_icon_img.get_height() * s)
+		img = pygame.transform.scale(self.beat_icon_img, (iw, ih))
+		surf.blit(img, (icon_x - iw//2, icon_y - ih//2))
+
+		# small label under the bar (tiny, unobtrusive)
+		if self.current_track:
+			label = f"{self.current_track['bpm']} BPM"
+			lbl = self.font_small.render(label, True, (120, 110, 100))
+			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(WINDOW_HEIGHT * 0.006)))
 
 	def draw_judgement(self, surf):
 		if self.judgement_timer > 0 and self.last_judgement:
 			surf_text = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
-			bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
-			margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-			bar_x = WINDOW_WIDTH - bar_width - margin
-			bar_y = margin
+			bar_width = self.beat_bar_w
+			bar_height = self.beat_bar_h
+			bar_x = self.beat_bar_x
+			bar_y = self.beat_bar_y
 			x = bar_x + bar_width - surf_text.get_width()
-			y = bar_y + BEAT_BAR_HEIGHT + int(WINDOW_HEIGHT * 0.01)
+			y = bar_y + bar_height + int(WINDOW_HEIGHT * 0.05)
 			colour = (200, 255, 200) if "Perfect" in self.last_judgement else (220, 220, 180) if "Good" in self.last_judgement else (255, 200, 180) # colour code
 			surf_text = self.font_small.render(self.last_judgement, True, colour)
 			surf.blit(surf_text, (x, y))

@@ -48,6 +48,12 @@ OBSTACLE_SPACING_MAX = 5 # * SPRITE_SCALE
 FONT_SMALL = max(14, int(WINDOW_HEIGHT * 0.035))
 FONT_LARGE = max(28, int(WINDOW_HEIGHT * 0.06))
 
+BEAT_ICON_SCALE_DEFAULT = 0.75
+BEAT_ICON_SCALE_BEAT = 1.0
+BEAT_ICON_SCALE_PERFECT = 1.5
+BEAT_BAR_PULSE_SCALE = 0.08 # 8% beat bar pop
+BEAT_BAR_PULSE_DECAY = 2.8
+
 # Timing / beat
 
 DEFAULT_BPM = 120
@@ -76,6 +82,7 @@ FG_LAYER = os.path.join(SPRITES_DIR, "fg_layer.png")
 MASCOT_SHEET = os.path.join(SPRITES_DIR, "mascot_sheet_24x24.png")
 TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
 TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.ogg")
+BEAT_ICON = os.path.join(SPRITES_DIR, "beat_icon_48x48.png")
 
 TRACKS = [
 	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
@@ -90,14 +97,17 @@ TRACKS = [
 BACKGROUND_COLOUR = (30, 34, 45)
 GROUND_COLOUR = (120, 100, 80)
 TEXT_COLOUR = (240, 240, 235)
-BEAT_BAR_BG = (60, 50, 40)
+
+BEAT_BAR_BG_COLOUR = (60, 50, 40) # (245, 235, 230) very light cream
+BEAT_BAR_BORDER_COLOUR = (220, 200, 190)
 BEAT_BAR_COLOUR = (212, 163, 115)
+BEAT_MARKER_COLOUR = (255, 255, 255)
 
 # UI relative sizes
 
-BEAT_BAR_WIDTH_FRAC = 0.325 # fraction of window width
+BEAT_BAR_WIDTH = int(WINDOW_WIDTH * 0.28)
+BEAT_BAR_HEIGHT = max(14, int(WINDOW_HEIGHT * 0.028))
 
-BEAT_BAR_HEIGHT = max(12, int(WINDOW_HEIGHT * 0.022))
 UI_MARGIN_FRAC = 0.025 # fraction of window width for margins
 
 # CAPTION = "One-Button Rhythm Dodger"
