@@ -432,6 +432,18 @@ class RhythmDodgerGame:
 		x = WINDOW_WIDTH - bar_w - margin
 		y = margin
 
+		# apply pulse scale (cute pop)
+		pulse_scale = 1.0 + 0.08 * self.beat_bar_pulse # 8% pop
+		scaled_w = int(bar_w * pulse_scale)
+		scaled_h = int(bar_h * pulse_scale)
+
+		# recentre the scaled bar
+		x -= (scaled_w - bar_w) // 2
+		y -= (scaled_h - bar_h) // 2
+		bar_w = scaled_w
+		bar_h = scaled_h
+		self.beat_bar_w = bar_w
+
 		# base pill background (soft pastel)
 		base_colour = (245, 235, 230) # very light cream
 		border_colour = (220, 200, 190)
