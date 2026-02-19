@@ -272,14 +272,6 @@ class RhythmDodgerGame:
 			# small pulse for the bar background
 			self.beat_bar_pulse = 1.0
 
-			# subtle particle burst at the icon position (only a few)
-			try:
-				icon_x = WINDOW_WIDTH - int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC) - int(WINDOW_WIDTH * UI_MARGIN_FRAC) + max(6, int(BEAT_BAR_HEIGHT * 0.2))
-				icon_y = int(UI_MARGIN_FRAC * WINDOW_HEIGHT) + BEAT_BAR_HEIGHT // 2
-				self.particles.emit(icon_x, icon_y, count=6, colour=(255,230, 200))
-			except Exception:
-				pass
-		
 		# player jump
 		if jump_pressed:
 			self.player.try_jump()
