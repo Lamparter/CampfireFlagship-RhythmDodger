@@ -312,9 +312,41 @@ class RhythmDodgerGame:
 			obs.update(dt)
 		
 		# collision
+		player_rect = self.player.rect
+		player_mask = self.player.get_mask()
+
 		for obs in self.obstacles:
-			if self.player.rect.colliderect(obs.rect):
-				# collision -> game over unless ghost powerup (todo)
+			# quick reject by rect
+			if not player_rect.colliderect(obs.rect):
+				continue
+
+			# ensure obstacle has a mask
+			obs_mask = getattr(obs, "mask", None)
+			if obs_mask is None:
+				# fallback: treat as rect collision if no mask
+				self.state = "gameover"
+				self.best_score = max(self.best_score, self.score)
+				self.audio.play_sfx("miss", 0.8)
+				self.apply_screen_shake(6, 0.18)
+				break
+
+			# compute offset from player mask to obstacle mask
+			offset_x = int(obs.rect.x - player_rect.x)
+			offset_y = int(obs.rect.y - player_rect.y)
+
+			# if either mask is missing, skip
+			if player_mask is None:
+				# fallback to rect collision
+				self.state = "gameover"
+				self.best_score = max(self.best_score, self.score)
+				self.audio.play_sfx("miss", 0.8)
+				self.apply_screen_shake(6, 0.18)
+				break
+
+			# check overlap: returns point or None
+			overlap_point = player_mask.overlap(obs_mask, (offset_x, offset_y))
+			if overlap_point:
+				# pixel-perfect collision detected
 				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("miss", 0.8)
