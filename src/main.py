@@ -443,6 +443,9 @@ class RhythmDodgerGame:
 		bar_w = scaled_w
 		bar_h = scaled_h
 		self.beat_bar_w = bar_w
+		self.beat_bar_h = bar_h
+		self.beat_bar_x = x
+		self.beat_bar_y = y
 
 		# base pill background (soft pastel)
 		base_colour = (245, 235, 230) # very light cream
@@ -509,12 +512,12 @@ class RhythmDodgerGame:
 	def draw_judgement(self, surf):
 		if self.judgement_timer > 0 and self.last_judgement:
 			surf_text = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
-			bar_width = int(WINDOW_WIDTH * BEAT_BAR_WIDTH_FRAC)
-			margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-			bar_x = WINDOW_WIDTH - bar_width - margin
-			bar_y = margin
+			bar_width = self.beat_bar_w
+			bar_height = self.beat_bar_h
+			bar_x = self.beat_bar_x
+			bar_y = self.beat_bar_y
 			x = bar_x + bar_width - surf_text.get_width()
-			y = bar_y + BEAT_BAR_HEIGHT + int(WINDOW_HEIGHT * 0.01)
+			y = bar_y + bar_height + int(WINDOW_HEIGHT * 0.05)
 			colour = (200, 255, 200) if "Perfect" in self.last_judgement else (220, 220, 180) if "Good" in self.last_judgement else (255, 200, 180) # colour code
 			surf_text = self.font_small.render(self.last_judgement, True, colour)
 			surf.blit(surf_text, (x, y))
