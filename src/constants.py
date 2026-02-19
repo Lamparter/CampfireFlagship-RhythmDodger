@@ -105,11 +105,11 @@ SFX = [
 ]
 
 TRACKS = [
-	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
-	("DJGotUsFallinInLove.ogg", "Usher - DJ Got Us Fallin' In Love", 120),
-	("GimmeGimmeGimme.ogg", "ABBA - Gimme Gimme Gimme!", 120),
-	("OnlySoMuchOilInTheGround.ogg", "Stefanie Heinzmann - Only So Much Oil In The Ground", 121),
-	("ShizumeruMachi.ogg", "YOEKO - Sinking Town", 125),
+	("BackToBlack", "Amy Winehouse", "Back to Black", 123),
+	("DJGotUsFallinInLove", "Usher", "DJ Got Us Fallin' In Love", 120),
+	("GimmeGimmeGimme", "ABBA", "Gimme Gimme Gimme!", 120),
+	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121),
+	("ShizumeruMachi", "YOEKO", "Sinking Town", 125),
 ]
 
 # Colours
