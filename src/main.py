@@ -258,7 +258,6 @@ class RhythmDodgerGame:
 			# cute beat bar reactions
 
 			# icon bounce: set target scale and reset anim timer
-			#self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
 			self.beat_icon_target_scale = BEAT_ICON_SCALE_BEAT # pop scale on beat
 			self.beat_icon_anim_time = 0.0
 
