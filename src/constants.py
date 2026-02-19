@@ -82,6 +82,28 @@ TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
 TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.wav")
 BEAT_ICON = os.path.join(SPRITES_DIR, "beat_icon_48x48.png")
 
+SFX = [
+	("beat_good"),
+	("beat_miss"),
+	("beat_perfect"),
+	("error"),
+	("jump"),
+	("land"),
+	("mascot"),
+	("powerup_in"),
+	("powerup_out"),
+	("rain"),
+	("ui_1"),
+	("ui_2"),
+	("ui_3"),
+	("ui_4"),
+	("ui_5"),
+	("ui_cancel"),
+	("ui_decide_title"),
+	("ui_return_title"),
+	("wind"),
+]
+
 TRACKS = [
 	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
 	("DJGotUsFallinInLove.ogg", "Usher - DJ Got Us Fallin' In Love", 120),

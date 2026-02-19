@@ -23,12 +23,9 @@ class RhythmDodgerGame:
 		self.audio = audio.AudioManager()
 
 		# preload sfx
-		# TODO: move to constants
-		self.audio.load_sfx("perfect", os.path.join(SFX_DIR, "beat_perfect.wav"))
-		self.audio.load_sfx("good", os.path.join(SFX_DIR, "beat_good.wav"))
-		self.audio.load_sfx("miss", os.path.join(SFX_DIR, "beat_miss.wav"))
-		self.audio.load_sfx("jump", os.path.join(SFX_DIR, "jump.wav"))
-		self.audio.load_sfx("land", os.path.join(SFX_DIR, "land.wav"))
+		
+		for sfx in SFX:
+			self.audio.load_sfx(sfx, os.path.join(SFX_DIR, f"{sfx}.wav"))
 
 		# sprites
 
@@ -280,7 +277,7 @@ class RhythmDodgerGame:
 				self.combo += 1
 				self.score += 15 + self.combo
 				self.accurate_jumps += 1
-				self.audio.play_sfx("perfect", 0.9)
+				self.audio.play_sfx("beat_perfect", 0.9)
 
 				# particles + mascot
 				cx = self.player.x + self.player.width / 2
@@ -295,12 +292,12 @@ class RhythmDodgerGame:
 				self.combo += 1
 				self.score += 8 + self.combo
 				self.accurate_jumps += 1
-				self.audio.play_sfx("good", 0.8)
+				self.audio.play_sfx("beat_good", 0.8)
 				self.particles.emit(self.player.x + 12, self.player.y + 12, count = 6, colour = (220, 200, 160))
 				self.mascot.react("happy")
 			else:
 				self.combo = 0
-				self.audio.play_sfx("miss", 0.6)
+				self.audio.play_sfx("beat_miss", 0.6)
 				self.mascot.react("sad")
 			self.max_combo = max(self.max_combo, self.combo)
 
@@ -326,7 +323,7 @@ class RhythmDodgerGame:
 				# fallback: treat as rect collision if no mask
 				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("miss", 0.8)
+				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
 				break
 
@@ -339,7 +336,7 @@ class RhythmDodgerGame:
 				# fallback to rect collision
 				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("miss", 0.8)
+				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
 				break
 
@@ -349,7 +346,7 @@ class RhythmDodgerGame:
 				# pixel-perfect collision detected
 				self.state = "gameover"
 				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("miss", 0.8)
+				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
 				break
 		

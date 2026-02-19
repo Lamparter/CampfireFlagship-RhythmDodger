@@ -2,7 +2,7 @@
 Helper functions
 """
 
-import pygame, math, random, models; from constants import *
+import pygame, math, random, models, audio; from constants import *
 
 def space_obstacle() -> int:
 	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
@@ -32,3 +32,6 @@ def get_rank(accuracy):
 	if accuracy >= 85: return "A"
 	if accuracy >= 70: return "B"
 	return "C"
+
+def play_ui_sound(audioManager: audio.AudioManager):
+	audioManager.play_sfx("ui_" + random.randint(1, 5) + ".wav")
