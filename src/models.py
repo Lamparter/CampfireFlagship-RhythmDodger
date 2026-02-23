@@ -414,7 +414,22 @@ class SongSelectScreen:
 		for i, (rect, t) in enumerate(self.tiles):
 			filename, artist, title, bpm, art = t
 			# tile background
-			colour = (255,245,)
+			colour = (255,245,235) if i == self.selected_index else (245,240,235)
+			pygame.draw.rect(surf, colour, rect, border_radius=10)
+
+			# album art
+			if os.path.exists(art):
+				try:
+					img = pygame.image.load(art).convert_alpha()
+					img = pygame.transform.smoothscale(img, (rect.height-8, rect.height-8))
+					surf.blit(img, (rect.x+6, rect.y+4))
+				except:
+					pass
+			# text
+			txt = self.font_large.render(title, True, (40,34,30))
+			surf.blit(txt, (rect.x + rect.height + 12, rect.y + 8))
+			sub = self.font_small.render(f"{artist} - {bpm} BPM", True, (100,90,80))
+			surf.blit(sub, (rect.x + rect.height + 12, rect.y + 8 + txt.get_height()))
 
 # Helper classes
 
