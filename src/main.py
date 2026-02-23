@@ -233,7 +233,7 @@ class RhythmDodgerGame:
 			if event.type == pygame.QUIT:
 				self.running = False
 			elif event.type == pygame.KEYDOWN:
-				if event.key in pygame.K_q and (self.state == "title"):
+				if event.key == pygame.K_q and (self.state == "title"):
 					self.running = False
 				elif event.key == pygame.K_ESCAPE:
 					# behave contextually: if playing -> pause; if title -> do nothing; if options -> back
