@@ -349,6 +349,88 @@ class TitleScreen:
 		# particles
 		self.particles.draw(surf)
 
+class SongSelectScreen:
+	def __init__(self, game):
+		self.game = game
+		self.screen = game.screen
+		self.font_small = game.font_small
+		self.font_large = game.font_large
+		self.tracks = game.available_tracks
+
+		# build tiles from TRACKS constant
+		self.tiles = []
+		self.selected_index = 0
+		self._build_tiles()
+	
+	def _build_tiles(self):
+		# tile layout: horizontal stretching tiles stacked vertically
+		tile_w = int(WINDOW_WIDTH * 0.7)
+		tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
+		margin_x = int(WINDOW_WIDTH * 0.15)
+		base_y = int(WINDOW_HEIGHT * 0.28)
+		spacing = tile_h + int(WINDOW_HEIGHT * 0.03)
+
+		for i, t in enumerate(TRACKS):
+			rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
+			self.tiles.append((rect, t))
+	
+	def handle_input(self, events):
+		for e in events:
+			if e.type == pygame.KEYDOWN:
+				if e.key in (pygame.K_ESCAPE, pygame.K_q):
+					# return to title
+					self.game.set_state("title")
+					try: self.game.audio.play_sfx("ui_return_title")
+					except: pass
+				elif e.key in (pygame.K_UP,):
+					self.selected_index = max(0, self.selected_index - 1)
+				elif e.key in (pygame.K_DOWN,):
+					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
+				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+					self._selected_track(self.selected_index)
+			elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+				for i, (rect, t) in enumerate(self.tiles):
+					if rect.collidepoint(e.pos):
+						self._select_track(i)
+	
+	def _select_track(self, idx):
+		# set current track and go to playing state (but show confirm menu)
+		rect, t = self.tiles[idx]
+		filename, artist, title, bpm, art = t
+		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": art}
+
+		# play decide sfx
+		try: self.game.audio.play_sfx("ui_decide_title")
+		except: pass
+
+		# start music and go to playing
+		self.game.start_track(self.game.current_track)
+		self.game.set_state("playing")
+	
+	def draw(self):
+		surf = self.screen
+		surf.fill((20,20,24)) # dim background
+		ui.draw_panel(surf, pygame.Rect(int(WINDOW_WIDTH*0.08), int(WINDOW_HEIGHT*0.12), int(WINDOW_WIDTH*0.84), int(WINDOW_HEIGHT*0.76)), (30,28,32), (80,70,60))
+		for i, (rect, t) in enumerate(self.tiles):
+			filename, artist, title, bpm, art = t
+			# tile background
+			colour = (255,245,235) if i == self.selected_index else (245,240,235)
+			pygame.draw.rect(surf, colour, rect, border_radius=10)
+
+			# album art
+			if os.path.exists(art):
+				try:
+					img = pygame.image.load(art).convert_alpha()
+					img = pygame.transform.smoothscale(img, (rect.height-8, rect.height-8))
+					surf.blit(img, (rect.x+6, rect.y+4))
+				except:
+					pass
+			# text
+			txt = self.font_large.render(title, True, (40,34,30))
+			surf.blit(txt, (rect.x + rect.height + 12, rect.y + 8))
+			sub = self.font_small.render(f"{artist} - {bpm} BPM", True, (100,90,80))
+			surf.blit(sub, (rect.x + rect.height + 12, rect.y + 8 + txt.get_height()))
+
 # Helper classes
 
 class ParallaxLayer:
