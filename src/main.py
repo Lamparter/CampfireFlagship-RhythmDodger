@@ -686,6 +686,23 @@ class RhythmDodgerGame:
 
 		pygame.display.flip()
 
+		if self.state == "paused":
+			# then dim
+			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			overlay.fill((8, 8, 10, 200))
+			self.screen.blit(overlay, (0, 0))
+			
+			# draw options panel centred
+			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90))
+			title = self.font_large.render("Paused", True, TEXT_COLOUR)
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.26)))
+
+			# buttons
+			resume_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.4), 240, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
+			title_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.5), 240, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
+			resume_btn.draw(self.screen); title_btn.draw(self.screen)
+		return
+
 	# reset
 	
 	def reset(self):
