@@ -174,6 +174,13 @@ class RhythmDodgerGame:
 		if new_state == "title" and prev != "title":
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
+
+		if new_state == "gameover":
+			try: pygame.mixer.music.set_volume(0.12)
+			except: pass
+		elif new_state == "playing":
+			try: pygame.mixer.music.set_volume(0.7)
+			except: pass		
 	
 	def toggle_pause(self):
 		if self.state == "playing":
