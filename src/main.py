@@ -222,13 +222,6 @@ class RhythmDodgerGame:
 		jump_pressed = False
 
 		for event in events:
-			if self.state == "playing":
-				try:
-					if self.pause_button.handle_event(event):
-						pass # handled by pause button
-				except Exception:
-					pass
-
 			if event.type == pygame.QUIT:
 				self.running = False
 			elif event.type == pygame.KEYDOWN:
@@ -252,6 +245,17 @@ class RhythmDodgerGame:
 			for e in events:
 				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
 					self.state = "title"
+		elif self.state == "playing":
+			for e in events:
+				try:
+					if self.pause_button.handle_event(e):
+						pass # handled by pause button
+				except Exception:
+					pass
+		elif self.state == "paused":
+			for e in events:
+				self.resume_btn.handle_event(e)
+				self.title_btn.handle_event(e)
 		elif self.state == "song_select":
 			self.song_select.handle_input(events)
 			return False
@@ -663,6 +667,8 @@ class RhythmDodgerGame:
 			self.screen.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, int(WINDOW_HEIGHT*0.8)))
 			pygame.display.flip()
 			return
+		
+		# ref: 'pause' state handled at bottom of method
 
 		if self.state == "song_select":
 			self.song_select.draw()
@@ -753,12 +759,12 @@ class RhythmDodgerGame:
 			# draw options panel centred
 			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90))
 			title = self.font_large.render("Paused", True, TEXT_COLOUR)
-			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.26)))
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.06)))
 
 			# buttons
-			resume_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.4), 240, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
-			title_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.5), 240, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
-			resume_btn.draw(self.screen); title_btn.draw(self.screen)
+			self.resume_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.35), 280, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
+			self.title_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.55), 280, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
+			self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
 		return
 
 	# reset
