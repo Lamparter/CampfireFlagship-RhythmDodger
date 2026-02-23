@@ -164,6 +164,7 @@ class RhythmDodgerGame:
 		# title screen
 
 		self.title_screen = models.TitleScreen(self)
+		self.song_select = models.SongSelectScreen(self)
 
 	# game state
 
