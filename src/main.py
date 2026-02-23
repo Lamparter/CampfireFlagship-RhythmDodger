@@ -102,7 +102,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
-		self.state = "title" # title | options | playing | gameover
+		self.set_state("title") # title | options | playing | gameover
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
@@ -253,7 +253,7 @@ class RhythmDodgerGame:
 			# simple options: press escape to return
 			for e in events:
 				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
-					self.state = "title"
+					self.set_state("title")
 		elif self.state == "playing":
 			for e in events:
 				try:
@@ -272,7 +272,7 @@ class RhythmDodgerGame:
 			for e in events:
 				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
 					self.reset()
-					self.state = "playing"
+					self.set_state("playing")
 
 		return jump_pressed
 	
@@ -392,7 +392,7 @@ class RhythmDodgerGame:
 			obs_mask = getattr(obs, "mask", None)
 			if obs_mask is None:
 				# fallback: treat as rect collision if no mask
-				self.state = "gameover"
+				self.set_state("gameover")
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
@@ -405,7 +405,7 @@ class RhythmDodgerGame:
 			# if either mask is missing, skip
 			if player_mask is None:
 				# fallback to rect collision
-				self.state = "gameover"
+				self.set_state("gameover")
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
@@ -415,7 +415,7 @@ class RhythmDodgerGame:
 			overlap_point = player_mask.overlap(obs_mask, (offset_x, offset_y))
 			if overlap_point:
 				# pixel-perfect collision detected
-				self.state = "gameover"
+				self.set_state("gameover")
 				self.best_score = max(self.best_score, self.score)
 				self.audio.play_sfx("beat_miss", 0.8)
 				self.apply_screen_shake(6, 0.18)
@@ -782,7 +782,7 @@ class RhythmDodgerGame:
 		self.player.reset()
 		self.obstacles.clear()
 		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
-		self.state = "playing"
+		self.set_state("playing")
 		self.score = 0
 		self.combo = 0
 		self.max_combo = 0
