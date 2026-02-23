@@ -139,9 +139,9 @@ class RhythmDodgerGame:
 		# load tracks list
 
 		self.available_tracks = []
-		for fn, name, bpm in TRACKS:
+		for fn, artist, name, bpm in TRACKS:
 			path = os.path.join(MUSIC_DIR, fn)
-			self.available_tracks.append((path, name, bpm))
+			self.available_tracks.append((path + ".ogg", artist, name, bpm))
 
 		# start a random track
 
@@ -198,37 +198,26 @@ class RhythmDodgerGame:
 	# music / beat
 
 	def start_track(self, track):
-		try:
-			self.audio.load_music(track["path"])
-			self.audio.play_music(-1)
-			pygame.mixer.music.set_volume(0.7)
-			self.music_started = True
-			self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
-			self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
-		except Exception:
-			self.music_started = False
+		self.audio.load_music(track["path"])
+		self.audio.play_music(-1)
+		pygame.mixer.music.set_volume(0.7)
+		self.music_started = True
+		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+		self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
 
 	def start_random_track(self):
 		if not self.available_tracks:
 			return
-		path, name, bpm = random.choice(self.available_tracks)
-		self.current_track = {"path": path, "name": name, "bpm": bpm}
-		try:
-			self.audio.load_music(path)
-			self.audio.play_music(-1)
-			self.music_started = True
-			self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
-			self.beat_tracker = models.BeatTracker(60.0 / bpm)
-		except Exception as e:
-			print("Music start failed:", e)
-			self.music_started = False
+		path, artist, name, bpm = random.choice(self.available_tracks)
+		self.current_track = {"path": path, "artist": artist, "name": name, "bpm": bpm}
+		self.start_track(self.current_track)
 
 	# input handling
 
 	def handle_events(self):
 		events = pygame.event.get()
 		jump_pressed = False
-		
+
 		for event in events:
 			if event.type == pygame.QUIT:
 				self.running = False
@@ -244,7 +233,7 @@ class RhythmDodgerGame:
 				# only allow gameplay jump when playing
 				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP):
 					jump_pressed = True
-		
+
 		# route events to state-specific handlers
 		if self.state == "title":
 			self.title_screen.handle_input(events)
@@ -561,7 +550,7 @@ class RhythmDodgerGame:
 		if not self.current_track:
 			return
 		
-		text = f"{self.current_track['name']} ({self.current_track['bpm']} BPM)"
+		text = f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
 		surf_text = self.font_small.render(text, True, TEXT_COLOUR)
 
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
