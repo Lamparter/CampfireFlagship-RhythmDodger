@@ -220,6 +220,13 @@ class RhythmDodgerGame:
 		jump_pressed = False
 
 		for event in events:
+			if self.state == "playing":
+				try:
+					if self.pause_button.handle_event(event):
+						pass # handled by pause button
+				except Exception:
+					pass
+
 			if event.type == pygame.QUIT:
 				self.running = False
 			elif event.type == pygame.KEYDOWN:
