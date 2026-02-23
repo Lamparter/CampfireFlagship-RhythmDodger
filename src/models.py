@@ -317,7 +317,7 @@ class TitleScreen:
 
 		# dim background to focus UI
 		dim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-		dim.fill((8, 8, 10, 200))
+		dim.fill((10, 10, 12, 180))
 		surf.blit(dim, (0, 0))
 		
 		# logo or fallback text (because i haven't designed logo yet)
