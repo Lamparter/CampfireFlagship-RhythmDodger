@@ -211,6 +211,12 @@ class RhythmDodgerGame:
 		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
 		self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
 
+		# play UI decide sfx
+		try:
+			self.audio.play_sfx("ui_decide_title", 0.9)
+		except Exception:
+			pass
+
 	def start_random_track(self):
 		if not self.available_tracks:
 			return
