@@ -153,8 +153,10 @@ class RhythmDodgerGame:
 		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
 
 		pause_w = max(36, int(WINDOW_WIDTH * 0.04))
-		pause_rect = (WINDOW_WIDTH - pause_w - int(WINDOW_WIDTH * UI_MARGIN_FRAC), int(WINDOW_HEIGHT * UI_MARGIN_FRAC), pause_w, pause_w)
-		self.pause_button = ui.Button(pause_rect, "II", self.font_small, lambda b: self.toggle_pause(), radius=8)
+		pause_h = pause_w
+		pause_x = WINDOW_WIDTH - pause_w - int(WINDOW_WIDTH * UI_MARGIN_FRAC)
+		pause_y = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
+		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "II", self.font_small, lambda b: self.toggle_pause(), radius=8)
 		self.paused = False
 
 		# mascot position in top-left near HUD
