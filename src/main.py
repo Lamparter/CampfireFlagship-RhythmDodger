@@ -197,6 +197,17 @@ class RhythmDodgerGame:
 
 	# music / beat
 
+	def start_track(self, track):
+		try:
+			self.audio.load_music(track["path"])
+			self.audio.play_music(-1)
+			pygame.mixer.music.set_volume(0.7)
+			self.music_started = True
+			self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+			self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
+		except Exception:
+			self.music_started = False
+
 	def start_random_track(self):
 		if not self.available_tracks:
 			return
