@@ -174,6 +174,12 @@ class RhythmDodgerGame:
 		if new_state == "title" and prev != "title":
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
+	
+	def toggle_pause(self):
+		if self.state == "playing":
+			self.set_state("paused") # dim and open options overlay
+		elif self.state == "paused":
+			self.set_state("playing")
 
 	# music / beat
 
