@@ -180,6 +180,13 @@ class RhythmDodgerGame:
 			self.set_state("paused") # dim and open options overlay
 		elif self.state == "paused":
 			self.set_state("playing")
+	
+	def _play_again(self):
+		# restart current track and go to playing
+		if self.current_track:
+			self.start_track(self.current_track)
+		self.reset()
+		self.set_state("playing")
 
 	# music / beat
 
