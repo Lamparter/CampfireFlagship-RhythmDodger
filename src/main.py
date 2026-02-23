@@ -152,6 +152,11 @@ class RhythmDodgerGame:
 		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
 		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
 
+		pause_w = max(36, int(WINDOW_WIDTH * 0.04))
+		pause_rect = (WINDOW_WIDTH - pause_w - int(WINDOW_WIDTH * UI_MARGIN_FRAC), int(WINDOW_HEIGHT * UI_MARGIN_FRAC), pause_w, pause_w)
+		self.pause_button = ui.Button(pause_rect, "II", self.font_small, lambda b: self.toggle_pause(), radius=8)
+		self.paused = False
+
 		# mascot position in top-left near HUD
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
@@ -169,6 +174,12 @@ class RhythmDodgerGame:
 		if new_state == "title" and prev != "title":
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
+	
+	def toggle_pause(self):
+		if self.state == "playing":
+			self.set_state("paused") # dim and open options overlay
+		elif self.state == "paused":
+			self.set_state("playing")
 
 	# music / beat
 
@@ -674,6 +685,23 @@ class RhythmDodgerGame:
 			self.draw_game_over(self.screen)
 
 		pygame.display.flip()
+
+		if self.state == "paused":
+			# then dim
+			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			overlay.fill((8, 8, 10, 200))
+			self.screen.blit(overlay, (0, 0))
+			
+			# draw options panel centred
+			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90))
+			title = self.font_large.render("Paused", True, TEXT_COLOUR)
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.26)))
+
+			# buttons
+			resume_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.4), 240, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
+			title_btn = ui.Button((WINDOW_WIDTH//2 - 120, int(WINDOW_HEIGHT*0.5), 240, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
+			resume_btn.draw(self.screen); title_btn.draw(self.screen)
+		return
 
 	# reset
 	
