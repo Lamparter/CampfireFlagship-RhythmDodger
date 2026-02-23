@@ -604,6 +604,9 @@ class RhythmDodgerGame:
 		self.draw_judgement(surf)
 		self.draw_track_info(surf)
 
+		# pause button
+		self.pause_button.draw(surf)
+
 	def apply_screen_shake(self, intensity = 4, duration = 0.12):
 		self.shake_time = duration
 		self.shake_intensity = intensity
