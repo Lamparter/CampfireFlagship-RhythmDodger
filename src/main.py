@@ -243,6 +243,9 @@ class RhythmDodgerGame:
 			for e in events:
 				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
 					self.state = "title"
+		elif self.state == "song_select":
+			self.song_select.handle_input(events)
+			return False
 		elif self.state == "gameover":
 			for e in events:
 				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
@@ -263,6 +266,10 @@ class RhythmDodgerGame:
 		if self.state == "options":
 			return
 		
+		if self.state == "song_select":
+			self.song_select.update(dt)
+			return
+
 		# gameover state: keep particles/mascot animating
 		if self.state == "gameover":
 			self.particles.update(dt)
@@ -642,6 +649,11 @@ class RhythmDodgerGame:
 			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
 			hint = self.font_small.render("Press ESC to return", True, TEXT_COLOUR)
 			self.screen.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, int(WINDOW_HEIGHT*0.8)))
+			pygame.display.flip()
+			return
+
+		if self.state == "song_select":
+			self.song_select.draw()
 			pygame.display.flip()
 			return
 
