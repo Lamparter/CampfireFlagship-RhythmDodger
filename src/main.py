@@ -183,7 +183,10 @@ class RhythmDodgerGame:
 			except: pass
 		elif new_state == "playing":
 			try: pygame.mixer.music.set_volume(0.7)
-			except: pass		
+			except: pass
+		elif new_state == "paused":
+			try: pygame.mixer.music.set_volume(0.12)
+			except: pass
 	
 	def toggle_pause(self):
 		if self.state == "playing":
