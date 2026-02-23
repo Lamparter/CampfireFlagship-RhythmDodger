@@ -573,7 +573,12 @@ class RhythmDodgerGame:
 		self.shake_time = duration
 		self.shake_intensity = intensity
 
-	def draw_game_over(self, surf):
+	def draw_game_over(self, surf): # TODO: fix this mess
+		# dim background
+		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+		overlay.fill((8, 8, 10, 200))
+		surf.blit(overlay, (0, 0))
+
 		panel_w = int(WINDOW_WIDTH * 0.6) # centre panel in the middle of the window
 		panel_h = int(WINDOW_HEIGHT * 0.45)
 		panel_x = (WINDOW_WIDTH - panel_w) // 2
@@ -591,6 +596,14 @@ class RhythmDodgerGame:
 		surf.blit(rank_text, (WINDOW_WIDTH//2 - rank_text.get_width()//2, panel_y + int(panel_h * 0.44)))
 		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
+
+		# buttons
+		btn_w = 220; btn_h = 56
+		bx = WINDOW_WIDTH//2 - btn_w//2
+		by = panel_y + int(panel_h * 0.68)
+		title_btn = ui.Button((bx, by, btn_w, btn_h), "Title Screen", self.font_small, lambda b: self.set_state("title"))
+		again_btn = ui.Button((bx, by + btn_h + 12, btn_w, btn_h), "Play Again", self.font_small, lambda b: self._play_again())
+		title_btn.draw(surf); again_btn.draw(surf)
 
 	# render
 
