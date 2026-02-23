@@ -160,6 +160,16 @@ class RhythmDodgerGame:
 
 		self.title_screen = models.TitleScreen(self)
 
+	# game state
+
+	def set_state(self, new_state):
+		prev = getattr(self, "state", None) # reflection is evil
+		self.state = new_state
+		# play return sound when going back to title
+		if new_state == "title" and prev != "title":
+			try: self.audio.play_sfx("ui_return_title", 0.9)
+			except: pass
+
 	# music / beat
 
 	def start_random_track(self):
