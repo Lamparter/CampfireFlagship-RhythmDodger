@@ -387,7 +387,7 @@ class SongSelectScreen:
 				elif e.key in (pygame.K_DOWN,):
 					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
 				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
-					self._selected_track(self.selected_index)
+					self._select_track(self.selected_index)
 			elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
 				for i, (rect, t) in enumerate(self.tiles):
 					if rect.collidepoint(e.pos):
@@ -396,8 +396,8 @@ class SongSelectScreen:
 	def _select_track(self, idx):
 		# set current track and go to playing state (but show confirm menu)
 		rect, t = self.tiles[idx]
-		filename, artist, title, bpm, art = t
-		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": art}
+		filename, artist, title, bpm = t
+		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(ART_DIR, filename)}
 
 		# play decide sfx
 		try: self.game.audio.play_sfx("ui_decide_title")
@@ -412,7 +412,8 @@ class SongSelectScreen:
 		surf.fill((20,20,24)) # dim background
 		ui.draw_panel(surf, pygame.Rect(int(WINDOW_WIDTH*0.08), int(WINDOW_HEIGHT*0.12), int(WINDOW_WIDTH*0.84), int(WINDOW_HEIGHT*0.76)), (30,28,32), (80,70,60))
 		for i, (rect, t) in enumerate(self.tiles):
-			filename, artist, title, bpm, art = t
+			filename, artist, title, bpm = t
+			art = os.path.join(ART_DIR, filename)
 			# tile background
 			colour = (255,245,235) if i == self.selected_index else (245,240,235)
 			pygame.draw.rect(surf, colour, rect, border_radius=10)

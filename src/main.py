@@ -102,7 +102,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
-		self.set_state("title") # title | options | playing | gameover
+		self.state = "title"
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
@@ -159,6 +159,52 @@ class RhythmDodgerGame:
 		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "II", self.font_small, lambda b: self.toggle_pause(), radius=8)
 		self.paused = False
 
+		# pause overlay buttons
+		btn_w = 280
+		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
+		centre_x = WINDOW_WIDTH // 2
+		panel_w = int(WINDOW_WIDTH * 0.6)
+		panel_x = WINDOW_WIDTH//2 - panel_w//2
+
+		# resume button (from pause overlay)
+		self.pause_resume_btn = ui.Button(
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.35), btn_w, btn_h),
+			"Resume",
+			self.font_large,
+			lambda b: self.set_state("playing"),
+			radius=10
+		)
+
+		# back to title button (from pause overlay)
+		self.pause_title_btn = ui.Button(
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
+			"Back to Title",
+			self.font_large,
+			lambda b: self.set_state("title"),
+			radius=10
+		)
+
+		# game over buttons (from gameover)
+		go_btn_w = 220
+		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		go_x = WINDOW_WIDTH//2 - go_btn_w//2
+
+		self.gameover_title_btn = ui.Button(
+			(go_x, int(WINDOW_HEIGHT*0.6), go_btn_w, go_btn_h),
+			"Title Screen",
+			self.font_small,
+			lambda b: self.set_state("title"),
+			radius=8
+		)
+
+		self.gameover_again_btn = ui.Button(
+			(go_x, int(WINDOW_HEIGHT*0.6) + go_btn_h + 12, go_btn_w, go_btn_h),
+			"Play Again",
+			self.font_small,
+			lambda b: self._play_again(),
+			radius=8
+		)
+
 		# mascot position in top-left near HUD
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
@@ -171,21 +217,26 @@ class RhythmDodgerGame:
 	# game state
 
 	def set_state(self, new_state):
-		prev = getattr(self, "state", None) # reflection is evil
+		prev = self.state
 		self.state = new_state
 		# play return sound when going back to title
 		if new_state == "title" and prev != "title":
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
-
-		if new_state == "gameover":
-			try: pygame.mixer.music.set_volume(0.12)
+		elif new_state == "gameover" and prev != "gameover":
+			try: 
+				pygame.mixer.music.set_volume(0.12)
+				self.gameover_title_btn.focus = True
+				self.gameover_again_btn.focus = False
 			except: pass
-		elif new_state == "playing":
+		elif new_state == "playing" and prev != "playing":
 			try: pygame.mixer.music.set_volume(0.7)
 			except: pass
-		elif new_state == "paused":
-			try: pygame.mixer.music.set_volume(0.12)
+		elif new_state == "paused" and prev != "paused":
+			try: 
+				pygame.mixer.music.set_volume(0.12)
+				self.pause_resume_btn.focus = True
+				self.pause_title_btn.focus = False
 			except: pass
 	
 	def toggle_pause(self):
@@ -256,23 +307,37 @@ class RhythmDodgerGame:
 					self.set_state("title")
 		elif self.state == "playing":
 			for e in events:
-				try:
-					if self.pause_button.handle_event(e):
-						pass # handled by pause button
-				except Exception:
-					pass
+				if self.pause_button.handle_event(e):
+					continue
 		elif self.state == "paused":
 			for e in events:
-				self.resume_btn.handle_event(e)
-				self.title_btn.handle_event(e)
+				if self.pause_resume_btn.handle_event(e):
+					continue
+				if self.pause_title_btn.handle_event(e):
+					continue
+				if e.type == pygame.KEYDOWN:
+					if e.key in (pygame.K_UP, pygame.K_DOWN):
+						# toggle focus
+						self.pause_resume_btn.focus, self.pause_title_btn.focus = self.pause_title_btn.focus, self.pause_resume_btn.focus
+					elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+						focused = self.pause_resume_btn if self.pause_resume_btn.focus else self.pause_title_btn
+						focused._click()
 		elif self.state == "song_select":
 			self.song_select.handle_input(events)
 			return False
 		elif self.state == "gameover":
 			for e in events:
-				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
-					self.reset()
-					self.set_state("playing")
+				if self.gameover_title_btn.handle_event(e):
+					continue
+				if self.gameover_again_btn.handle_event(e):
+					continue
+				if e.type == pygame.KEYDOWN:
+					if e.key in (pygame.K_UP, pygame.K_DOWN):
+						# toggle focus
+						self.gameover_title_btn.focus, self.gameover_again_btn.focus = self.gameover_again_btn.focus, self.gameover_title_btn.focus
+					elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+						focused = self.gameover_title_btn if self.gameover_title_btn.focus else self.gameover_again_btn
+						focused._click()
 
 		return jump_pressed
 	
@@ -289,7 +354,7 @@ class RhythmDodgerGame:
 			return
 		
 		if self.state == "song_select":
-			self.song_select.update(dt)
+			#self.song_select.update(dt)
 			return
 
 		# gameover state: keep particles/mascot animating
@@ -651,12 +716,26 @@ class RhythmDodgerGame:
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
-		btn_w = 220; btn_h = 56
-		bx = WINDOW_WIDTH//2 - btn_w//2
+		panel_w = int(WINDOW_WIDTH * 0.6)
+		panel_h = int(WINDOW_HEIGHT * 0.45)
+		panel_x = (WINDOW_WIDTH - panel_w) // 2
+		panel_y = (WINDOW_HEIGHT - panel_h) // 2
+
+		go_btn_w = 220
+		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		bx = WINDOW_WIDTH//2 - go_btn_w//2
 		by = panel_y + int(panel_h * 0.68)
-		title_btn = ui.Button((bx, by, btn_w, btn_h), "Title Screen", self.font_small, lambda b: self.set_state("title"))
-		again_btn = ui.Button((bx, by + btn_h + 12, btn_w, btn_h), "Play Again", self.font_small, lambda b: self._play_again())
-		title_btn.draw(surf); again_btn.draw(surf)
+
+		self.gameover_title_btn.rect.topleft = (bx, by)
+		self.gameover_title_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_title_btn._render_text()
+
+		self.gameover_again_btn.rect.topleft = (bx, by + go_btn_h + 12)
+		self.gameover_again_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_again_btn._render_text()
+
+		self.gameover_title_btn.draw(surf)
+		self.gameover_again_btn.draw(surf)
 
 	# render
 
@@ -757,8 +836,6 @@ class RhythmDodgerGame:
 		if self.state == "gameover":
 			self.draw_game_over(self.screen)
 
-		pygame.display.flip()
-
 		if self.state == "paused":
 			# then dim
 			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
@@ -771,10 +848,11 @@ class RhythmDodgerGame:
 			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.06)))
 
 			# buttons
-			self.resume_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.35), 280, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
-			self.title_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.55), 280, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
-			self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
-		return
+			self.pause_resume_btn.draw(self.screen)
+			self.pause_title_btn.draw(self.screen)
+			# self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
+		
+		pygame.display.flip()
 
 	# reset
 	
