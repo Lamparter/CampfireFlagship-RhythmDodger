@@ -707,12 +707,26 @@ class RhythmDodgerGame:
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
-		btn_w = 220; btn_h = 56
-		bx = WINDOW_WIDTH//2 - btn_w//2
+		panel_w = int(WINDOW_WIDTH * 0.6)
+		panel_h = int(WINDOW_HEIGHT * 0.45)
+		panel_x = (WINDOW_WIDTH - panel_w) // 2
+		panel_y = (WINDOW_HEIGHT - panel_h) // 2
+
+		go_btn_w = 220
+		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		bx = WINDOW_WIDTH//2 - go_btn_w//2
 		by = panel_y + int(panel_h * 0.68)
-		title_btn = ui.Button((bx, by, btn_w, btn_h), "Title Screen", self.font_small, lambda b: self.set_state("title"))
-		again_btn = ui.Button((bx, by + btn_h + 12, btn_w, btn_h), "Play Again", self.font_small, lambda b: self._play_again())
-		title_btn.draw(surf); again_btn.draw(surf)
+
+		self.gameover_title_btn.rect.topleft = (bx, by)
+		self.gameover_title_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_title_btn._render_text()
+
+		self.gameover_again_btn.rect.topleft = (bx, by + go_btn_h + 12)
+		self.gameover_again_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_again_btn._render_text()
+
+		self.gameover_title_btn.draw(surf)
+		self.gameover_again_btn.draw(surf)
 
 	# render
 
