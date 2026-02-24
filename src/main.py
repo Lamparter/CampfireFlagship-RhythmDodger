@@ -230,7 +230,10 @@ class RhythmDodgerGame:
 			try: pygame.mixer.music.set_volume(0.7)
 			except: pass
 		elif new_state == "paused" and prev != "paused":
-			try: pygame.mixer.music.set_volume(0.12)
+			try: 
+				pygame.mixer.music.set_volume(0.12)
+				self.pause_resume_btn.focus = True
+				self.pause_title_btn.focus = False
 			except: pass
 	
 	def toggle_pause(self):
@@ -810,8 +813,6 @@ class RhythmDodgerGame:
 		if self.state == "gameover":
 			self.draw_game_over(self.screen)
 
-		pygame.display.flip()
-
 		if self.state == "paused":
 			# then dim
 			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
@@ -824,10 +825,11 @@ class RhythmDodgerGame:
 			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.06)))
 
 			# buttons
-			self.resume_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.35), 280, 56), "Resume", self.font_large, lambda b: self.set_state("playing"))
-			self.title_btn = ui.Button((WINDOW_WIDTH//2 - 140, int(WINDOW_HEIGHT*0.55), 280, 56), "Back to title", self.font_large, lambda b: self.set_state("title"))
-			self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
-		return
+			self.pause_resume_btn.draw(self.screen)
+			self.pause_title_btn.draw(self.screen)
+			# self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
+		
+		pygame.display.flip()
 
 	# reset
 	
