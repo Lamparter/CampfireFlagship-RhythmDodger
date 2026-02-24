@@ -224,7 +224,10 @@ class RhythmDodgerGame:
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
 		elif new_state == "gameover" and prev != "gameover":
-			try: pygame.mixer.music.set_volume(0.12)
+			try: 
+				pygame.mixer.music.set_volume(0.12)
+				self.gameover_title_btn.focus = True
+				self.gameover_again_btn.focus = False
 			except: pass
 		elif new_state == "playing" and prev != "playing":
 			try: pygame.mixer.music.set_volume(0.7)
@@ -304,31 +307,37 @@ class RhythmDodgerGame:
 					self.set_state("title")
 		elif self.state == "playing":
 			for e in events:
-				try:
-					if self.pause_button.handle_event(e):
-						continue
-					if self.pause_resume_btn.handle_event(e):
-						continue
-					if self.pause_title_btn.handle_event(e):
-						continue
-				except Exception:
-					pass
+				if self.pause_button.handle_event(e):
+					continue
 		elif self.state == "paused":
 			for e in events:
-				self.resume_btn.handle_event(e)
-				self.title_btn.handle_event(e)
+				if self.pause_resume_btn.handle_event(e):
+					continue
+				if self.pause_title_btn.handle_event(e):
+					continue
+				if e.type == pygame.KEYDOWN:
+					if e.key in (pygame.K_UP, pygame.K_DOWN):
+						# toggle focus
+						self.pause_resume_btn.focus, self.pause_title_btn.focus = self.pause_title_btn.focus, self.pause_resume_btn.focus
+					elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+						focused = self.pause_resume_btn if self.pause_resume_btn.focus else self.pause_title_btn
+						focused._click()
 		elif self.state == "song_select":
 			self.song_select.handle_input(events)
 			return False
 		elif self.state == "gameover":
 			for e in events:
-				try:
-					if self.gameover_title_btn.handle_event(e):
-						continue
-					if self.gameover_again_btn.handle_event(e):
-						continue
-				except Exception:
-					pass
+				if self.gameover_title_btn.handle_event(e):
+					continue
+				if self.gameover_again_btn.handle_event(e):
+					continue
+				if e.type == pygame.KEYDOWN:
+					if e.key in (pygame.K_UP, pygame.K_DOWN):
+						# toggle focus
+						self.gameover_title_btn.focus, self.gameover_again_btn.focus = self.gameover_again_btn.focus, self.gameover_title_btn.focus
+					elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+						focused = self.gameover_title_btn if self.gameover_title_btn.focus else self.gameover_again_btn
+						focused._click()
 
 		return jump_pressed
 	
