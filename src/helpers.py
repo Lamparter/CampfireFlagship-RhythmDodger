@@ -35,3 +35,9 @@ def get_rank(accuracy):
 
 def play_ui_sound(audioManager: audio.AudioManager):
 	audioManager.play_sfx("ui_" + random.randint(1, 5) + ".wav")
+
+def _with_click_sfx(cb, audioManager: audio.AudioManager):
+	def wrapper(btn):
+		play_ui_sound(audioManager)
+		cb(btn)
+	return wrapper
