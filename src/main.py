@@ -102,7 +102,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
-		self.set_state("title") # title | options | playing | gameover
+		self.state = "title"
 		self.score = 0
 		self.best_score = 0
 		self.combo = 0
@@ -171,20 +171,19 @@ class RhythmDodgerGame:
 	# game state
 
 	def set_state(self, new_state):
-		prev = getattr(self, "state", None) # reflection is evil
+		prev = self.state
 		self.state = new_state
 		# play return sound when going back to title
 		if new_state == "title" and prev != "title":
 			try: self.audio.play_sfx("ui_return_title", 0.9)
 			except: pass
-
-		if new_state == "gameover":
+		elif new_state == "gameover" and prev != "gameover":
 			try: pygame.mixer.music.set_volume(0.12)
 			except: pass
-		elif new_state == "playing":
+		elif new_state == "playing" and prev != "playing":
 			try: pygame.mixer.music.set_volume(0.7)
 			except: pass
-		elif new_state == "paused":
+		elif new_state == "paused" and prev != "paused":
 			try: pygame.mixer.music.set_volume(0.12)
 			except: pass
 	
@@ -289,7 +288,7 @@ class RhythmDodgerGame:
 			return
 		
 		if self.state == "song_select":
-			self.song_select.update(dt)
+			#self.song_select.update(dt)
 			return
 
 		# gameover state: keep particles/mascot animating
