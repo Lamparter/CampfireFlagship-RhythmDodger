@@ -150,7 +150,7 @@ class RhythmDodgerGame:
 		# hud
 
 		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)d
+		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
 
 		pause_w = max(36, int(WINDOW_WIDTH * 0.04))
 		pause_h = pause_w
