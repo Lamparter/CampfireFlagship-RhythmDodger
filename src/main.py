@@ -150,7 +150,7 @@ class RhythmDodgerGame:
 		# hud
 
 		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
+		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)d
 
 		pause_w = max(36, int(WINDOW_WIDTH * 0.04))
 		pause_h = pause_w
@@ -158,6 +158,52 @@ class RhythmDodgerGame:
 		pause_y = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
 		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "II", self.font_small, lambda b: self.toggle_pause(), radius=8)
 		self.paused = False
+
+		# pause overlay buttons
+		btn_w = 280
+		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
+		centre_x = WINDOW_WIDTH // 2
+		panel_w = int(WINDOW_WIDTH * 0.6)
+		panel_x = WINDOW_WIDTH//2 - panel_w//2
+
+		# resume button (from pause overlay)
+		self.pause_resume_btn = ui.Button(
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.35), btn_w, btn_h),
+			"Resume",
+			self.font_large,
+			lambda b: self.set_state("playing"),
+			radius=10
+		)
+
+		# back to title button (from pause overlay)
+		self.pause_title_btn = ui.Button(
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
+			"Back to Title",
+			self.font_large,
+			lambda b: self.set_state("title"),
+			radius=10
+		)
+
+		# game over buttons (from gameover)
+		go_btn_w = 220
+		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		go_x = WINDOW_WIDTH//2 - go_btn_w//2
+
+		self.gameover_title_btn = ui.Button(
+			(go_x, int(WINDOW_HEIGHT*0.6), go_btn_w, go_btn_h),
+			"Title Screen",
+			self.font_small,
+			lambda b: self.set_state("title"),
+			radius=8
+		)
+
+		self.gameover_again_btn = ui.Button(
+			(go_x, int(WINDOW_HEIGHT*0.6) + go_btn_h + 12, go_btn_w, go_btn_h),
+			"Play Again",
+			self.font_small,
+			lambda b: self._play_again(),
+			radius=8
+		)
 
 		# mascot position in top-left near HUD
 		self.mascot.x = self.left_margin
