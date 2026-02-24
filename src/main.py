@@ -303,7 +303,11 @@ class RhythmDodgerGame:
 			for e in events:
 				try:
 					if self.pause_button.handle_event(e):
-						pass # handled by pause button
+						continue
+					if self.pause_resume_btn.handle_event(e):
+						continue
+					if self.pause_title_btn.handle_event(e):
+						continue
 				except Exception:
 					pass
 		elif self.state == "paused":
@@ -315,9 +319,13 @@ class RhythmDodgerGame:
 			return False
 		elif self.state == "gameover":
 			for e in events:
-				if e.type == pygame.KEYDOWN and e.key in (pygame.K_r, pygame.K_RETURN, pygame.K_SPACE):
-					self.reset()
-					self.set_state("playing")
+				try:
+					if self.gameover_title_btn.handle_event(e):
+						continue
+					if self.gameover_again_btn.handle_event(e):
+						continue
+				except Exception:
+					pass
 
 		return jump_pressed
 	
