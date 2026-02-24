@@ -141,7 +141,7 @@ class RhythmDodgerGame:
 		self.available_tracks = []
 		for fn, artist, name, bpm in TRACKS:
 			path = os.path.join(MUSIC_DIR, fn)
-			self.available_tracks.append((path + ".ogg", artist, name, bpm))
+			self.available_tracks.append((path, artist, name, bpm))
 
 		# start a random track
 
@@ -255,7 +255,7 @@ class RhythmDodgerGame:
 	# music / beat
 
 	def start_track(self, track):
-		self.audio.load_music(track["path"])
+		self.audio.load_music(track["path"] + ".ogg")
 		self.audio.play_music(-1)
 		pygame.mixer.music.set_volume(0.7)
 		self.music_started = True
