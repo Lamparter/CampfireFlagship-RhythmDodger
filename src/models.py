@@ -386,7 +386,14 @@ class SongSelectScreen:
 
 		for i, t in enumerate(TRACKS):
 			rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
-			self.tiles.append((rect, t))
+			btn = ui.Button(
+				rect,
+				"",
+				self.font_large,
+				lambda b, idx=1: self._select_track(idx),
+				radius=12
+			)
+			self.tiles.append((btn, t))
 
 	def _compute_max_scroll(self):
 		total_h = len(self.tiles) * self.spacing
