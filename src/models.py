@@ -368,12 +368,13 @@ class SongSelectScreen:
 		self.max_scroll = 0
 		self.tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
 		self.spacing = self.tile_h + int(WINDOW_HEIGHT * 0.03)
-		self._compute_max_scroll()
 
 		# build tiles from TRACKS constant
 		self.tiles = []
 		self.selected_index = 0
 		self._build_tiles()
+
+		self._compute_max_scroll()
 	
 	def _build_tiles(self):
 		# tile layout: horizontal stretching tiles stacked vertically
