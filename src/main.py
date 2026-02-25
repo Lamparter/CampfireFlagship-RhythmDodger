@@ -226,21 +226,26 @@ class RhythmDodgerGame:
 				if self.title_screen:
 					self.title_screen.enter_title_music()
 			except: pass
-		elif new_state == "gameover" and prev != "gameover":
+		if new_state == "gameover" and prev != "gameover":
 			try: 
 				pygame.mixer.music.set_volume(0.12)
 				self.gameover_title_btn.focus = True
 				self.gameover_again_btn.focus = False
 			except: pass
-		elif new_state == "playing" and prev != "playing":
+		if new_state == "playing" and prev != "playing":
 			try: pygame.mixer.music.set_volume(0.7)
 			except: pass
-		elif new_state == "paused" and prev != "paused":
-			try: 
+		if new_state == "paused" and prev != "paused":
+			try:
 				pygame.mixer.music.set_volume(0.12)
 				self.pause_resume_btn.focus = True
 				self.pause_title_btn.focus = False
+				self.pause_time_ticks = pygame.time.get_ticks()
 			except: pass
+		if new_state == "playing" and prev == "paused":
+			if self.pause_time_ticks:
+				elapsed_ms = pygame.time.get_ticks() - self.pause_time_ticks
+				self.music_start_time += elapsed_ms / 1000.0
 	
 	def toggle_pause(self):
 		if self.state == "playing":
@@ -357,20 +362,24 @@ class RhythmDodgerGame:
 	# game update
 
 	def update(self, dt, jump_pressed):
-		if getattr(self, "player_invulnerable_time", 0.0) > 0.0:
-			self.player_invulnerable_time = max(0.0, self.player_invulnerable_time - dt)
-
 		# title screen update
 		if self.state == "title":
 			self.title_screen.update(dt)
 			return
-		
+
 		# options screen (placeholder)
 		if self.state == "options":
 			return
-		
+
+		# song select screen
 		if self.state == "song_select":
 			#self.song_select.update(dt)
+			return
+
+		# pause screen
+		if self.state == "paused":
+			self.particles.update(dt)
+			self.mascot.update(dt)
 			return
 
 		# gameover state: keep particles/mascot animating
@@ -378,7 +387,10 @@ class RhythmDodgerGame:
 			self.particles.update(dt)
 			self.mascot.update(dt)
 			return
-		
+
+		if getattr(self, "player_invulnerable_time", 0.0) > 0.0:
+			self.player_invulnerable_time = max(0.0, self.player_invulnerable_time - dt)
+
 		# compute absolute time if music started
 		absolute_time = None
 		if self.music_started and self.current_track:
