@@ -710,7 +710,7 @@ class RhythmDodgerGame:
 		self.shake_time = duration
 		self.shake_intensity = intensity
 
-	def draw_game_over(self, surf): # TODO: fix this mess
+	def draw_game_over(self, surf):
 		# dim background
 		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
 		overlay.fill((8, 8, 10, 200))
@@ -735,22 +735,19 @@ class RhythmDodgerGame:
 		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
-		panel_w = int(WINDOW_WIDTH * 0.6)
-		panel_h = int(WINDOW_HEIGHT * 0.45)
-		panel_x = (WINDOW_WIDTH - panel_w) // 2
-		panel_y = (WINDOW_HEIGHT - panel_h) // 2
+		btn_w = 220
+		btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		gap = 24
+		total_w = btn_w * 2 + gap
+		start_x = WINDOW_WIDTH//2 - total_w//2
+		y = panel_y + int(panel_h * 0.68)
 
-		go_btn_w = 220
-		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
-		bx = WINDOW_WIDTH//2 - go_btn_w//2
-		by = panel_y + int(panel_h * 0.68)
-
-		self.gameover_title_btn.rect.topleft = (bx, by)
-		self.gameover_title_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_title_btn.rect.topleft = (start_x, y)
+		self.gameover_title_btn.rect.size = (btn_w, btn_h)
 		self.gameover_title_btn._render_text()
 
-		self.gameover_again_btn.rect.topleft = (bx, by + go_btn_h + 12)
-		self.gameover_again_btn.rect.size = (go_btn_w, go_btn_h)
+		self.gameover_again_btn.rect.topleft = (start_x + btn_w + gap, y)
+		self.gameover_again_btn.rect.size = (btn_w, btn_h)
 		self.gameover_again_btn._render_text()
 
 		self.gameover_title_btn.draw(surf)
