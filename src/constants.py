@@ -108,9 +108,19 @@ SFX = [
 TRACKS = [
 	("BackToBlack", "Amy Winehouse", "Back to Black", 123),
 	("DJGotUsFallinInLove", "Usher", "DJ Got Us Fallin' In Love", 120),
-	("GimmeGimmeGimme", "ABBA", "Gimme Gimme Gimme!", 120),
+	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme! (A Man After Midnight)", 120),
 	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121),
 	("ShizumeruMachi", "YOEKO", "Sinking Town", 125),
+	("AmericanBoy", "Estelle", "American Boy", 118),
+	("CaliforniaGurls", "Katy Perry", "California Gurls", 125),
+	("Golden", "HUNTR/X", "Golden", 123),
+	("Illegal", "PinkPantheress", "Illegal", 141),
+	("ItsRainingMen", "The Weather Girls", "It's Raining Men", 137),
+	("MoneyMoneyMoney", "ABBA", "Money, Money, Money", 120),
+	("MurderOnTheDancefloor", "Sophie Ellis-Bextor", "Murder On The Dancefloor", 117),
+	("PartyInTheUSA", "Miley Cyrus", "Party In The U.S.A.", 96),
+	("Rasputin", "Boney M.", "Rasputin", 126),
+	("WhereIsMyHusband", "RAYE", "WHERE IS MY HUSBAND!", 116),
 ]
 
 # Colours
