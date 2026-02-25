@@ -156,7 +156,7 @@ class RhythmDodgerGame:
 		pause_h = pause_w
 		pause_x = int(WINDOW_WIDTH * 0.02)
 		pause_y = WINDOW_HEIGHT - pause_h - int(WINDOW_HEIGHT*0.02)
-		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "Pause", self.font_small, lambda b: self.toggle_pause(), radius=8)
+		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "Pause", self.font_small, helpers._with_click_sfx(lambda b: self.toggle_pause(), self.audio), radius=8)
 		self.paused = False
 
 		# pause overlay buttons
