@@ -275,10 +275,15 @@ class TitleScreen:
 
 	def handle_input(self, events):
 		for e in events:
+			for b in self.menu_buttons:
+				if b.handle_event(e):
+					return
+
+		for e in events:
 			if e.type == pygame.KEYDOWN:
-				if e.key in (pygame.K_UP,):
+				if e.key in pygame.K_UP:
 					self._focus_prev()
-				elif e.key in (pygame.K_DOWN,):
+				elif e.key in pygame.K_DOWN:
 					self._focus_next()
 				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
 					focused = next((b for b in self.menu_buttons if b.focus), None)
