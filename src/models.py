@@ -2,7 +2,7 @@
 Game objects
 """
 
-import os, pygame, random, sprites, particles, ui
+import os, pygame, random, sprites, particles, ui, helpers
 from constants import *
 
 # Game objects
@@ -192,16 +192,8 @@ class TitleScreen:
 				self.logo = None
 
 		# load music if present
-		self.title_music_loaded = False
-		if os.path.exists(TITLE_MUSIC):
-			try:
-				pygame.mixer.music.load(TITLE_MUSIC)
-				pygame.mixer.music.set_volume(0.32)
-				pygame.mixer.music.play(-1)
-				self.title_music_loaded = True
-			except Exception:
-				self.title_music_loaded = False
-		
+		self.enter_title_music()
+
 		# UI buttons
 		self.menu_buttons = []
 		self._create_menu_buttons()
@@ -218,6 +210,16 @@ class TitleScreen:
 		# initial keyboard focus on first button
 		if self.menu_buttons:
 			self.menu_buttons[0].focus = True
+	
+	def enter_title_music(self):
+		if os.path.exists(TITLE_MUSIC):
+			try:
+				pygame.mixer.music.load(TITLE_MUSIC)
+				pygame.mixer.music.set_volume(0.32)
+				pygame.mixer.music.play(-1)
+				self.title_music_loaded = True
+			except Exception:
+				self.title_music_loaded = False
 	
 	def _create_menu_buttons(self):
 		# compute size and positions

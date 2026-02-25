@@ -221,7 +221,10 @@ class RhythmDodgerGame:
 		self.state = new_state
 		# play return sound when going back to title
 		if new_state == "title" and prev != "title":
-			try: self.audio.play_sfx("ui_return_title", 0.9)
+			try:
+				self.audio.play_sfx("ui_return_title", 0.9)
+				if self.title_screen:
+					self.title_screen.enter_title_music()
 			except: pass
 		elif new_state == "gameover" and prev != "gameover":
 			try: 
