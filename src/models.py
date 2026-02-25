@@ -439,6 +439,8 @@ class SongSelectScreen:
 				elif e.key == pygame.K_DOWN:
 					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
 					self._ensure_selected_visible()
+				elif e.key in (pygame.K_ESCAPE, pygame.K_q):
+					self.game.set_state("title")
 	
 	def draw(self):
 		surf = self.screen
