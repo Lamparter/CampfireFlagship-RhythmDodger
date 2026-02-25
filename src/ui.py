@@ -56,15 +56,28 @@ class Button:
 			self.on_click(self)
 	
 	def draw(self, surf):
-		# background
-		bg = self.hover and self.hover_bg or self.bg
-		pygame.draw.rect(surf, self.border, self.rect.inflate(4,4), border_radius=self.radius)
+		# background colour changes when focused or hovered
+		if self.focus or self.hover:
+			bg = (255, 245, 235) # warmer when focused
+			border_col = (255, 200, 120)
+		else:
+			bg = self.bg
+			border_col = self.border
+		
+		# draw border and background
+		pygame.draw.rect(surf, border_col, self.rect.inflate(6,6), border_radius=self.radius)
 		pygame.draw.rect(surf, bg, self.rect, border_radius=self.radius)
+
+		# subtle glow when focused
+		if self.focus or self.hover:
+			glow = pygame.Surface((self.rect.w, self.rect.h), pygame.SRCALPHA)
+			glow.fill((255, 220, 160, 40))
+			surf.blit(glow, self.rect.topleft, special_flags=pygame.BLEND_RGBA_ADD)
 
 		# text
 		self.text_rect = self.text_surf.get_rect(center=self.rect.center)
 		surf.blit(self.text_surf, self.text_rect)
 
-		# focus indicator
+		# focus indicator outline
 		if self.focus:
-			pygame.draw.rect(surf, (255,255,255,30), self.rect, width=2, border_radius=self.radius)
+			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=3, border_radius=self.radius)
