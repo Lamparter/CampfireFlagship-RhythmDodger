@@ -41,3 +41,10 @@ def _with_click_sfx(cb, audioManager: audio.AudioManager):
 		play_ui_sound(audioManager)
 		cb(btn)
 	return wrapper
+
+def _draw_rounded_image(self, surf, img, rect, radius=12):
+	mask = pygame.Surface((rect.w, rect.h), pygame.SRCALPHA)
+	pygame.draw.rect(mask, (255,255,255), mask.get_rect(), border_radius=radius)
+	img_scaled = pygame.transform.smoothscale(img, (rect.w, rect.h))
+	img_scaled.blit(mask, (0,0), special_flags=pygame.BLEND_RGBA_MIN)
+	surf.blit(img_scaled, rect.topleft)
