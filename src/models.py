@@ -458,7 +458,7 @@ class SongSelectScreen:
 				continue # only draw if intersects visible area
 
 			filename, artist, title, bpm = t
-			art = os.path.join(ART_DIR, filename)
+			art = os.path.join(ART_DIR, filename + ".jpg")
 			# tile background
 			colour = (255,245,235) if i == self.selected_index else (245,240,235)
 			pygame.draw.rect(surf, colour, draw_rect, border_radius=10)
