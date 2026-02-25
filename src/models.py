@@ -281,15 +281,15 @@ class TitleScreen:
 
 		for e in events:
 			if e.type == pygame.KEYDOWN:
-				if e.key in pygame.K_UP:
+				if e.key == pygame.K_UP:
 					self._focus_prev()
-				elif e.key in pygame.K_DOWN:
+				elif e.key == pygame.K_DOWN:
 					self._focus_next()
 				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
 					focused = next((b for b in self.menu_buttons if b.focus), None)
 					if focused:
 						focused._click()
-				elif e.key in (pygame.K_q,):
+				elif e.key == pygame.K_q:
 					pass
 			elif e.type == pygame.MOUSEMOTION:
 				# update hover states so buttons show hover visuals

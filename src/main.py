@@ -258,6 +258,16 @@ class RhythmDodgerGame:
 	# music / beat
 
 	def start_track(self, track):
+		self.obstacles.clear()
+		self.player.reset()
+		self.score = 0
+		self.combo = 0
+		self.max_combo = 0
+		self.total_jumps = 0
+		self.accurate_jumps = 0
+
+		self.player_invulnerable_time = 0.6
+
 		self.audio.load_music(track["path"] + ".ogg")
 		self.audio.play_music(-1)
 		pygame.mixer.music.set_volume(0.7)
@@ -347,6 +357,9 @@ class RhythmDodgerGame:
 	# game update
 
 	def update(self, dt, jump_pressed):
+		if getattr(self, "player_invulnerable_time", 0.0) > 0.0:
+			self.player_invulnerable_time = max(0.0, self.player_invulnerable_time - dt)
+
 		# title screen update
 		if self.state == "title":
 			self.title_screen.update(dt)
@@ -451,43 +464,46 @@ class RhythmDodgerGame:
 		player_rect = self.player.rect
 		player_mask = self.player.get_mask()
 
-		for obs in self.obstacles:
-			# quick reject by rect
-			if not player_rect.colliderect(obs.rect):
-				continue
+		if self.player_invulnerable_time > 0.0:
+			pass
+		else:
+			for obs in self.obstacles:
+				# quick reject by rect
+				if not player_rect.colliderect(obs.rect):
+					continue
 
-			# ensure obstacle has a mask
-			obs_mask = getattr(obs, "mask", None)
-			if obs_mask is None:
-				# fallback: treat as rect collision if no mask
-				self.set_state("gameover")
-				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("beat_miss", 0.8)
-				self.apply_screen_shake(6, 0.18)
-				break
+				# ensure obstacle has a mask
+				obs_mask = getattr(obs, "mask", None)
+				if obs_mask is None:
+					# fallback: treat as rect collision if no mask
+					self.set_state("gameover")
+					self.best_score = max(self.best_score, self.score)
+					self.audio.play_sfx("beat_miss", 0.8)
+					self.apply_screen_shake(6, 0.18)
+					break
 
-			# compute offset from player mask to obstacle mask
-			offset_x = int(obs.rect.x - player_rect.x)
-			offset_y = int(obs.rect.y - player_rect.y)
+				# compute offset from player mask to obstacle mask
+				offset_x = int(obs.rect.x - player_rect.x)
+				offset_y = int(obs.rect.y - player_rect.y)
 
-			# if either mask is missing, skip
-			if player_mask is None:
-				# fallback to rect collision
-				self.set_state("gameover")
-				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("beat_miss", 0.8)
-				self.apply_screen_shake(6, 0.18)
-				break
+				# if either mask is missing, skip
+				if player_mask is None:
+					# fallback to rect collision
+					self.set_state("gameover")
+					self.best_score = max(self.best_score, self.score)
+					self.audio.play_sfx("beat_miss", 0.8)
+					self.apply_screen_shake(6, 0.18)
+					break
 
-			# check overlap: returns point or None
-			overlap_point = player_mask.overlap(obs_mask, (offset_x, offset_y))
-			if overlap_point:
-				# pixel-perfect collision detected
-				self.set_state("gameover")
-				self.best_score = max(self.best_score, self.score)
-				self.audio.play_sfx("beat_miss", 0.8)
-				self.apply_screen_shake(6, 0.18)
-				break
+				# check overlap: returns point or None
+				overlap_point = player_mask.overlap(obs_mask, (offset_x, offset_y))
+				if overlap_point:
+					# pixel-perfect collision detected
+					self.set_state("gameover")
+					self.best_score = max(self.best_score, self.score)
+					self.audio.play_sfx("beat_miss", 0.8)
+					self.apply_screen_shake(6, 0.18)
+					break
 		
 		# remove offscreen
 		self.obstacles = [o for o in self.obstacles if not o.offscreen()]
