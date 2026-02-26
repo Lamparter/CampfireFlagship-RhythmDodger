@@ -168,7 +168,7 @@ class RhythmDodgerGame:
 
 		# resume button (from pause overlay)
 		self.pause_resume_btn = ui.Button(
-			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.35), btn_w, btn_h),
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
 			"Resume",
 			self.font_large,
 			lambda b: self.set_state("playing"),
@@ -177,7 +177,7 @@ class RhythmDodgerGame:
 
 		# back to title button (from pause overlay)
 		self.pause_title_btn = ui.Button(
-			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.2) + int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
+			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.65), btn_w, btn_h),
 			"Back to Title",
 			self.font_large,
 			lambda b: self.set_state("title"),
@@ -351,7 +351,7 @@ class RhythmDodgerGame:
 				if self.gameover_again_btn.handle_event(e):
 					continue
 				if e.type == pygame.KEYDOWN:
-					if e.key in (pygame.K_UP, pygame.K_DOWN):
+					if e.key in (pygame.K_LEFT, pygame.K_RIGHT):
 						# toggle focus
 						self.gameover_title_btn.focus, self.gameover_again_btn.focus = self.gameover_again_btn.focus, self.gameover_title_btn.focus
 					elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
@@ -753,7 +753,7 @@ class RhythmDodgerGame:
 		gap = 24
 		total_w = btn_w * 2 + gap
 		start_x = WINDOW_WIDTH//2 - total_w//2
-		y = panel_y + int(panel_h * 0.68)
+		y = panel_y + int(panel_h * 0.77)
 
 		self.gameover_title_btn.rect.topleft = (start_x, y)
 		self.gameover_title_btn.rect.size = (btn_w, btn_h)
@@ -874,12 +874,11 @@ class RhythmDodgerGame:
 			# draw options panel centred
 			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90))
 			title = self.font_large.render("Paused", True, TEXT_COLOUR)
-			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.06)))
+			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.3)))
 
 			# buttons
 			self.pause_resume_btn.draw(self.screen)
 			self.pause_title_btn.draw(self.screen)
-			# self.resume_btn.draw(self.screen); self.title_btn.draw(self.screen)
 		
 		pygame.display.flip()
 
