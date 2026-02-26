@@ -394,6 +394,8 @@ class SongSelectScreen:
 				radius=12
 			)
 			self.tiles.append((btn, t))
+		
+		self._apply_focus()
 
 	def _compute_max_scroll(self):
 		total_h = len(self.tiles) * self.spacing
@@ -426,6 +428,10 @@ class SongSelectScreen:
 		elif bottom - self.scroll_y > visible_bottom:
 			self.scroll_y = min(self.max_scroll, bottom - visible_bottom)
 
+	def _apply_focus(self):
+		for i, (btn, _) in enumerate (self.tiles):
+			btn.focus = (i == self.selected_index)
+
 	def handle_input(self, events):
 		for e in events:
 			if e.type == pygame.MOUSEBUTTONDOWN:
@@ -446,54 +452,81 @@ class SongSelectScreen:
 				elif e.key == pygame.K_DOWN:
 					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
 					self._ensure_selected_visible()
+				elif e.key in (pygame.K_RETURN, pygame.KSPACE):
+					btn, _ = self.tiles[self.selected_index]
+					btn._click()
 				elif e.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.game.set_state("title")
 	
 	def draw(self):
 		surf = self.screen
-		surf.fill((20,20,24)) # dim background
-		ui.draw_panel(surf, pygame.Rect(int(WINDOW_WIDTH*0.08), int(WINDOW_HEIGHT*0.12), int(WINDOW_WIDTH*0.84), int(WINDOW_HEIGHT*0.76)), (30,28,32), (80,70,60))
-		margin_x = int(WINDOW_WIDTH * 0.15)
-		base_y = int(WINDOW_HEIGHT * 0.28)
-		visible_area_top = base_y
-		visible_area_height = int(WINDOW_HEIGHT * 0.6)
+		surf.fill((20, 20, 24))
 
-		for i, (rect, t) in enumerate(self.tiles):
-			draw_rect = rect.move(0, -self.scroll_y)
+		panel_x = int(WINDOW_WIDTH * 0.08)
+		panel_y = int(WINDOW_HEIGHT * 0.12)
+		panel_w = int(WINDOW_WIDTH * 0.84)
+		panel_h = int(WINDOW_HEIGHT * 0.76)
+		panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
 
-			if draw_rect.bottom < visible_area_top or draw_rect.top > visible_area_top + visible_area_height:
-				continue # only draw if intersects visible area
+		ui.draw_panel(
+			surf,
+			panel_rect,
+			(30, 28, 32), # dark interior
+			(80, 70, 60)
+		)
 
-			filename, artist, title, bpm = t
-			art = os.path.join(ART_DIR, filename + ".jpg")
-			# tile background
-			colour = (255,245,235) if i == self.selected_index else (245,240,235)
-			pygame.draw.rect(surf, colour, draw_rect, border_radius=10)
+		title = self.font_large.render("Choose a Song", True, TEXT_COLOUR)
+		surf.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, panel_y + 12))
 
-			# album art
-			if os.path.exists(art):
+		subtitle = self.font_small.render("Select a track to begin playing", True, (180,170,160))
+		surf.blit(subtitle, (WINDOW_WIDTH//2 - subtitle.get_width()//2,
+					   		panel_y + 12 + title.get_height() + 4))
+		
+		visible_top = panel_y + int(panel_h * 0.18)
+		visible_h = int(panel_h * 0.72)
+		visible_bottom = visible_top + visible_h
+
+		clip_rect = pygame.Rect(panel_x, visible_top, panel_w, visible_h)
+		prev_clip = surf.get_clip()
+		surf.set_clip(clip_rect)
+
+		for i, (btn, track) in enumerate(self.tiles):
+			filename, artist, title_text, bpm = track
+			art_path = os.path.join(ART_DIR, filename + ".jpg")
+
+			draw_rect = btn.rect.move(0, -self.scroll_y)
+			btn.rect = draw_rect
+
+			# skip tiles outside visible area
+			if draw_rect.bottom < visible_top or draw_rect.top > visible_bottom:
+				continue
+			btn.draw(surf)
+			
+			# album art rect
+			pad = int(draw_rect.height * 0.12)
+			art_size = draw_rect.height - pad * 2
+			art_rect = pygame.Rect(draw_rect.x + pad, draw_rect.y + pad, art_size, art_size)
+
+			if os.path.exists(art_path):
 				try:
-					img = pygame.image.load(art).convert_alpha()
-					img = pygame.transform.smoothscale(img, (draw_rect.height-8, draw_rect.height-8))
-					surf.blit(img, (draw_rect.x+6, draw_rect.y+4))
+					img = pygame.image.load(art_path).convert_alpha()
+					helpers._draw_rounded_image(surf, img, art_rect, radius=12)
 				except:
 					pass
-			# text
-			txt = self.font_large.render(title, True, (40,34,30))
-			surf.blit(txt, (draw_rect.x + draw_rect.height + 12, draw_rect.y + 8))
-			sub = self.font_small.render(f"{artist} - {bpm} BPM", True, (100,90,80))
-			surf.blit(sub, (draw_rect.x + draw_rect.height + 12, draw_rect.y + 8 + txt.get_height()))
 
-		panel_right = int(WINDOW_WIDTH*0.92)
-		sb_h = visible_area_height
-		sb_w = 10
-		sb_x = panel_right - sb_w - 8
-		sb_y = visible_area_top
-		pygame.draw.rect(surf, (60,60,64), (sb_x, sb_y, sb_w, sb_h), border_radius=6)
-		if self.max_scroll > 0:
-			thumb_h = max(24, int(sb_h * (visible_area_height / (len(self.tiles) * self.spacing))))
-			thumb_y = sb_y + int((self.scroll_y / max(1, self.max_scroll)) * (sb_h - thumb_h))
-			pygame.draw.rect(surf, (200,180,160), (sb_x+2, thumb_y, sb_w-4, thumb_h), border_radius=6)
+			# text positions
+			text_x = art_rect.right + pad
+			title_y = draw_rect.y + pad
+			artist_y = title_y + self.font_large.get_height() + 4
+	
+			title_surf = self.font_large.render(title_text, True, (40, 34, 40))
+			surf.blit(title_surf, (text_x, title_y))
+	
+			sub_surf = self.font_small.render(f"{artist} - {bpm} BPM", True, (100, 90, 80))
+			surf.blit(sub_surf, (text_x, artist_y))
+
+		# restore clipping
+		surf.set_clip(prev_clip)
 
 # Helper classes
 
