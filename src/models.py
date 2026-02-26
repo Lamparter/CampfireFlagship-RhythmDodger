@@ -439,24 +439,29 @@ class SongSelectScreen:
 					self.scroll_y = max(0, self.scroll_y - int(self.tile_h * 0.5))
 				elif e.button == 5: # wheel down
 					self.scroll_y = min(self.max_scroll, self.scroll_y + int(self.tile_h * 0.5))
-				elif e.button == 1:
-					for i, (rect, t) in enumerate(self.tiles):
-						hit_rect = rect.move(0, -self.scroll_y)
+				elif e.button == 1: # left click
+					# check click against scrolled tile rects
+					for i, (btn, track) in enumerate(self.tiles):
+						hit_rect = btn.rect.move(0, -self.scroll_y)
 						if hit_rect.collidepoint(e.pos):
 							self._select_track(i)
+							return
 			elif e.type == pygame.KEYDOWN:
-				# keyboard navigation
 				if e.key == pygame.K_UP:
 					self.selected_index = max(0, self.selected_index - 1)
+					self._apply_focus()
 					self._ensure_selected_visible()
 				elif e.key == pygame.K_DOWN:
-					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
+					self.selected_index = min(len(self.tiles) - 1, self.selected_index + 1)
+					self._apply_focus()
 					self._ensure_selected_visible()
-				elif e.key in (pygame.K_RETURN, pygame.KSPACE):
+				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
 					btn, _ = self.tiles[self.selected_index]
 					btn._click()
+					return
 				elif e.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.game.set_state("title")
+					return
 	
 	def draw(self):
 		surf = self.screen
