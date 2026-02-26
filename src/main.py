@@ -220,10 +220,10 @@ class RhythmDodgerGame:
 		prev = self.state
 		self.state = new_state
 		# play return sound when going back to title
-		if new_state == "title" and prev != "title":
+		if new_state == "title" and prev not in ("title", "song_select", "options"):
 			try:
 				self.audio.play_sfx("ui_return_title", 0.9)
-				if self.title_screen:
+				if self.title_screen and not self.title_screen.title_music_loaded:
 					self.title_screen.enter_title_music()
 			except: pass
 		if new_state == "gameover" and prev != "gameover":
@@ -233,6 +233,7 @@ class RhythmDodgerGame:
 				self.gameover_again_btn.focus = False
 			except: pass
 		if new_state == "playing" and prev != "playing":
+			self.title_screen.title_music_loaded = False
 			try: pygame.mixer.music.set_volume(0.7)
 			except: pass
 		if new_state == "paused" and prev != "paused":

@@ -239,20 +239,6 @@ class TitleScreen:
 		self.menu_buttons.append(make_btn("Quit", 2, lambda b: setattr(self.game, "running", False)))
 	
 	def open_song_select(self):
-		# play decide sfx and switch to song select screen
-		try:
-			self.game.audio.play_sfx("ui_decide_title")
-		except Exception:
-			pass
-
-		# fade out title music gently if present
-		if self.title_music_loaded:
-			try:
-				pygame.mixer.music.fadeout(300)
-			except Exception:
-				pass
-		
-		# switch to song select state
 		self.game.set_state("song_select")
 	
 	def _focus_next(self):
