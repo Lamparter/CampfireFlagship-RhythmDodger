@@ -152,12 +152,17 @@ class RhythmDodgerGame:
 		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
 		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
 
-		pause_w = max(44, int(WINDOW_WIDTH * 0.06))
-		pause_h = pause_w
+		pause_size = max(32, int(WINDOW_WIDTH * 0.04))
 		pause_x = int(WINDOW_WIDTH * 0.02)
-		pause_y = WINDOW_HEIGHT - pause_h - int(WINDOW_HEIGHT*0.02)
-		self.pause_button = ui.Button((pause_x, pause_y, pause_x, pause_y), "Pause", self.font_small, helpers._with_click_sfx(lambda b: self.toggle_pause(), self.audio), radius=8)
-		self.paused = False
+		pause_y = WINDOW_HEIGHT - pause_size - int(WINDOW_HEIGHT * 0.02)
+
+		self.pause_button = ui.Button(
+			(pause_x, pause_y, pause_size, pause_size),
+			"",
+			self.font_small,
+			helpers._with_click_sfx(lambda b: self.toggle_pause(), self.audio),
+			radius=8
+		)
 
 		# pause overlay buttons
 		btn_w = 280
@@ -718,6 +723,26 @@ class RhythmDodgerGame:
 
 		# pause button
 		self.pause_button.draw(surf)
+
+		if self.pause_button:
+			self.pause_button.draw(self.screen)
+
+			r = self.pause_button.rect
+			bar_w = max(3, r.w // 6)
+			bar_h = int(r.h * 0.6)
+			gap = bar_w
+
+			cx = r.centerx
+			cy = r.centery
+
+			left_bar = pygame.Rect(0, 0, bar_w, bar_h)
+			right_bar = pygame.Rect(0, 0, bar_w, bar_h)
+
+			left_bar.center = (cx - gap // 2 - bar_w // 2, cy)
+			right_bar.center = (cx + gap // 2 + bar_w // 2, cy)
+
+			pygame.draw.rect(self.screen, (40, 34, 30), left_bar, border_radius=2)
+			pygame.draw.rect(self.screen, (40, 34, 30), right_bar, border_radius=2)
 
 	def apply_screen_shake(self, intensity = 4, duration = 0.12):
 		self.shake_time = duration
