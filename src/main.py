@@ -777,11 +777,9 @@ class RhythmDodgerGame:
 
 		if self.state == "options":
 			self.screen.fill(BACKGROUND_COLOUR)
-			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90))
+			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90), subtitle="Press ESC to return", subtitle_font=self.font_small)
 			title = self.font_large.render("Options", True, TEXT_COLOUR)
 			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
-			hint = self.font_small.render("Press ESC to return", True, TEXT_COLOUR)
-			self.screen.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, int(WINDOW_HEIGHT*0.8)))
 			pygame.display.flip()
 			return
 		
@@ -872,7 +870,7 @@ class RhythmDodgerGame:
 			self.screen.blit(overlay, (0, 0))
 			
 			# draw options panel centred
-			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90))
+			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90), subtitle="Press ESC to return", subtitle_font=self.font_small)
 			title = self.font_large.render("Paused", True, TEXT_COLOUR)
 			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.3)))
 

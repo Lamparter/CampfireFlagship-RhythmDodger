@@ -1,9 +1,39 @@
 import pygame
 
-def draw_panel(surface, rect, bg_colour, border_colour, border=2):
-	pygame.draw.rect(surface, border_colour, rect)
-	inner = rect.inflate(-border*2, -border*2)
-	pygame.draw.rect(surface, bg_colour, inner)
+def draw_panel(
+	surf,
+	rect,
+	bg_colour,
+	border_colour,
+	*,
+	radius=12,
+	subtitle=None,
+	subtitle_font=None,
+	subtitle_colour=(180, 170, 160),
+	subtitle_offset=20
+):
+	# panel border
+	pygame.draw.rect(
+		surf,
+		border_colour,
+		rect.inflate(4, 4),
+		border_radius=radius
+	)
+
+	# panel background
+	pygame.draw.rect(
+		surf,
+		bg_colour,
+		rect.inflate(4, 4),
+		border_radius=radius
+	)
+
+	# optional subtitle
+	if subtitle and subtitle_font:
+		subtitle_surf = subtitle_font.render(subtitle, True, subtitle_colour)
+		subtitle_x = rect.centerx - subtitle_surf.get_width() // 2
+		subtitle_y = rect.bottom + subtitle_offset
+		surf.blit(subtitle_surf, (subtitle_x, subtitle_y))
 
 def render_text(font, text, colour):
 	return font.render(text, True, colour)

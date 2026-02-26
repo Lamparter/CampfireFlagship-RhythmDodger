@@ -468,7 +468,9 @@ class SongSelectScreen:
 			surf,
 			panel_rect,
 			(30, 28, 32), # dark interior
-			(80, 70, 60)
+			(80, 70, 60),
+			subtitle="Press ESC to return",
+			subtitle_font=self.font_small
 		)
 
 		title = self.font_large.render("Choose a Song", True, TEXT_COLOUR)
