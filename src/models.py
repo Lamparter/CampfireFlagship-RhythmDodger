@@ -390,7 +390,7 @@ class SongSelectScreen:
 				rect,
 				"",
 				self.font_large,
-				lambda b, idx=1: self._select_track(idx),
+				lambda b, track=t: self._select_track(track),
 				radius=12
 			)
 			btn.base_rect = rect.copy()
@@ -403,10 +403,9 @@ class SongSelectScreen:
 		visible_h = int(WINDOW_HEIGHT * 0.6) # area used by tiles
 		self.max_scroll = max(0, total_h - visible_h)
 
-	def _select_track(self, idx):
+	def _select_track(self, track):
 		# set current track and go to playing state (but show confirm menu)
-		rect, t = self.tiles[idx]
-		filename, artist, title, bpm = t
+		filename, artist, title, bpm = track
 		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(ART_DIR, filename)}
 
 		# play decide sfx
@@ -443,10 +442,9 @@ class SongSelectScreen:
 				elif e.button == 1: # left click
 					# check click against scrolled tile rects
 					for i, (btn, track) in enumerate(self.tiles):
-						hit_rect = btn.rect.move(0, -self.scroll_y)
+						hit_rect = btn.base_rect.move(0, -self.scroll_y)
 						if hit_rect.collidepoint(e.pos):
-							self._select_track(i)
-							return
+							self._select_track(track)
 			elif e.type == pygame.KEYDOWN:
 				if e.key == pygame.K_UP:
 					self.selected_index = max(0, self.selected_index - 1)
@@ -457,8 +455,8 @@ class SongSelectScreen:
 					self._apply_focus()
 					self._ensure_selected_visible()
 				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
-					btn, _ = self.tiles[self.selected_index]
-					btn._click()
+					btn, track = self.tiles[self.selected_index]
+					self._select_track(track)
 					return
 				elif e.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.game.set_state("title")
