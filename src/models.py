@@ -393,6 +393,7 @@ class SongSelectScreen:
 				lambda b, idx=1: self._select_track(idx),
 				radius=12
 			)
+			btn.base_rect = rect.copy()
 			self.tiles.append((btn, t))
 		
 		self._apply_focus()
@@ -421,12 +422,12 @@ class SongSelectScreen:
 		idx = self.selected_index
 		top = idx * self.spacing
 		bottom = top + self.tile_h
-		visible_top = 0
-		visible_bottom = int(WINDOW_HEIGHT * 0.6)
-		if top - self.scroll_y < visible_top:
+		visible_top = self.scroll_y
+		visible_bottom = self.scroll_y + int(WINDOW_HEIGHT * 0.6)
+		if top < visible_top:
 			self.scroll_y = max(0, top)
-		elif bottom - self.scroll_y > visible_bottom:
-			self.scroll_y = min(self.max_scroll, bottom - visible_bottom)
+		elif bottom > visible_bottom:
+			self.scroll_y = min(self.max_scroll, bottom - int(WINDOW_HEIGHT * 0.6))
 
 	def _apply_focus(self):
 		for i, (btn, _) in enumerate (self.tiles):
@@ -499,7 +500,7 @@ class SongSelectScreen:
 			filename, artist, title_text, bpm = track
 			art_path = os.path.join(ART_DIR, filename + ".jpg")
 
-			draw_rect = btn.rect.move(0, -self.scroll_y)
+			draw_rect = btn.base_rect.move(0, -self.scroll_y)
 			btn.rect = draw_rect
 
 			# skip tiles outside visible area
