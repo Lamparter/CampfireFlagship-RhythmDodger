@@ -108,7 +108,7 @@ SFX = [
 TRACKS = [
 	("BackToBlack", "Amy Winehouse", "Back to Black", 123),
 	("DJGotUsFallinInLove", "Usher", "DJ Got Us Fallin' In Love", 120),
-	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme! (A Man After Midnight)", 120),
+	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme!", 120),
 	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121),
 	("ShizumeruMachi", "YOEKO", "Sinking Town", 125),
 	("AmericanBoy", "Estelle", "American Boy", 118),

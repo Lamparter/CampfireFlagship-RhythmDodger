@@ -522,7 +522,7 @@ class SongSelectScreen:
 
 			# text positions
 			text_x = art_rect.right + pad
-			title_y = draw_rect.y + pad
+			title_y = draw_rect.y
 			artist_y = title_y + self.font_large.get_height() + 4
 	
 			title_surf = self.font_large.render(title_text, True, (40, 34, 40))
