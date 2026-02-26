@@ -350,6 +350,15 @@ class SongSelectScreen:
 		self.font_large = game.font_large
 		self.tracks = game.available_tracks
 
+		self.panel_x = int(WINDOW_WIDTH * 0.08)
+		self.panel_y = int(WINDOW_HEIGHT * 0.12)
+		self.panel_w = int(WINDOW_WIDTH * 0.84)
+		self.panel_h = int(WINDOW_HEIGHT * 0.76)
+
+		self.visible_top = self.panel_y + int(self.panel_h * 0.18)
+		self.visible_h = int(self.panel_h * 0.72)
+		self.visible_bottom = self.visible_top + self.visible_h
+
 		self.scroll_y = 0
 		self.max_scroll = 0
 		self.tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
@@ -386,8 +395,7 @@ class SongSelectScreen:
 
 	def _compute_max_scroll(self):
 		total_h = len(self.tiles) * self.spacing
-		visible_h = int(WINDOW_HEIGHT * 0.6) # area used by tiles
-		self.max_scroll = max(0, total_h - visible_h)
+		self.max_scroll = max(0, total_h - self.visible_h)
 
 	def _select_track(self, track):
 		# set current track and go to playing state (but show confirm menu)
@@ -407,12 +415,10 @@ class SongSelectScreen:
 		idx = self.selected_index
 		top = idx * self.spacing
 		bottom = top + self.tile_h
-		visible_top = self.scroll_y
-		visible_bottom = self.scroll_y + int(WINDOW_HEIGHT * 0.6)
-		if top < visible_top:
+		if top < self.scroll_y:
 			self.scroll_y = max(0, top)
-		elif bottom > visible_bottom:
-			self.scroll_y = min(self.max_scroll, bottom - int(WINDOW_HEIGHT * 0.6))
+		elif bottom > self.scroll_y + self.visible_h:
+			self.scroll_y = min(self.max_scroll, bottom - self.visible_h)
 
 	def _apply_focus(self):
 		for i, (btn, _) in enumerate (self.tiles):
