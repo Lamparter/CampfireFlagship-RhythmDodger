@@ -201,3 +201,45 @@ class Slider:
 		pygame.draw.rect(surf, (240,230,220), thumb_rect, border_radius=6)
 		if self.focus:
 			pygame.draw.rect(surf, (255,210,140), self.rect, width=2, border_radius=8)
+
+class TextInput:
+	def __init__(self, rect, text="", font=None):
+		self.rect = pygame.Rect(rect)
+		self.text = str(text)
+		self.font = font
+		self.focus = False
+		self.cursor = 0
+
+	def handle_event(self, e):
+		if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+			self.focus = self.rect.collidepoint(e.pos)
+			return self.focus
+		if not self.focus:
+			return False
+		if e.type == pygame.KEYDOWN:
+			if e.key == pygame.K_BACKSPACE:
+				self.text = self.text[:max(0, self.cursor-1)] + self.text[self.cursor:]
+				self.cursor = max(0, self.cursor-1)
+				return True
+			elif e.key == pygame.K_LEFT:
+				self.cursor = max(0, self.cursor-1)
+				return True
+			elif e.key == pygame.K_RIGHT:
+				self.cursor = min(len(self.text), self.cursor+1)
+				return True
+			elif e.key == pygame.K_RETURN:
+				self.focus = False
+				return True
+			else:
+				if e.unicode:
+					self.text = self.text[:self.cursor] + e.unicode + self.text[self.cursor:]
+					self.cursor += 1
+					return True
+		return False
+	
+	def draw(self, surf):
+		pygame.draw.rect(surf, (245,240,235), self.rect, border_radius=8)
+		txt = self.font.render(self.text, True, (40,34,30))
+		surf.blit(txt, (self.rect.x + 8, self.rect.y + (self.rect.h - txt.get_height())//2))
+		if self.focus:
+			pygame.draw.rect(surf, (255,210,140), self.rect, width=2, border_radius=8)
