@@ -827,14 +827,22 @@ class RhythmDodgerGame:
 		for layer in self.bg_layers:
 			layer.update(1.0 / FPS, camera_dx)
 			layer.draw(scene)
-		
-		# ground and tiles (scaled)
-		self.draw_ground(scene)
 
-		# obstacles
-		for obs in self.obstacles:
-			obs.draw(scene)
-		
+		# foreground parallax
+		self.fg_layer.update(1.0 / FPS, camera_dx)
+		self.fg_layer.draw(scene)
+
+		# day/night tint
+		def f(x):
+			return int(140 * ((x ** 2) / ((x ** 2) + ((1 - x) ** 2))))
+
+		t = abs(math.sin(self.time_of_day * math.pi * 2))
+		tint = (f(t), f(t), f(t))
+		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+		overlay.fill(tint)
+		overlay.set_alpha(50)
+		scene.blit(overlay, (0, 0))
+
 		# player squash/stretch micro-animations
 		scale_x, scale_y = 1.0, 1.0
 		if self.player.vy < -50 * SPRITE_SCALE:
@@ -843,23 +851,18 @@ class RhythmDodgerGame:
 			scale_y = 0.9; scale_x = 1.12
 		self.player.draw(scene, scale_x, scale_y)
 
+		# obstacles
+		for obs in self.obstacles:
+			obs.draw(scene)
+
+		# ground and tiles (scaled)
+		self.draw_ground(scene)
+
 		# mascot
 		#self.mascot.draw(scene)
 
 		# particles
 		self.particles.draw(scene)
-
-		# foreground parallax
-		self.fg_layer.update(1.0 / FPS, camera_dx)
-		self.fg_layer.draw(scene)
-
-		# day/night tint
-		t = abs(math.sin(self.time_of_day * math.pi * 2))
-		tint = (int(255 - 120 * t), int(255 - 120 * t), int(255 - 100 * t))
-		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-		overlay.fill(tint)
-		overlay.set_alpha(18)
-		scene.blit(overlay, (0, 0))
 
 		# subtle rain overlay
 		if self.raining:
