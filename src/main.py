@@ -771,8 +771,8 @@ class RhythmDodgerGame:
 		rank = helpers.get_rank(accuracy)
 		rank_text = self.font_small.render(f"Rank: {rank}", True, TEXT_COLOUR)
 		surf.blit(rank_text, (WINDOW_WIDTH//2 - rank_text.get_width()//2, panel_y + int(panel_h * 0.44)))
-		hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
-		surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
+		#hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
+		#surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
 		btn_w = 220
