@@ -3,7 +3,7 @@ Main game class
 """
 
 import sys, os, math, random # bcl
-import helpers, models, sprites, particles, audio, ui; from constants import * # local
+import helpers, models, sprites, particles, audio, ui, settings; from constants import * # local
 import pygame # main
 
 class RhythmDodgerGame:
@@ -17,6 +17,32 @@ class RhythmDodgerGame:
 
 		self.font_small = pygame.font.Font(FONT_PATH, FONT_SMALL)
 		self.font_large = pygame.font.Font(FONT_PATH, FONT_LARGE)
+
+		# settings
+
+		# settings file path
+		settings_path = os.path.join(ASSET_DIR, "settings.json")
+		self.settings = settings.SettingsManager(settings_path)
+
+		# apply immediately to audio and game state
+		try:
+			# master volume
+			master_vol = float(self.settings.get("master_volume"))
+			pygame.mixer.music.set_volume(master_vol)
+		except Exception:
+			pass
+
+		# music latency
+		self.music_latency = float(self.settings.get("music_latency", MUSIC_LATENCY))
+
+		# debug HUD flag
+		self.debug_hud = bool(self.settings.get("debug_hud", False))
+
+		# beat sound flag
+		self.beat_sound = bool(self.settings.get("beat_sound", False))
+
+		# create settings screen instance
+		self.settings_screen = models.SettingsScreen(self)
 
 		# audio
 
