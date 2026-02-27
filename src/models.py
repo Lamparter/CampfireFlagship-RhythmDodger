@@ -453,6 +453,10 @@ class SongSelectScreen:
 				elif e.key in (pygame.K_ESCAPE, pygame.K_q):
 					self.game.set_state("title")
 					return
+			elif e.type == pygame.MOUSEMOTION:
+				# update hover states so buttons show hover visuals
+				for b, t in self.tiles:
+					b.hover = b.rect.collidepoint(e.pos)
 	
 	def draw(self):
 		surf = self.screen
