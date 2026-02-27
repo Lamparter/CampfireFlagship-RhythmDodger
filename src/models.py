@@ -524,6 +524,141 @@ class SongSelectScreen:
 		# restore clipping
 		surf.set_clip(prev_clip)
 
+class SettingsScreen:
+	def __init__(self, game):
+		self.game = game
+		self.screen = game.screen
+		self.font_small = game.font_small
+		self.font_large = game.font_large
+		self.settings = game.settings
+
+		# key, label, description, control type, control args
+		self.schema = [
+			("beat_sound", "Beat Sound", "Play a sound on every beat", "toggle", {}),
+			("debug_hud", "Debug HUD", "Show debug overlay and FPS", "toggle", {}),
+			("music_latency", "Music Latency", "Adjust audio timing (seconds)", "slider", {"min": -1.0, "max": 1.0, "step": 0.01}),
+			("master_volume", "Master Volume", "Overall music volume", "slider", {"min": 0.0, "max": 1.0, "step": 0.01}),
+			("show_fps", "Show FPS", "Display FPS counter", "toggle", {}),
+			("ui_scale", "UI Scale", "Scale UI elements", "slider", {"min": 0.8, "max": 1.6, "step": 0.05}),
+		]
+
+		# build tiles: (base_rect, label, desc, control_obj, key)
+		self.tiles = []
+		tile_w = int(WINDOW_WIDTH * 0.84 * 0.9)
+		tile_h = max(64, int(WINDOW_HEIGHT * 0.10))
+		margin_x = int(WINDOW_WIDTH * 0.08) + int(WINDOW_WIDTH * 0.05)
+		base_y = int(WINDOW_HEIGHT * 0.22)
+		spacing = tile_h + int(WINDOW_HEIGHT * 0.03)
+
+		for i, (key, label, desc, ctype, args) in enumerate(self.schema):
+			base_rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
+			# create control
+			if ctype == "toggle":
+				ctrl_rect = (base_rect.right - 110, base_rect.y + (base_rect.h - 36)//2, 80, 36)
+				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key))
+				ctrl.on_change = lambda v, k=key: self._on_change(k, v)
+			elif ctype == "slider":
+				ctrl_rect = (base_rect.right - 260, base_rect.y + (base_rect.h - 28)//2, 220, 28)
+				minv = args.get("min", 0.0)
+				maxv = args.get("max", 1.0)
+				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
+				def make_on_change(k):
+					return lambda v: self._on_change(k, v)
+				ctrl.on_change = make_on_change(key) if hasattr(ctrl, "on_change") else None
+			else:
+				ctrl = None
+			
+			self.tiles.append((base_rect, label, desc, ctrl, key))
+		
+		# navigation
+		self.selected_index = 0
+		self._apply_focus()
+	
+	def on_change(self, key, value):
+		# persist and apply immediately
+		self.settings.set(key, value)
+		# apply side effects
+		if key == "master_volume":
+			try:
+				pygame.mixer.music.set_volume(value)
+			except Exception:
+				pass
+		if key == "music_latency":
+			# store in game for beat timing
+			self.game.music_latency = value
+		if key == "debug_hud":
+			self.game.debug_hud = bool(value)
+
+	def _apply_focus(self):
+		for i, (_, _, _, ctrl, _) in enumerate(self.tiles):
+			if ctrl:
+				ctrl.focus = (i == self.selected_index)
+	
+	def handle_input(self, events):
+		for e in events:
+			# global keys
+			if e.type == pygame.KEYDOWN:
+				if e.key == pygame.K_ESCAPE:
+					self.game.set_state("title")
+					return
+			elif e.key == pygame.K_UP:
+				self.selected_index = max(0, self.selected_index - 1)
+				self._apply_focus()
+				return
+			elif e.key == pygame.K_DOWN:
+				self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
+				self._apply_focus()
+				return
+			elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+				# if control exists, toggle or focus
+				_, _, _, ctrl, _ = self.tiles[self.selected_index]
+				if isinstance(ctrl, ui.ToggleSwitch):
+					ctrl.toggle()
+				elif isinstance(ctrl, ui.Slider):
+					ctrl.focus = True
+				return
+
+			# route mouse/keyboard to controls
+			for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
+				if ctrl and ctrl.handle_event(e):
+					# if control has on_change but not set, call manually
+					if hasattr(ctrl, "on_change") and ctrl.on_change:
+						# Slider updates value via ctrl.value; ToggleSwitch calls on_change in toggle()
+						if isinstance(ctrl, ui.Slider):
+							ctrl.on_change(ctrl.value)
+						elif isinstance(ctrl, ui.ToggleSwitch):
+							ctrl.on_change(ctrl.value)
+					return
+
+	def update(self, dt):
+		pass
+
+	def draw(self):
+		surf = self.screen
+		surf.fill((18,18,20))
+		panel_rect = pygame.Rect(int(WINDOW_WIDTH * 0.08), int(WINDOW_HEIGHT * 0.12), int(WINDOW_WIDTH * 0.84), int(WINDOW_HEIGHT * 0.76))
+		ui.draw_panel(surf, panel_rect, (30,28,32), (80,70,60), subtitle=None, subtitle_font=None)
+
+		# header
+		title = self.font_large.render("Settings", True, TEXT_COLOUR)
+		surf.blit(title, (panel_rect.centerx - title.get_width()//2, panel_rect.y + 12))
+		subtitle = self.font_small.render("Configure gameplay and audio", True, (180,170,160))
+		surf.blit(subtitle, (panel_rect.centerx - subtitle.get_width()//2, panel_rect.y + 12 + title.get_height() + 4))
+
+		# draw tiles
+		for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
+			# tile background
+			tile_bg = (245,240,235) if i == self.selected_index else (240,235,230)
+			pygame.draw.rect(surf, tile_bg, rect, border_radius=10)
+			# label + desc
+			lbl = self.font_large.render(label, True, (40,34,30))
+			surf.blit(lbl, (rect.x + 12, rect.y + 8))
+			d = self.font_small.render(desc, True, (110,100,90))
+			surf.blit(d, (rect.x + 12, rect.y + 8 + lbl.get_height()))
+			# draw control
+			if ctrl:
+				ctrl.draw(surf)
+
 # Helper classes
 
 class ParallaxLayer:
