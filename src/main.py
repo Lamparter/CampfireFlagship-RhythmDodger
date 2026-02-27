@@ -315,6 +315,8 @@ class RhythmDodgerGame:
 					# behave contextually: if playing -> pause; if title -> do nothing; if options -> back
 					if self.state == "playing":
 						self.set_state("paused")
+					elif self.state == "paused":
+						self.set_state("playing")
 					elif self.state == "options":
 						self.set_state("title")
 				# only allow gameplay jump when playing
