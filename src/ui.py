@@ -111,3 +111,42 @@ class Button:
 		# focus indicator outline
 		if self.focus:
 			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=3, border_radius=self.radius)
+
+class ToggleSwitch:
+	def __init__(self, rect, value=False, radius=10, on_colour=(200,160,120), off_colour=(120,120,120)):
+		self.rect = pygame.Rect(rect)
+		self.value = bool(value)
+		self.radius = radius
+		self.on_colour = on_colour
+		self.off_colour = off_colour
+		self.hover = False
+		self.focus = False
+		self.on_change = None
+	
+	def handle_event(self, e):
+		if e.type == pygame.MOUSEMOTION:
+			self.hover = self.rect.collidepoint(e.pos)
+		elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+			if self.rect.collidepoint(e.pos):
+				self.toggle()
+				return True
+		elif e.type == pygame.KEYDOWN and self.focus:
+			if e.key in (pygame.K_RETURN, pygame.K_SPACE):
+				self.toggle()
+				return True
+		return False
+	
+	def toggle(self):
+		self.value = not self.value
+		if callable(self.on_change):
+			self.on_change(self.value)
+	
+	def draw(self, surf):
+		bg = self.on_colour if self.value else self.off_colour
+		pygame.draw.rect(surf, bg, self.rect, border_radius=self.radius)
+		knob_w = self.rect.h - 6
+		knob_x = self.rect.x + 3 if not self.value else self.rect.right - knob_w - 3
+		knob_rect = pygame.Rect(knob_x, self.rect.y + 3, knob_w, knob_w)
+		pygame.draw.rect(surf, (250,250,250), knob_rect, border_radius=knob_w//2)
+		if self.focus:
+			pygame.draw.rect(surf, (255,220,140), self.rect, width=2, border_radius=self.radius)
