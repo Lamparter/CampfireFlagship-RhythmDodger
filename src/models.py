@@ -184,7 +184,7 @@ class TitleScreen:
 		if os.path.exists(TITLE_LOGO):
 			try:
 				logo_img = pygame.image.load(TITLE_LOGO).convert_alpha()
-				target_w = int(WINDOW_WIDTH * 0.5)
+				target_w = int(WINDOW_WIDTH * 0.3)
 				scale = target_w / logo_img.get_width()
 				target_h = int(logo_img.get_height() * scale)
 				self.logo = pygame.transform.smoothscale(logo_img, (target_w, target_h))
@@ -316,17 +316,11 @@ class TitleScreen:
 		# logo or fallback text (because i haven't designed logo yet)
 		if self.logo:
 			logo_x = WINDOW_WIDTH // 2 - self.logo.get_width() // 2
-			logo_y = int(WINDOW_HEIGHT * 0.10)
+			logo_y = int(WINDOW_HEIGHT * 0.15)
 			surf.blit(self.logo, (logo_x, logo_y))
 		else:
 			title_text = self.font_large.render("Campfire Flagship Rhythm Dodger", True, TEXT_COLOUR)
 			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.10)))
-		
-		# mascot near logo
-		mascot_size = max(MASCOT_SIZE, int(self.font_large.get_height() * 0.9))
-		mascot_x = int(WINDOW_WIDTH * 0.12)
-		mascot_y = int(WINDOW_HEIGHT * 0.12)
-		self.mascot.draw(surf, x=mascot_x, y=mascot_y, size=mascot_size)
 
 		# menu
 		for b in self.menu_buttons:
