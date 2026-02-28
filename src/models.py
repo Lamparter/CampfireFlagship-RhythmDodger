@@ -542,53 +542,60 @@ class SettingsScreen:
 			("ui_scale", "UI Scale", "Scale UI elements", "slider", {"min": 0.8, "max": 1.6, "step": 0.05}),
 		]
 
-		# build tiles: (base_rect, label, desc, control_obj, key)
-		self.tiles = []
-		tile_w = int(WINDOW_WIDTH * 0.84 * 0.9)
+		# layout
+		panel_x = int(WINDOW_WIDTH * 0.08)
+		panel_y = int(WINDOW_HEIGHT * 0.12)
+		panel_w = int(WINDOW_WIDTH * 0.84)
+		tile_w = int(panel_w * 0.9)
+		tile_h = int(panel_w * 0.9)
 		tile_h = max(64, int(WINDOW_HEIGHT * 0.10))
-		margin_x = int(WINDOW_WIDTH * 0.08) + int(WINDOW_WIDTH * 0.05)
-		base_y = int(WINDOW_HEIGHT * 0.22)
+		margin_x = panel_x + int(panel_w * 0.05)
+		base_y = panel_y + int(WINDOW_HEIGHT * 0.12)
 		spacing = tile_h + int(WINDOW_HEIGHT * 0.03)
 
+		self.tiles = []
 		for i, (key, label, desc, ctype, args) in enumerate(self.schema):
 			base_rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
-			# create control
+			ctrl = None
 			if ctype == "toggle":
 				ctrl_rect = (base_rect.right - 110, base_rect.y + (base_rect.h - 36)//2, 80, 36)
 				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key))
-				ctrl.on_change = lambda v, k=key: self._on_change(k, v)
+				# bind on_change to persist
+				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "slider":
 				ctrl_rect = (base_rect.right - 260, base_rect.y + (base_rect.h - 28)//2, 220, 28)
 				minv = args.get("min", 0.0)
 				maxv = args.get("max", 1.0)
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
-				def make_on_change(k):
-					return lambda v: self._on_change(k, v)
-				ctrl.on_change = make_on_change(key) if hasattr(ctrl, "on_change") else None
+				# TODO: implement Slider.on_change()
+				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			else:
 				ctrl = None
 			
 			self.tiles.append((base_rect, label, desc, ctrl, key))
 		
-		# navigation
 		self.selected_index = 0
 		self._apply_focus()
 	
-	def on_change(self, key, value):
-		# persist and apply immediately
+	def _on_change(self, key, value):
+		# persist
 		self.settings.set(key, value)
 		# apply side effects
 		if key == "master_volume":
 			try:
-				pygame.mixer.music.set_volume(value)
+				pygame.mixer.music.set_volume(float(value))
 			except Exception:
 				pass
 		if key == "music_latency":
-			# store in game for beat timing
-			self.game.music_latency = value
+			try:
+				self.game.music_latency = float(value)
+			except Exception:
+				pass
 		if key == "debug_hud":
 			self.game.debug_hud = bool(value)
-
+		if key == "beat_sound":
+			self.game.beat_sound = bool(value)
+	
 	def _apply_focus(self):
 		for i, (_, _, _, ctrl, _) in enumerate(self.tiles):
 			if ctrl:
@@ -596,34 +603,31 @@ class SettingsScreen:
 	
 	def handle_input(self, events):
 		for e in events:
-			# global keys
 			if e.type == pygame.KEYDOWN:
 				if e.key == pygame.K_ESCAPE:
 					self.game.set_state("title")
 					return
-			elif e.key == pygame.K_UP:
-				self.selected_index = max(0, self.selected_index - 1)
-				self._apply_focus()
-				return
-			elif e.key == pygame.K_DOWN:
-				self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
-				self._apply_focus()
-				return
-			elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
-				# if control exists, toggle or focus
-				_, _, _, ctrl, _ = self.tiles[self.selected_index]
-				if isinstance(ctrl, ui.ToggleSwitch):
-					ctrl.toggle()
-				elif isinstance(ctrl, ui.Slider):
-					ctrl.focus = True
-				return
-
-			# route mouse/keyboard to controls
+				elif e.key == pygame.K_UP:
+					self.selected_index = max(0, self.selected_index - 1)
+					self._apply_focus()
+					return
+				elif e.key == pygame.K_DOWN:
+					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
+					self._apply_focus()
+					return
+				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
+					_, _, _, ctrl, _ = self.tiles[self.selected_index]
+					if isinstance(ctrl, ui.ToggleSwitch):
+						ctrl.toggle()
+					elif isinstance(ctrl, ui.Slider):
+						ctrl.focus = True
+					return
+			
 			for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
 				if ctrl and ctrl.handle_event(e):
-					# if control has on_change but not set, call manually
+					# if control doesn't auto-call on_change
 					if hasattr(ctrl, "on_change") and ctrl.on_change:
-						# Slider updates value via ctrl.value; ToggleSwitch calls on_change in toggle()
+						# slider stores value in ctrl.value
 						if isinstance(ctrl, ui.Slider):
 							ctrl.on_change(ctrl.value)
 						elif isinstance(ctrl, ui.ToggleSwitch):
@@ -647,16 +651,21 @@ class SettingsScreen:
 
 		# draw tiles
 		for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
-			# tile background
 			tile_bg = (245,240,235) if i == self.selected_index else (240,235,230)
 			pygame.draw.rect(surf, tile_bg, rect, border_radius=10)
-			# label + desc
 			lbl = self.font_large.render(label, True, (40,34,30))
 			surf.blit(lbl, (rect.x + 12, rect.y + 8))
 			d = self.font_small.render(desc, True, (110,100,90))
 			surf.blit(d, (rect.x + 12, rect.y + 8 + lbl.get_height()))
-			# draw control
 			if ctrl:
+				# ensure control rect is updated relative to rect (in case of resize)
+				# many controls store absolute rects; if so, update their x/y here:
+				if hasattr(ctrl, "rect"):
+					# reposition control horizontally relative to tile
+					if isinstance(ctrl, ui.ToggleSwitch):
+						ctrl.rect.topleft = (rect.right - 110, rect.y + (rect.h - ctrl.rect.h)//2)
+					elif isinstance(ctrl, ui.Slider):
+						ctrl.rect.topleft = (rect.right - 260, rect.y + (rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
 
 # Helper classes

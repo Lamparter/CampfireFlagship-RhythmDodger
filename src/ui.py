@@ -154,23 +154,31 @@ class ToggleSwitch:
 class Slider:
 	def __init__(self, rect, minv=0.0, maxv=1.0, value=0.0):
 		self.rect = pygame.Rect(rect)
-		self.minv = minv
-		self.maxv = maxv
+		self.minv = float(minv)
+		self.maxv = float(maxv)
 		self.value = float(value)
 		self.dragging = False
 		self.focus = False
+		self.on_change = None
 	
 	def handle_event(self, e):
+		# mouse down -> start dragging
 		if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
 			if self.rect.collidepoint(e.pos):
 				self.dragging = True
 				self._set_from_pos(e.pos[0])
 				return True
+
+		# mouse up -> stop dragging
 		elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
 			self.dragging = False
+		
+		# mouse move while dragging
 		elif e.type == pygame.MOUSEMOTION and self.dragging:
 			self._set_from_pos(e.pos[0])
 			return True
+		
+		# keyboard control when focused
 		elif e.type == pygame.KEYDOWN and self.focus:
 			step = (self.maxv - self.minv) * 0.02
 			if e.key == pygame.K_LEFT:
@@ -187,20 +195,25 @@ class Slider:
 		self.set(val)
 	
 	def set(self, v):
+		old = self.value
 		self.value = max(self.minv, min(self.maxv, v))
-
+		if self.on_change and self.value != old:
+			self.on_change(self.value)
+	
 	def draw(self, surf):
 		# track
 		track_rect = pygame.Rect(self.rect.x, self.rect.centery - 4, self.rect.w, 8)
-		pygame.draw.rect(surf, (80,80,84), track_rect, border_radius=6)
+		pygame.draw.rect(surf, (80, 80, 84), track_rect, border_radius=6)
 
 		# thumb
 		t = (self.value - self.minv) / (self.maxv - self.minv) if self.maxv != self.minv else 0
 		thumb_x = int(self.rect.x + t * self.rect.w)
 		thumb_rect = pygame.Rect(thumb_x - 8, self.rect.centery - 12, 16, 24)
-		pygame.draw.rect(surf, (240,230,220), thumb_rect, border_radius=6)
+		pygame.draw.rect(surf, (240, 230, 220), thumb_rect, border_radius=6)
+
+		# focus outline
 		if self.focus:
-			pygame.draw.rect(surf, (255,210,140), self.rect, width=2, border_radius=8)
+			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=2, border_radius=8)
 
 class TextInput:
 	def __init__(self, rect, text="", font=None):

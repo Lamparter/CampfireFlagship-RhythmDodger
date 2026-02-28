@@ -2,14 +2,14 @@
 Game settings
 """
 
-import json
-import os
+import json, os
+from constants import *
 
 class SettingsManager:
 	DEFAULTS = {
 		"beat_sound": False,
 		"debug_hud": False,
-		"music_latency": -0.4,
+		"music_latency": MUSIC_LATENCY,
 		"master_volume": 0.7,
 		"show_fps": False,
 		"fullscreen": False,
@@ -31,12 +31,10 @@ class SettingsManager:
 			pass
 
 	def save(self):
-		try:
-			os.makedirs(os.path.dirname(self.path), exist_ok=True)
-			with open(self.path, "w", encoding="utf-8") as f:
-				json.dump(self._data, f, indent=2)
-		except Exception:
-			pass
+		print(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path))
+		os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path), exist_ok=True)
+		with open(self.path, "w", encoding="utf-8") as f:
+			json.dump(self._data, f, indent=2)
 
 	def get(self, key):
 		return self._data.get(key, SettingsManager.DEFAULTS.get(key))

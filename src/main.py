@@ -33,13 +33,13 @@ class RhythmDodgerGame:
 			pass
 
 		# music latency
-		self.music_latency = float(self.settings.get("music_latency", MUSIC_LATENCY))
+		self.music_latency = float(self.settings.get("music_latency"))
 
 		# debug HUD flag
-		self.debug_hud = bool(self.settings.get("debug_hud", False))
+		self.debug_hud = bool(self.settings.get("debug_hud"))
 
 		# beat sound flag
-		self.beat_sound = bool(self.settings.get("beat_sound", False))
+		self.beat_sound = bool(self.settings.get("beat_sound"))
 
 		# create settings screen instance
 		self.settings_screen = models.SettingsScreen(self)
@@ -353,10 +353,7 @@ class RhythmDodgerGame:
 		if self.state == "title":
 			self.title_screen.handle_input(events)
 		elif self.state == "options":
-			# simple options: press escape to return
-			for e in events:
-				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
-					self.set_state("title")
+			self.settings_screen.handle_input(events)
 		elif self.state == "playing":
 			for e in events:
 				if self.pause_button.handle_event(e):
@@ -403,6 +400,7 @@ class RhythmDodgerGame:
 
 		# options screen (placeholder)
 		if self.state == "options":
+			self.settings_screen.update(dt)
 			return
 
 		# song select screen
@@ -829,10 +827,7 @@ class RhythmDodgerGame:
 			return
 
 		if self.state == "options":
-			self.screen.fill(BACKGROUND_COLOUR)
-			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90), subtitle="Press ESC to return", subtitle_font=self.font_small)
-			title = self.font_large.render("Options", True, TEXT_COLOUR)
-			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
+			self.settings_screen.draw()
 			pygame.display.flip()
 			return
 		
