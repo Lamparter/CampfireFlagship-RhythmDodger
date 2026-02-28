@@ -27,7 +27,7 @@ class RhythmDodgerGame:
 		# preload sfx
 		
 		for sfx in SFX:
-			self.audio.load_sfx(sfx, os.path.join(SFX_DIR, f"{sfx}.wav"))
+			self.audio.load_sfx(sfx, os.path.join(SFX_DIR, f"{sfx}.ogg"))
 
 		# sprites
 

@@ -181,15 +181,14 @@ class TitleScreen:
 
 		# load logo if present
 		self.logo = None
-		if os.path.exists(TITLE_LOGO):
-			try:
-				logo_img = pygame.image.load(TITLE_LOGO).convert_alpha()
-				target_w = int(WINDOW_WIDTH * 0.5)
-				scale = target_w / logo_img.get_width()
-				target_h = int(logo_img.get_height() * scale)
-				self.logo = pygame.transform.smoothscale(logo_img, (target_w, target_h))
-			except Exception:
-				self.logo = None
+		try:
+			logo_img = pygame.image.load(TITLE_LOGO).convert_alpha()
+			target_w = int(WINDOW_WIDTH * 0.5)
+			scale = target_w / logo_img.get_width()
+			target_h = int(logo_img.get_height() * scale)
+			self.logo = pygame.transform.smoothscale(logo_img, (target_w, target_h))
+		except Exception:
+			self.logo = None
 
 		# load music if present
 		self.enter_title_music()
@@ -212,14 +211,13 @@ class TitleScreen:
 			self.menu_buttons[0].focus = True
 	
 	def enter_title_music(self):
-		if os.path.exists(TITLE_MUSIC):
-			try:
-				pygame.mixer.music.load(TITLE_MUSIC)
-				pygame.mixer.music.set_volume(0.32)
-				pygame.mixer.music.play(-1)
-				self.title_music_loaded = True
-			except Exception:
-				self.title_music_loaded = False
+		try:
+			pygame.mixer.music.load(TITLE_MUSIC)
+			pygame.mixer.music.set_volume(0.32)
+			pygame.mixer.music.play(-1)
+			self.title_music_loaded = True
+		except Exception:
+			self.title_music_loaded = False
 	
 	def _create_menu_buttons(self):
 		# compute size and positions
@@ -509,12 +507,11 @@ class SongSelectScreen:
 			art_size = draw_rect.height - pad * 2
 			art_rect = pygame.Rect(draw_rect.x + pad, draw_rect.y + pad, art_size, art_size)
 
-			if os.path.exists(art_path):
-				try:
-					img = pygame.image.load(art_path).convert_alpha()
-					helpers._draw_rounded_image(surf, img, art_rect, radius=12)
-				except:
-					pass
+			try:
+				img = pygame.image.load(art_path).convert_alpha()
+				helpers._draw_rounded_image(surf, img, art_rect, radius=12)
+			except Exception:
+				pass
 
 			# text positions
 			text_x = art_rect.right + pad
