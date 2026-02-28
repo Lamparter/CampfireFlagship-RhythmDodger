@@ -319,7 +319,7 @@ class TitleScreen:
 			logo_y = int(WINDOW_HEIGHT * 0.10)
 			surf.blit(self.logo, (logo_x, logo_y))
 		else:
-			title_text = self.font_large.render("Campfire Flagship Rhythm Dodger", True, TEXT_COLOUR)
+			title_text = self.font_large.render("Campfire London Rhythm Dodger", True, TEXT_COLOUR)
 			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.10)))
 		
 		# mascot near logo
