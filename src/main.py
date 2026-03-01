@@ -2,9 +2,8 @@
 Main game class
 """
 
-import sys, os, math, random # bcl
-import helpers, models, sprites, particles, audio, ui, settings; from constants import * # local
-import pygame # main
+import pygame, sys, os, math, random, asyncio
+import helpers, models, sprites, particles, audio, ui, settings; from constants import *
 
 class RhythmDodgerGame:
 	def __init__(self):
