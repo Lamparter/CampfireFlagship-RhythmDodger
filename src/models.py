@@ -559,7 +559,7 @@ class SettingsScreen:
 			ctrl = None
 			if ctype == "toggle":
 				ctrl_rect = (base_rect.right - 110, base_rect.y + (base_rect.h - 36)//2, 80, 36)
-				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key))
+				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key), font=self.font_small)
 				# bind on_change to persist
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "slider":

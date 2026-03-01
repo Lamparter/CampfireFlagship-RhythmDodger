@@ -113,12 +113,19 @@ class Button:
 			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=3, border_radius=self.radius)
 
 class ToggleSwitch:
-	def __init__(self, rect, value=False, radius=10, on_colour=(200,160,120), off_colour=(120,120,120)):
+	def __init__(self, rect, value=False, radius=10,
+			  	on_colour=(200, 160, 120),
+				off_colour=(120, 120, 120),
+				text_colour=(40, 34, 30),
+				font=None):
 		self.rect = pygame.Rect(rect)
 		self.value = bool(value)
 		self.radius = radius
 		self.on_colour = on_colour
 		self.off_colour = off_colour
+		self.text_colour = text_colour
+		self.font = font
+
 		self.hover = False
 		self.focus = False
 		self.on_change = None
@@ -142,14 +149,22 @@ class ToggleSwitch:
 			self.on_change(self.value)
 	
 	def draw(self, surf):
+		# background colour
 		bg = self.on_colour if self.value else self.off_colour
+
+		# draw box
 		pygame.draw.rect(surf, bg, self.rect, border_radius=self.radius)
-		knob_w = self.rect.h - 6
-		knob_x = self.rect.x + 3 if not self.value else self.rect.right - knob_w - 3
-		knob_rect = pygame.Rect(knob_x, self.rect.y + 3, knob_w, knob_w)
-		pygame.draw.rect(surf, (250,250,250), knob_rect, border_radius=knob_w//2)
+
+		# focus outline
 		if self.focus:
-			pygame.draw.rect(surf, (255,220,140), self.rect, width=2, border_radius=self.radius)
+			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=2, border_radius=self.radius)
+		
+		# ON/OFF text
+		if self.font:
+			txt = "ON" if self.value else "OFF"
+			txt_surf = self.font.render(txt, True, self.text_colour)
+			txt_rect = txt_surf.get_rect(center=self.rect.center)
+			surf.blit(txt_surf, txt_rect)
 
 class Slider:
 	def __init__(self, rect, minv=0.0, maxv=1.0, value=0.0):
@@ -209,7 +224,7 @@ class Slider:
 		t = (self.value - self.minv) / (self.maxv - self.minv) if self.maxv != self.minv else 0
 		thumb_x = int(self.rect.x + t * self.rect.w)
 		thumb_rect = pygame.Rect(thumb_x - 8, self.rect.centery - 12, 16, 24)
-		pygame.draw.rect(surf, (240, 230, 220), thumb_rect, border_radius=6)
+		pygame.draw.rect(surf, (200, 160, 120), thumb_rect, border_radius=6)
 
 		# focus outline
 		if self.focus:

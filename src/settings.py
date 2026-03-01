@@ -31,10 +31,12 @@ class SettingsManager:
 			pass
 
 	def save(self):
-		print(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path))
-		os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path), exist_ok=True)
-		with open(self.path, "w", encoding="utf-8") as f:
-			json.dump(self._data, f, indent=2)
+		try:
+			os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path), exist_ok=True)
+			with open(self.path, "w", encoding="utf-8") as f:
+				json.dump(self._data, f, indent=2)
+		except:
+			pass
 
 	def get(self, key):
 		return self._data.get(key, SettingsManager.DEFAULTS.get(key))
