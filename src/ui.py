@@ -145,6 +145,7 @@ class ToggleSwitch:
 	
 	def toggle(self):
 		self.value = not self.value
+		print(f"[DEBUG] Value of {self} set to {self.value}")
 		if callable(self.on_change):
 			self.on_change(self.value)
 	
@@ -212,6 +213,7 @@ class Slider:
 	def set(self, v):
 		old = self.value
 		self.value = max(self.minv, min(self.maxv, v))
+		print(f"[DEBUG] Value of {self} set to {self.value}")
 		if self.on_change and self.value != old:
 			self.on_change(self.value)
 	
