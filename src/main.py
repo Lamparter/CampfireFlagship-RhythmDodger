@@ -2,7 +2,7 @@
 Main game class
 """
 
-import pygame, sys, os, math, random, asyncio
+import pygame, sys, os, math, random, asyncio, glob, numpy
 import helpers, models, sprites, particles, audio, ui, settings; from constants import *
 
 class RhythmDodgerGame:
@@ -31,6 +31,7 @@ class RhythmDodgerGame:
 		except Exception:
 			pass
 
+		self.theme = str(self.settings.get("theme")).lower()
 		self.music_latency = float(self.settings.get("music_latency"))
 		self.debug = bool(self.settings.get("debug"))
 		self.beat_sound = bool(self.settings.get("beat_sound"))
@@ -46,10 +47,10 @@ class RhythmDodgerGame:
 
 		# sprites
 
-		self.player_sheet = sprites.SpriteSheet(PLAYER_SHEET)
+		self.player_sheet = sprites.SpriteSheet(helpers.get_themed(PLAYER, self.theme))
 		self.player = models.Player(self.player_sheet, self.font_small)
 
-		self.tileset_native = pygame.image.load(TILESET).convert_alpha()
+		self.tileset_native = pygame.image.load(helpers.get_themed(TILESET, self.theme)).convert_alpha()
 		self.tiles_native = []
 		native_tiles_count = max(3, self.tileset_native.get_width() // NATIVE_TILE)
 		for i in range(native_tiles_count):
@@ -59,7 +60,7 @@ class RhythmDodgerGame:
 		
 		# obstacles
 
-		self.obstacles_img = pygame.image.load(OBSTACLES_SPR).convert_alpha()
+		self.obstacles_img = pygame.image.load(helpers.get_themed(OBSTACLES, self.theme)).convert_alpha()
 
 		# split obstacles into frames (assume horizontal strip)
 		self.obstacle_sprites = []
@@ -71,7 +72,7 @@ class RhythmDodgerGame:
 		
 		# mascot
 
-		self.mascot_sheet = sprites.SpriteSheet(MASCOT_SHEET)
+		self.mascot_sheet = sprites.SpriteSheet(helpers.get_themed(MASCOT, self.theme))
 		self.mascot = models.Mascot(self.mascot_sheet, self.font_small)
 
 		# beat bar
@@ -79,9 +80,9 @@ class RhythmDodgerGame:
 		self.beat_icon_img = None
 		self.beat_marker_img = None
 
-		if os.path.exists(BEAT_ICON):
+		if os.path.exists(helpers.get_themed(HEARTBEAT, self.theme)):
 			try:
-				img = pygame.image.load(BEAT_ICON).convert_alpha()
+				img = pygame.image.load(helpers.get_themed(HEARTBEAT, self.theme)).convert_alpha()
 				# scale icon to match UI scale (use small multiple of font height)
 				target = 48
 				self.beat_icon_img = pygame.transform.smoothscale(img, (target, target))
@@ -97,12 +98,7 @@ class RhythmDodgerGame:
 
 		# parallax
 
-		self.bg_layers = [
-			models.ParallaxLayer(BG_LAYER0, 0.08),
-			models.ParallaxLayer(BG_LAYER1, 0.18),
-			models.ParallaxLayer(BG_LAYER2, 0.35),
-		]
-		self.fg_layer = models.ParallaxLayer(FG_LAYER, 0.6)
+		self.bg_layers = helpers.load_parallax_layers(os.path.join(SPRITES_DIR, self.theme))
 
 		# particles
 
@@ -843,10 +839,6 @@ class RhythmDodgerGame:
 		for layer in self.bg_layers:
 			layer.update(1.0 / FPS, camera_dx)
 			layer.draw(scene)
-
-		# foreground parallax
-		self.fg_layer.update(1.0 / FPS, camera_dx)
-		self.fg_layer.draw(scene)
 
 		# day/night tint
 		def f(x):

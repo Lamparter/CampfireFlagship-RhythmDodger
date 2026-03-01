@@ -567,6 +567,7 @@ class SettingsScreen:
 
 		# key, label, description, control type, control args
 		self.schema = [
+			("theme", "App theme", "Choose the app's theme", "input", {}),
 			("beat_sound", "Beat Sound", "Play a sound on every beat", "toggle", {}),
 			("debug", "Debug UI", "Show debug overlay and FPS", "toggle", {}),
 			("music_latency", "Music Latency", "Adjust audio timing (seconds)", "slider", {"min": -1.0, "max": 1.0, "step": 0.01}),
@@ -587,9 +588,12 @@ class SettingsScreen:
 				maxv = args.get("max", 1.0)
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
+			elif ctype == "input":
+				ctrl_rect = (0, 0, 240, 28)
+				ctrl = ui.TextInput(ctrl_rect, self.settings.get(key), self.game.font_small)
 			else:
 				ctrl = None
-			
+
 			self.tiles.append((base_rect, label, desc, ctrl, key))
 		
 		self.scroll_y = 0
@@ -598,7 +602,7 @@ class SettingsScreen:
 
 		self.selected_index = 0
 		self._apply_focus()
-	
+
 	def _on_change(self, key, value):
 		# persist
 		self.settings.set(key, value)
@@ -735,6 +739,8 @@ class SettingsScreen:
 					ctrl.rect.topleft = (draw_rect.right - 110, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.Slider):
 					ctrl.rect.topleft = (draw_rect.right - 260, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+				elif isinstance(ctrl, ui.TextInput):
+					ctrl.rect.topleft = (draw_rect.right - 110, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
 		surf.set_clip(prev_clip)
 

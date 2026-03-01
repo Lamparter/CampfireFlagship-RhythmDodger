@@ -2,7 +2,9 @@
 Helper functions
 """
 
-import pygame, math, random, models, audio; from constants import *
+import pygame, math, random, glob, numpy
+import models, audio
+from constants import *
 
 def space_obstacle() -> int:
 	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
@@ -35,6 +37,31 @@ def get_rank(accuracy):
 
 def play_ui_sound(audioManager: audio.AudioManager):
 	audioManager.play_sfx("ui_" + str(random.randint(1, 5)))
+
+def get_themed(asset, theme = DEFAULT_THEME.lower(), folder = SPRITES_DIR):
+	return os.path.join(folder, theme, asset)
+
+def load_parallax_layers(folder=os.path.join(SPRITES_DIR, DEFAULT_THEME.lower()), pattern="bg_*", max_value=0.60):
+	files = sorted(
+		glob.glob(os.path.join(folder, pattern)),
+		key=lambda f: int(os.path.basename(f).split("_")[1].split(".")[0])
+	)
+	
+	count = len(files)
+	if count == 0:
+		return []
+	
+	original_curve = numpy.array([0.1333, 0.3000, 0.5833, 1.0])
+	x_old = numpy.linspace(0, 1, len(original_curve))
+	x_new = numpy.linspace(0, 1, count)
+	values = numpy.interp(x_new, x_old, original_curve) * max_value
+
+	layers = [
+		models.ParallaxLayer(f, float(v))
+		for f, v in zip(files, values)
+	]
+
+	return layers
 
 def _with_click_sfx(cb, audioManager: audio.AudioManager):
 	def wrapper(btn):

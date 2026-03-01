@@ -70,19 +70,18 @@ ART_DIR = os.path.join(ASSET_DIR, "art")
 DATA_DIR = "build"
 
 FONT_NAME = "PixelifySans"
-
 FONT_PATH = os.path.join(FONTS_DIR, FONT_NAME, f"{FONT_NAME}.ttf")
-PLAYER_SHEET = os.path.join(SPRITES_DIR, "player_sheet_24x24.png")
-TILESET = os.path.join(SPRITES_DIR, "tileset_16x16.png")
-OBSTACLES_SPR = os.path.join(SPRITES_DIR, "obstacles_24x24.png")
-BG_LAYER0 = os.path.join(SPRITES_DIR, "bg_layer0.png")
-BG_LAYER1 = os.path.join(SPRITES_DIR, "bg_layer1.png")
-BG_LAYER2 = os.path.join(SPRITES_DIR, "bg_layer2.png")
-FG_LAYER = os.path.join(SPRITES_DIR, "fg_layer.png")
-MASCOT_SHEET = os.path.join(SPRITES_DIR, "mascot_sheet_24x24.png")
+
+DEFAULT_THEME = "Classic"
+
+PLAYER = "player_24x24.png"
+TILESET = "tileset_16x16.png"
+OBSTACLES = "obstacles_24x24.png"
+MASCOT = "mascot_24x24.png"
+HEARTBEAT = "heartbeat_48x48.png"
+
 TITLE_LOGO = os.path.join(SPRITES_DIR, "title_logo.png")
 TITLE_MUSIC = os.path.join(SFX_DIR, "title_theme.wav")
-BEAT_ICON = os.path.join(SPRITES_DIR, "beat_icon_48x48.png")
 
 SFX = [
 	("beat_good"),

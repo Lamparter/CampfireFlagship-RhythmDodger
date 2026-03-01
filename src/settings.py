@@ -7,6 +7,7 @@ from constants import *
 
 class SettingsManager:
 	DEFAULTS = {
+		"theme": DEFAULT_THEME,
 		"beat_sound": False,
 		"debug": False,
 		"music_latency": MUSIC_LATENCY,
