@@ -747,7 +747,7 @@ class RhythmDodgerGame:
 		self.pause_button.draw(surf)
 
 		if self.pause_button:
-			self.pause_button.draw(self.screen)
+			self.pause_button.draw(surf)
 
 			r = self.pause_button.rect
 			bar_w = max(3, r.w // 6)
@@ -763,8 +763,8 @@ class RhythmDodgerGame:
 			left_bar.center = (cx - gap // 2 - bar_w // 2, cy)
 			right_bar.center = (cx + gap // 2 + bar_w // 2, cy)
 
-			pygame.draw.rect(self.screen, (40, 34, 30), left_bar, border_radius=2)
-			pygame.draw.rect(self.screen, (40, 34, 30), right_bar, border_radius=2)
+			pygame.draw.rect(surf, (40, 34, 30), left_bar, border_radius=2)
+			pygame.draw.rect(surf, (40, 34, 30), right_bar, border_radius=2)
 
 	def apply_screen_shake(self, intensity = 4, duration = 0.12):
 		self.shake_time = duration
