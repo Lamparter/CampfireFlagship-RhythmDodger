@@ -22,21 +22,15 @@ class SettingsManager:
 		self.load()
 	
 	def load(self):
-		try:
-			if os.path.exists(self.path):
-				with open(self.path, "r", encoding="utf-8") as f:
-					data = json.load(f)
-					self._data.update(data)
-		except Exception:
-			pass
+		if os.path.exists(self.path):
+			with open(os.path.join("build", self.path), "r", encoding="utf-8") as f:
+				data = json.load(f)
+				self._data.update(data)
 
 	def save(self):
-		try:
-			os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), self.path), exist_ok=True)
-			with open(self.path, "w", encoding="utf-8") as f:
-				json.dump(self._data, f, indent=2)
-		except:
-			pass
+		os.makedirs(os.path.dirname(self.path), exist_ok=True)
+		with open(self.path, "w", encoding="utf-8") as f:
+			json.dump(self._data, f, indent=2)
 
 	def get(self, key):
 		return self._data.get(key, SettingsManager.DEFAULTS.get(key))

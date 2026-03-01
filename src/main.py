@@ -21,7 +21,7 @@ class RhythmDodgerGame:
 		# settings
 
 		# settings file path
-		settings_path = os.path.join(ASSET_DIR, "settings.json")
+		settings_path = os.path.join(DATA_DIR, "settings.json")
 		self.settings = settings.SettingsManager(settings_path)
 
 		# apply immediately to audio and game state
