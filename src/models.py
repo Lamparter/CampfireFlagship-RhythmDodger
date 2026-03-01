@@ -609,6 +609,13 @@ class SettingsScreen:
 		# persist
 		self.settings.set(key, value)
 		# apply side effects
+		if key == "theme":
+			if value in ("Classic", "London", "Flagship"):
+				self.game.theme = str(value).lower()
+				self.game.restart_screen = "options"
+				self.game.restarting = True
+			else:
+				value = self.game.theme
 		if key == "master_volume":
 			try:
 				pygame.mixer.music.set_volume(float(value))
@@ -645,6 +652,7 @@ class SettingsScreen:
 			self.settings.set(key, default)
 		
 		# reapply to game
+		self.game.theme = self.settings.get("theme").lower()
 		self.game.music_latency = self.settings.get("music_latency")
 		self.game.debug = self.settings.get("debug")
 		self.game.beat_sound = self.settings.get("beat_sound")
@@ -654,6 +662,9 @@ class SettingsScreen:
 		for _, _, _, ctrl, key in self.tiles:
 			if ctrl:
 				ctrl.value = self.settings.get(key)
+
+		self.game.restart_screen = "options"
+		self.game.restarting = True
 	
 	def handle_input(self, events):
 		for e in events:

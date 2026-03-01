@@ -115,6 +115,7 @@ class RhythmDodgerGame:
 		# game state
 
 		self.running = True
+		self.restarting = False
 		self.state = "title"
 		self.score = 0
 		self.best_score = 0
@@ -955,6 +956,9 @@ class RhythmDodgerGame:
 
 	def run(self):
 		while self.running:
+			if self.restarting:
+				self.__init__()
+				self.set_state(self.restart_screen)
 			dt_ms = self.clock.tick(FPS)
 			dt = dt_ms / 1000.0
 
