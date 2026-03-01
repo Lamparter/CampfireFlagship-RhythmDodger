@@ -1,4 +1,4 @@
-import pygame
+import pygame, pygame.scrap as scrap
 import helpers
 
 def draw_panel(
@@ -234,43 +234,291 @@ class Slider:
 			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=2, border_radius=8)
 
 class TextInput:
-	def __init__(self, rect, text="", font=None):
-		self.rect = pygame.Rect(rect)
-		self.text = str(text)
-		self.font = font
-		self.focus = False
-		self.cursor = 0
+	BLINK_INTERVAL = 500 # ms
 
-	def handle_event(self, e):
-		if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-			self.focus = self.rect.collidepoint(e.pos)
-			return self.focus
-		if not self.focus:
-			return False
-		if e.type == pygame.KEYDOWN:
-			if e.key == pygame.K_BACKSPACE:
-				self.text = self.text[:max(0, self.cursor-1)] + self.text[self.cursor:]
-				self.cursor = max(0, self.cursor-1)
-				return True
-			elif e.key == pygame.K_LEFT:
-				self.cursor = max(0, self.cursor-1)
-				return True
-			elif e.key == pygame.K_RIGHT:
-				self.cursor = min(len(self.text), self.cursor+1)
-				return True
-			elif e.key == pygame.K_RETURN:
-				self.focus = False
-				return True
-			else:
-				if e.unicode:
-					self.text = self.text[:self.cursor] + e.unicode + self.text[self.cursor:]
-					self.cursor += 1
-					return True
-		return False
+	def __init__(self, rect, text="", font=None, placeholder="", max_length=None):
+		self.rect = pygame.Rect(rect)
+		self.font = font
+		self.text = str(text)
+		self.placeholder = placeholder
+		self.max_length = max_length
+
+		# editing state
+		self.focus = False
+		self.cursor = len(self.text)
+		self.sel_start = None # selection starts index or None
+
+		self.dragging = False
+
+		# visual
+		self._last_blink = pygame.time.get_ticks()
+		self._show_caret = True
+		self.hover = False
+
+		# callback
+		self.on_change = None
+
+		# clipboard
+		try:
+			scrap.init()
+			self._scrap = scrap
+		except Exception:
+			self._scrap = None
 	
+	def set(self, text):
+		self.text = str(text)
+		self.cursor = min(len(self.text), self.cursor)
+		self._call_change()
+
+	def get(self):
+		return self.text
+	
+	def _clamp_cursor(self):
+		self.cursor = max(0, min(len(self.text), self.cursor))
+	
+	def _delete_selection(self):
+		if self.sel_start is None:
+			return False
+		a, b = sorted((self.sel_start, self.cursor))
+		if a == b:
+			self.sel_start = None
+			return False
+		self.text = self.text[:a] + self.text[b:]
+		self.cursor = a
+		self.sel_start = None
+		self._call_change()
+		return True
+	
+	def _call_change(self):
+		if callable(self.on_change):
+			try:
+				self.on_change(self.text)
+			except Exception:
+				pass
+	
+	def _copy_selection_to_clipboard(self):
+		if self.sel_start is None:
+			return
+		a, b = sorted((self.sel_start), self.cursor)
+		s = self.text[a:b]
+		if self._scrap:
+			try:
+				self._scrap.put(self._scrap.SCRAP_TEXT, s.encode("utf-8"))
+			except Exception:
+				pass
+	
+	def _paste_from_clipboard(self):
+		if not self._scrap:
+			return
+		try:
+			raw = self._scrap.get(self._scrap.SCRAP_TEXT)
+			if not raw:
+				return
+		except Exception:
+			return
+		if self._delete_selection():
+			pass
+		insert_at = self.cursor
+		if self.max_length is not None:
+			allowed = self.max_length - len(self.text)
+			s = s[:max(0, allowed)]
+		self.text = self.text[:insert_at] + s + self.text[insert_at:]
+		self.cursor = insert_at + len(s)
+		self._call_change()
+
+	def _update_blink(self):
+		now = pygame.time.get_ticks()
+		if now - self._last_blink >= TextInput.BLINK_INTERVAL:
+			self._show_caret = not self._show_caret
+			self._last_blink = now
+	
+	def handle_event(self, e):
+		consumed = False
+
+		if e.type == pygame.MOUSEMOTION:
+			self.hover = self.rect.collidepoint(e.pos)
+		
+		if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+			if self.rect.collidepoint(e.pos):
+				# focus and position cursor by click x
+				self.focus = True
+				self._position_cursor_from_x(e.pos[0])
+				self.sel_start = None
+				self._show_caret = True
+				self._last_blink = pygame.time.get_ticks()
+				consumed = True
+			else:
+				# clicking outside unfocuses
+				if self.focus:
+					self.focus = False
+					consumed = True
+
+		if not self.focus:
+			return consumed
+
+		# keyboard input
+		if e.type == pygame.KEYDOWN:
+			mods = pygame.key.get_mods()
+			ctrl = mods & pygame.KMOD_CTRL
+			shift = mods & pygame.KMOD_SHIFT
+
+			# clipboard shortcuts
+			if ctrl and e.key == pygame.K_a:
+				# select all
+				self.sel_start = 0
+				self.cursor = len(self.text)
+				consumed = True
+			elif ctrl and e.key == pygame.K_c:
+				self._copy_selection_to_clipboard()
+				consumed = True
+			elif ctrl and e.key == pygame.K_x:
+				self._copy_selection_to_clipboard()
+				self._delete_selection()
+				consumed = True
+
+			elif e.key == pygame.K_BACKSPACE:
+				if self._delete_selection():
+					consumed = True
+				else:
+					if self.cursor > 0:
+						self.text = self.text[:self.cursor-1] + self.text[self.cursor:]
+						self.cursor -= 1
+						self._call_change()
+						consumed = True
+
+			elif e.key == pygame.K_DELETE:
+				if self._delete_selection():
+					consumed = True
+				else:
+					if self.cursor < len(self.text):
+						self.text = self.text[:self.cursor] + self.text[self.cursor+1:]
+						self._call_change()
+						consumed = True
+
+			elif e.key == pygame.K_LEFT:
+				if shift:
+					if self.sel_start is None:
+						self.sel_start = self.cursor
+					self.cursor = max(0, self.cursor - 1)
+				else:
+					if self.sel_start is not None:
+						# collapse selection to left
+						a, b = sorted((self.sel_start, self.cursor))
+						self.cursor = a
+						self.sel_start = None
+					else:
+						self.cursor = max(0, self.cursor - 1)
+				consumed = True
+
+			elif e.key == pygame.K_RIGHT:
+				if shift:
+					if self.sel_start is None:
+						self.sel_start = self.cursor
+					self.cursor = min(len(self.text), self.cursor + 1)
+				else:
+					if self.sel_start is not None:
+						a, b = sorted((self.sel_start, self.cursor))
+						self.cursor = b
+						self.sel_start = None
+					else:
+						self.cursor = min(len(self.text), self.cursor + 1)
+				consumed = True
+
+			elif e.key == pygame.K_HOME:
+				if shift:
+					if self.sel_start is None:
+						self.sel_start = self.cursor
+					self.cursor = 0
+				else:
+					self.cursor = 0
+					self.sel_start = None
+				consumed = True
+
+			elif e.key == pygame.K_END:
+				if shift:
+					if self.sel_start is None:
+						self.sel_start = self.cursor
+					self.cursor = len(self.text)
+				else:
+					self.cursor = len(self.text)
+					self.sel_start = None
+				consumed = True
+
+			elif e.key == pygame.K_RETURN:
+				# commit and unfocus
+				self.focus = False
+				consumed = True
+
+			elif e.key == pygame.K_ESCAPE:
+				# cancel editing (unfocus)
+				self.focus = False
+				consumed = True
+
+			else:
+				# text input (use e.unicode)
+				if hasattr(e, "unicode") and e.unicode:
+					ch = e.unicode
+					if self._delete_selection():
+						pass
+					insert_at = self.cursor
+					if self.max_length is not None:
+						allowed = self.max_length - len(self.text)
+						ch = ch[:max(0, allowed)]
+					self.text = self.text[:insert_at] + ch + self.text[insert_at:]
+					self.cursor = insert_at + len(ch)
+					self._call_change()
+					consumed = True
+
+		# keep cursor valid and reset blink on activity
+		self._clamp_cursor()
+		if consumed:
+			self._show_caret = True
+			self._last_blink = pygame.time.get_ticks()
+		return consumed
+	
+	def _position_cursor_from_x(self, x):
+		# approximate cursor position by measuring text widths
+		rel_x = x - (self.rect.x + 8)
+		pos = 0
+		acc = 0
+		for i in range(len(self.text) + 1):
+			seg = self.text[:i]
+			w = self.font.size(seg)[0]
+			if w >= rel_x:
+				pos = i
+				break
+			pos = i
+		self.cursor = pos
+		self._clamp_cursor()
+
 	def draw(self, surf):
-		pygame.draw.rect(surf, (245,240,235), self.rect, border_radius=8)
-		txt = self.font.render(self.text, True, (40,34,30))
-		surf.blit(txt, (self.rect.x + 8, self.rect.y + (self.rect.h - txt.get_height())//2))
+		# background
+		pygame.draw.rect(surf, (245, 240, 235), self.rect, border_radius=8)
+
+		# focus outline
 		if self.focus:
-			pygame.draw.rect(surf, (255,210,140), self.rect, width=2, border_radius=8)
+			pygame.draw.rect(surf, (255, 210, 140), self.rect, width=2, border_radius=8)
+		elif self.hover:
+			pygame.draw.rect(surf, (220, 210, 190), self.rect, width=1, border_radius=8)
+
+		# prepare text surface clipped to inner area
+		inner_x = self.rect.x + 8
+		inner_w = max(4, self.rect.w - 16)
+		text_to_draw = self.text if self.text else self.placeholder
+		colour = (40, 34, 30) if self.text else (140, 130, 120)
+		txt_surf = self.font.render(text_to_draw, True, colour)
+
+		# clip and blit
+		prev_clip = surf.get_clip()
+		surf.set_clip(pygame.Rect(inner_x, self.rect.y, inner_w, self.rect.h))
+		surf.blit(txt_surf, (inner_x, self.rect.y + (self.rect.h - txt_surf.get_height()) // 2))
+
+		# caret
+		if self.focus:
+			self._update_blink()
+			if self._show_caret:
+				caret_x = inner_x + self.font.size(self.text[:self.cursor])[0]
+				caret_rect = pygame.Rect(caret_x, self.rect.y + 6, 2, self.rect.h - 12)
+				pygame.draw.rect(surf, (40, 34, 30), caret_rect)
+		
+		surf.set_clip(prev_clip)

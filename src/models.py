@@ -589,8 +589,10 @@ class SettingsScreen:
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "input":
-				ctrl_rect = (0, 0, 240, 28)
-				ctrl = ui.TextInput(ctrl_rect, self.settings.get(key), self.game.font_small)
+				ctrl_rect = (0, 0, 200, 36)
+				initial = str(self.settings.get(key))
+				ctrl = ui.TextInput(ctrl_rect, text=initial, font=self.game.font_small, placeholder=DEFAULT_THEME)
+				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			else:
 				ctrl = None
 
@@ -740,7 +742,7 @@ class SettingsScreen:
 				elif isinstance(ctrl, ui.Slider):
 					ctrl.rect.topleft = (draw_rect.right - 260, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.TextInput):
-					ctrl.rect.topleft = (draw_rect.right - 110, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - 220, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
 		surf.set_clip(prev_clip)
 
