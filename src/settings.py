@@ -11,9 +11,6 @@ class SettingsManager:
 		"debug_hud": False,
 		"music_latency": MUSIC_LATENCY,
 		"master_volume": 0.7,
-		"show_fps": False,
-		"fullscreen": False,
-		"ui_scale": 1.0
 	}
 
 	def __init__(self, path):
@@ -23,7 +20,7 @@ class SettingsManager:
 	
 	def load(self):
 		if os.path.exists(self.path):
-			with open(os.path.join("build", self.path), "r", encoding="utf-8") as f:
+			with open(self.path, "r", encoding="utf-8") as f:
 				data = json.load(f)
 				self._data.update(data)
 

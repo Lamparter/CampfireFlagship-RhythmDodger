@@ -1,4 +1,5 @@
 import pygame
+import helpers
 
 def draw_panel(
 	surf,

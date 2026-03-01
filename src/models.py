@@ -2,7 +2,8 @@
 Game objects
 """
 
-import os, pygame, random, sprites, particles, ui, helpers
+import os, pygame, random
+import sprites, particles, ui, helpers, settings
 from constants import *
 
 # Game objects
@@ -234,8 +235,8 @@ class TitleScreen:
 			b = ui.Button(rect, text, self.font_large, cb)
 			return b
 		
-		self.menu_buttons.append(make_btn("Start", 0, lambda b: self.open_song_select()))
-		self.menu_buttons.append(make_btn("Settings", 1, lambda b: self.game.set_state("options")))
+		self.menu_buttons.append(make_btn("Start", 0, helpers._with_click_sfx(lambda b: self.open_song_select(), self.game.audio)))
+		self.menu_buttons.append(make_btn("Settings", 1, helpers._with_click_sfx(lambda b: self.game.set_state("options"), self.game.audio)))
 		self.menu_buttons.append(make_btn("Quit", 2, lambda b: setattr(self.game, "running", False)))
 	
 	def open_song_select(self):
@@ -538,6 +539,20 @@ class SettingsScreen:
 		self.panel_w = int(WINDOW_WIDTH * 0.84)
 		self.panel_h = int(WINDOW_HEIGHT * 0.76)
 
+		# reset button
+		btn_w = 120
+		btn_h = 40
+		self.reset_button = ui.Button(
+			(self.panel_x + self.panel_w - btn_w - 12,
+			self.panel_y + 12,
+			btn_w,
+			btn_h),
+			"Reset",
+			self.font_small,
+			helpers._with_click_sfx(lambda b: self._reset_settings(), self.game.audio),
+			radius=8
+		)
+
 		# visible scroll area inside panel
 		self.visible_top = self.panel_y + int(self.panel_h * 0.22)
 		self.visible_h = int(self.panel_h * 0.72)
@@ -556,8 +571,6 @@ class SettingsScreen:
 			("debug_hud", "Debug HUD", "Show debug overlay and FPS", "toggle", {}),
 			("music_latency", "Music Latency", "Adjust audio timing (seconds)", "slider", {"min": -1.0, "max": 1.0, "step": 0.01}),
 			("master_volume", "Master Volume", "Overall music volume", "slider", {"min": 0.0, "max": 1.0, "step": 0.01}),
-			("show_fps", "Show FPS", "Display FPS counter", "toggle", {}),
-			("ui_scale", "UI Scale", "Scale UI elements", "slider", {"min": 0.8, "max": 1.6, "step": 0.05}),
 		]
 
 		self.tiles = []
@@ -567,7 +580,7 @@ class SettingsScreen:
 				ctrl_rect = (0, 0, 90, 40)
 				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key), font=self.font_small)
 				# bind on_change to persist
-				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
+				ctrl.on_change = (lambda k: helpers._with_click_sfx(lambda v: self._on_change(k, v), self.game.audio))(key)
 			elif ctype == "slider":
 				ctrl_rect = (0, 0, 240, 28)
 				minv = args.get("min", 0.0)
@@ -619,9 +632,28 @@ class SettingsScreen:
 			self.scroll_y = max(0, top)
 		elif bottom > self.scroll_y + self.visible_h:
 			self.scroll_y = min(self.max_scroll, bottom - self.visible_h)
+
+	def _reset_settings(self):
+		# restore defaults
+		for key, default in settings.SettingsManager.DEFAULTS.items():
+			self.settings.set(key, default)
+		
+		# reapply to game
+		self.game.music_latency = self.settings.get("music_latency")
+		self.game.debug_hud = self.settings.get("debug_hud")
+		self.game.beat_sound = self.settings.get("beat_sound")
+		pygame.mixer.music.set_volume(self.settings.get("master_volume"))
+
+		# update controls visually
+		for _, _, _, ctrl, key in self.tiles:
+			if ctrl:
+				ctrl.value = self.settings.get(key)
 	
 	def handle_input(self, events):
 		for e in events:
+			if self.reset_button.handle_event(e):
+				return
+
 			if e.type == pygame.KEYDOWN:
 				if e.key == pygame.K_ESCAPE:
 					self.game.set_state("title")
@@ -671,6 +703,9 @@ class SettingsScreen:
 		surf.blit(title, (panel_rect.centerx - title.get_width()//2, panel_rect.y + 12))
 		subtitle = self.font_small.render("Configure gameplay and audio", True, (180,170,160))
 		surf.blit(subtitle, (panel_rect.centerx - subtitle.get_width()//2, panel_rect.y + 12 + title.get_height() + 4))
+
+		# reset button
+		self.reset_button.draw(surf)
 
 		# clip to scroll area
 		prev_clip = surf.get_clip()

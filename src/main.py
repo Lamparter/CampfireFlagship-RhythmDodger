@@ -32,17 +32,9 @@ class RhythmDodgerGame:
 		except Exception:
 			pass
 
-		# music latency
 		self.music_latency = float(self.settings.get("music_latency"))
-
-		# debug HUD flag
 		self.debug_hud = bool(self.settings.get("debug_hud"))
-
-		# beat sound flag
 		self.beat_sound = bool(self.settings.get("beat_sound"))
-
-		# create settings screen instance
-		self.settings_screen = models.SettingsScreen(self)
 
 		# audio
 
@@ -202,7 +194,7 @@ class RhythmDodgerGame:
 			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
 			"Resume",
 			self.font_large,
-			lambda b: self.set_state("playing"),
+			helpers._with_click_sfx(lambda b: self.set_state("playing"), self.audio),
 			radius=10
 		)
 
@@ -240,10 +232,11 @@ class RhythmDodgerGame:
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
 
-		# title screen
+		# views
 
 		self.title_screen = models.TitleScreen(self)
 		self.song_select = models.SongSelectScreen(self)
+		self.settings_screen = models.SettingsScreen(self)
 
 	# game state
 
@@ -309,7 +302,7 @@ class RhythmDodgerGame:
 		self.audio.play_music(-1)
 		pygame.mixer.music.set_volume(0.7)
 		self.music_started = True
-		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+		self.music_start_time = pygame.time.get_ticks() / 1000.0 + self.music_latency
 		self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
 
 		# play UI decide sfx
@@ -433,8 +426,8 @@ class RhythmDodgerGame:
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 		if beat_triggered:
-			# play soft metronome (use good sound) TODO: add this back via a feature switch in settings
-			# self.audio.play_sfx("good", 0.6)
+			if self.beat_sound:
+				self.audio.play_sfx("ui_1", 1)
 
 			# count down until next obstacle
 			self.beats_until_next_obstacle -= 1
@@ -949,7 +942,7 @@ class RhythmDodgerGame:
 		if self.current_track:
 			try:
 				self.audio.play_music(-1)
-				self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+				self.music_start_time = pygame.time.get_ticks() / 1000.0 + self.music_latency
 				self.music_started = True
 			except Exception:
 				self.music_started = False
