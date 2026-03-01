@@ -9,7 +9,7 @@ class RhythmDodgerGame:
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-		pygame.display.set_caption("Rhythm Dodger")
+		pygame.display.set_caption(NAME)
 		self.clock = pygame.time.Clock()
 
 		# fonts (scale with window height)

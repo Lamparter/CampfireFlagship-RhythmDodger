@@ -4,6 +4,8 @@ Configuration/constants
 
 import os
 
+NAME = "Rhythm Dodger"
+
 # Responsive UI
 
 WINDOW_WIDTH = 1280
