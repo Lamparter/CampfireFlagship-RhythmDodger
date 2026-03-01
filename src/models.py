@@ -532,6 +532,24 @@ class SettingsScreen:
 		self.font_large = game.font_large
 		self.settings = game.settings
 
+		# layout
+		self.panel_x = int(WINDOW_WIDTH * 0.08)
+		self.panel_y = int(WINDOW_HEIGHT * 0.12)
+		self.panel_w = int(WINDOW_WIDTH * 0.84)
+		self.panel_h = int(WINDOW_HEIGHT * 0.76)
+
+		# visible scroll area inside panel
+		self.visible_top = self.panel_y + int(self.panel_h * 0.22)
+		self.visible_h = int(self.panel_h * 0.72)
+		self.visible_bottom = self.visible_top + self.visible_h
+
+		# tile geometry
+		self.tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
+		self.spacing = self.tile_h + int(WINDOW_HEIGHT * 0.03)
+		self.tile_w = int(self.panel_w * 0.90)
+		self.margin_x = self.panel_x + int(self.panel_w * 0.05)
+		self.base_y = self.visible_top
+
 		# key, label, description, control type, control args
 		self.schema = [
 			("beat_sound", "Beat Sound", "Play a sound on every beat", "toggle", {}),
@@ -542,38 +560,29 @@ class SettingsScreen:
 			("ui_scale", "UI Scale", "Scale UI elements", "slider", {"min": 0.8, "max": 1.6, "step": 0.05}),
 		]
 
-		# layout
-		panel_x = int(WINDOW_WIDTH * 0.08)
-		panel_y = int(WINDOW_HEIGHT * 0.12)
-		panel_w = int(WINDOW_WIDTH * 0.84)
-		tile_w = int(panel_w * 0.9)
-		tile_h = int(panel_w * 0.9)
-		tile_h = max(64, int(WINDOW_HEIGHT * 0.10))
-		margin_x = panel_x + int(panel_w * 0.05)
-		base_y = panel_y + int(WINDOW_HEIGHT * 0.12)
-		spacing = tile_h + int(WINDOW_HEIGHT * 0.03)
-
 		self.tiles = []
 		for i, (key, label, desc, ctype, args) in enumerate(self.schema):
-			base_rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
-			ctrl = None
+			base_rect = pygame.Rect(self.margin_x, self.base_y + i * self.spacing, self.tile_w, self.tile_h)
 			if ctype == "toggle":
-				ctrl_rect = (base_rect.right - 110, base_rect.y + (base_rect.h - 36)//2, 80, 36)
+				ctrl_rect = (0, 0, 90, 40)
 				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key), font=self.font_small)
 				# bind on_change to persist
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "slider":
-				ctrl_rect = (base_rect.right - 260, base_rect.y + (base_rect.h - 28)//2, 220, 28)
+				ctrl_rect = (0, 0, 240, 28)
 				minv = args.get("min", 0.0)
 				maxv = args.get("max", 1.0)
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
-				# TODO: implement Slider.on_change()
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			else:
 				ctrl = None
 			
 			self.tiles.append((base_rect, label, desc, ctrl, key))
 		
+		self.scroll_y = 0
+		total_height = len(self.tiles) * self.spacing
+		self.max_scroll = max(0, total_height - self.visible_h)
+
 		self.selected_index = 0
 		self._apply_focus()
 	
@@ -601,6 +610,16 @@ class SettingsScreen:
 			if ctrl:
 				ctrl.focus = (i == self.selected_index)
 	
+	def _ensure_selected_visible(self):
+		idx = self.selected_index
+		top = idx * self.spacing
+		bottom = top + self.tile_h
+
+		if top < self.scroll_y:
+			self.scroll_y = max(0, top)
+		elif bottom > self.scroll_y + self.visible_h:
+			self.scroll_y = min(self.max_scroll, bottom - self.visible_h)
+	
 	def handle_input(self, events):
 		for e in events:
 			if e.type == pygame.KEYDOWN:
@@ -610,10 +629,12 @@ class SettingsScreen:
 				elif e.key == pygame.K_UP:
 					self.selected_index = max(0, self.selected_index - 1)
 					self._apply_focus()
+					self._ensure_selected_visible()
 					return
 				elif e.key == pygame.K_DOWN:
 					self.selected_index = min(len(self.tiles)-1, self.selected_index + 1)
 					self._apply_focus()
+					self._ensure_selected_visible()
 					return
 				elif e.key in (pygame.K_RETURN, pygame.K_SPACE):
 					_, _, _, ctrl, _ = self.tiles[self.selected_index]
@@ -622,16 +643,17 @@ class SettingsScreen:
 					elif isinstance(ctrl, ui.Slider):
 						ctrl.focus = True
 					return
-			
-			for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
+			elif e.type == pygame.MOUSEBUTTONDOWN:
+				if e.button == 4:
+					self.scroll_y = max(0, self.scroll_y - int(self.tile_h * 0.5))
+				elif e.button == 5:
+					self.scroll_y = min(self.max_scroll, self.scroll_y + int(self.tile_h * 0.5))
+			elif e.type == pygame.MOUSEMOTION:
+				for base_rect, label, desc, ctrl, key in self.tiles:
+					ctrl.focus = ctrl.rect.collidepoint(e.pos)
+				
+			for base_rect, label, desc, ctrl, key in self.tiles:
 				if ctrl and ctrl.handle_event(e):
-					# if control doesn't auto-call on_change
-					if hasattr(ctrl, "on_change") and ctrl.on_change:
-						# slider stores value in ctrl.value
-						if isinstance(ctrl, ui.Slider):
-							ctrl.on_change(ctrl.value)
-						elif isinstance(ctrl, ui.ToggleSwitch):
-							ctrl.on_change(ctrl.value)
 					return
 
 	def update(self, dt):
@@ -640,8 +662,9 @@ class SettingsScreen:
 	def draw(self):
 		surf = self.screen
 		surf.fill((18,18,20))
-		panel_rect = pygame.Rect(int(WINDOW_WIDTH * 0.08), int(WINDOW_HEIGHT * 0.12), int(WINDOW_WIDTH * 0.84), int(WINDOW_HEIGHT * 0.76))
-		ui.draw_panel(surf, panel_rect, (30,28,32), (80,70,60), subtitle=None, subtitle_font=None)
+
+		panel_rect = pygame.Rect(self.panel_x, self.panel_y, self.panel_w, self.panel_h)
+		ui.draw_panel(surf, panel_rect, (30,28,32), (80,70,60), subtitle="Press ESC to return", subtitle_font=self.font_small)
 
 		# header
 		title = self.font_large.render("Settings", True, TEXT_COLOUR)
@@ -649,24 +672,36 @@ class SettingsScreen:
 		subtitle = self.font_small.render("Configure gameplay and audio", True, (180,170,160))
 		surf.blit(subtitle, (panel_rect.centerx - subtitle.get_width()//2, panel_rect.y + 12 + title.get_height() + 4))
 
+		# clip to scroll area
+		prev_clip = surf.get_clip()
+		surf.set_clip(pygame.Rect(self.panel_x, self.visible_top, self.panel_w, self.visible_h))
+
 		# draw tiles
-		for i, (rect, label, desc, ctrl, key) in enumerate(self.tiles):
+		for i, (base_rect, label, desc, ctrl, key) in enumerate(self.tiles):
+			draw_rect = base_rect.move(0, -self.scroll_y)
+
+			# skip if outside visible area
+			if draw_rect.bottom < self.visible_top or draw_rect.top > self.visible_bottom:
+				continue
+
+			# tile background
 			tile_bg = (245,240,235) if i == self.selected_index else (240,235,230)
-			pygame.draw.rect(surf, tile_bg, rect, border_radius=10)
+			pygame.draw.rect(surf, tile_bg, draw_rect, border_radius=10)
+
+			# text
 			lbl = self.font_large.render(label, True, (40,34,30))
-			surf.blit(lbl, (rect.x + 12, rect.y + 8))
+			surf.blit(lbl, (draw_rect.x + 12, draw_rect.y + 4))
 			d = self.font_small.render(desc, True, (110,100,90))
-			surf.blit(d, (rect.x + 12, rect.y + 8 + lbl.get_height()))
+			surf.blit(d, (draw_rect.x + 12, draw_rect.y + 2 + lbl.get_height()))
+
+			# control positioning
 			if ctrl:
-				# ensure control rect is updated relative to rect (in case of resize)
-				# many controls store absolute rects; if so, update their x/y here:
-				if hasattr(ctrl, "rect"):
-					# reposition control horizontally relative to tile
-					if isinstance(ctrl, ui.ToggleSwitch):
-						ctrl.rect.topleft = (rect.right - 110, rect.y + (rect.h - ctrl.rect.h)//2)
-					elif isinstance(ctrl, ui.Slider):
-						ctrl.rect.topleft = (rect.right - 260, rect.y + (rect.h - ctrl.rect.h)//2)
+				if isinstance(ctrl, ui.ToggleSwitch):
+					ctrl.rect.topleft = (draw_rect.right - 110, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+				elif isinstance(ctrl, ui.Slider):
+					ctrl.rect.topleft = (draw_rect.right - 260, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
+		surf.set_clip(prev_clip)
 
 # Helper classes
 
