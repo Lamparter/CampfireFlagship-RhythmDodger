@@ -615,7 +615,7 @@ class SettingsScreen:
 				self.game.restart_screen = "options"
 				self.game.restarting = True
 			else:
-				value = self.game.theme
+				self.settings.set(key, str(self.game.theme).capitalize())
 		if key == "master_volume":
 			try:
 				pygame.mixer.music.set_volume(float(value))
