@@ -26,8 +26,8 @@ class RhythmDodgerGame:
 		# apply immediately to audio and game state
 		try:
 			# master volume
-			master_vol = float(self.settings.get("master_volume"))
-			pygame.mixer.music.set_volume(master_vol)
+			self.master_vol = float(self.settings.get("master_volume"))
+			pygame.mixer.music.set_volume(self.master_vol)
 		except Exception:
 			pass
 
@@ -257,7 +257,7 @@ class RhythmDodgerGame:
 			except: pass
 		if new_state == "playing" and prev != "playing":
 			self.title_screen.title_music_loaded = False
-			try: pygame.mixer.music.set_volume(0.7)
+			try: pygame.mixer.music.set_volume(self.master_vol)
 			except: pass
 		if new_state == "paused" and prev != "paused":
 			try:
@@ -299,7 +299,7 @@ class RhythmDodgerGame:
 
 		self.audio.load_music(track["path"] + ".ogg")
 		self.audio.play_music(-1)
-		pygame.mixer.music.set_volume(0.7)
+		pygame.mixer.music.set_volume(self.master_vol)
 		self.music_started = True
 		self.music_start_time = pygame.time.get_ticks() / 1000.0 + self.music_latency
 		self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
