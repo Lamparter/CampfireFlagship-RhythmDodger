@@ -290,6 +290,7 @@ class TextInput:
 		return True
 	
 	def _call_change(self):
+		print(f"[DEBUG] Value of {self} set to \"{self.text}\"")
 		if callable(self.on_change):
 			try:
 				self.on_change(self.text)
