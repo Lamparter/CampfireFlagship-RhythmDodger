@@ -8,7 +8,7 @@ from constants import *
 class SettingsManager:
 	DEFAULTS = {
 		"beat_sound": False,
-		"debug_hud": False,
+		"debug": False,
 		"music_latency": MUSIC_LATENCY,
 		"master_volume": 0.7,
 	}

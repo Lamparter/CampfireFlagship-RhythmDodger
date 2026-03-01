@@ -33,7 +33,7 @@ class RhythmDodgerGame:
 			pass
 
 		self.music_latency = float(self.settings.get("music_latency"))
-		self.debug_hud = bool(self.settings.get("debug_hud"))
+		self.debug = bool(self.settings.get("debug"))
 		self.beat_sound = bool(self.settings.get("beat_sound"))
 
 		# audio
@@ -680,7 +680,10 @@ class RhythmDodgerGame:
 
 		# small label under the bar (tiny, unobtrusive)
 		if self.current_track:
-			label = f"{self.current_track['bpm']} BPM"
+			label = ""
+			if self.debug:
+				label = f"{int(self.clock.get_fps())} FPS - "
+			label += f"{self.current_track['bpm']} BPM"
 			lbl = self.font_small.render(label, True, (120, 110, 100))
 			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(WINDOW_HEIGHT * 0.006)))
 
@@ -701,7 +704,7 @@ class RhythmDodgerGame:
 		if not self.current_track:
 			return
 		
-		text = f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
+		text = f"{self.current_track['path']}.ogg" if self.debug else f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
 		surf_text = self.font_small.render(text, True, TEXT_COLOUR)
 
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
@@ -886,6 +889,16 @@ class RhythmDodgerGame:
 		
 		# HUD (incl. mascot)
 		self.draw_hud(scene)
+
+		if self.debug:
+			debug_colour = (255, 0, 0)
+			pygame.draw.rect(scene, debug_colour, self.player.rect, 1)
+			if self.obstacles:
+				for o in self.obstacles:
+					pygame.draw.rect(scene, debug_colour, o.rect, 1)
+			#if self.particles:
+			#	for p in self.particles:
+			#		pygame.draw.rect(self.screen, debug_colour, p.rect, 1)
 
 		# subtle judgement flash on perfect
 		if "Perfect" in self.last_judgement and self.judgement_timer > 0:

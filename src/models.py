@@ -568,7 +568,7 @@ class SettingsScreen:
 		# key, label, description, control type, control args
 		self.schema = [
 			("beat_sound", "Beat Sound", "Play a sound on every beat", "toggle", {}),
-			("debug_hud", "Debug HUD", "Show debug overlay and FPS", "toggle", {}),
+			("debug", "Debug UI", "Show debug overlay and FPS", "toggle", {}),
 			("music_latency", "Music Latency", "Adjust audio timing (seconds)", "slider", {"min": -1.0, "max": 1.0, "step": 0.01}),
 			("master_volume", "Master Volume", "Overall music volume", "slider", {"min": 0.0, "max": 1.0, "step": 0.01}),
 		]
@@ -613,8 +613,8 @@ class SettingsScreen:
 				self.game.music_latency = float(value)
 			except Exception:
 				pass
-		if key == "debug_hud":
-			self.game.debug_hud = bool(value)
+		if key == "debug":
+			self.game.debug = bool(value)
 		if key == "beat_sound":
 			self.game.beat_sound = bool(value)
 	
@@ -640,7 +640,7 @@ class SettingsScreen:
 		
 		# reapply to game
 		self.game.music_latency = self.settings.get("music_latency")
-		self.game.debug_hud = self.settings.get("debug_hud")
+		self.game.debug = self.settings.get("debug")
 		self.game.beat_sound = self.settings.get("beat_sound")
 		pygame.mixer.music.set_volume(self.settings.get("master_volume"))
 
