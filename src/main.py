@@ -3,7 +3,7 @@ Main game class
 """
 
 import sys, os, math, random # bcl
-import helpers, models, sprites, particles, audio, ui; from constants import * # local
+import helpers, models, sprites, particles, audio, ui, settings; from constants import * # local
 import pygame # main
 
 class RhythmDodgerGame:
@@ -17,6 +17,24 @@ class RhythmDodgerGame:
 
 		self.font_small = pygame.font.Font(FONT_PATH, FONT_SMALL)
 		self.font_large = pygame.font.Font(FONT_PATH, FONT_LARGE)
+
+		# settings
+
+		# settings file path
+		settings_path = os.path.join(DATA_DIR, "settings.json")
+		self.settings = settings.SettingsManager(settings_path)
+
+		# apply immediately to audio and game state
+		try:
+			# master volume
+			master_vol = float(self.settings.get("master_volume"))
+			pygame.mixer.music.set_volume(master_vol)
+		except Exception:
+			pass
+
+		self.music_latency = float(self.settings.get("music_latency"))
+		self.debug = bool(self.settings.get("debug"))
+		self.beat_sound = bool(self.settings.get("beat_sound"))
 
 		# audio
 
@@ -176,7 +194,7 @@ class RhythmDodgerGame:
 			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
 			"Resume",
 			self.font_large,
-			lambda b: self.set_state("playing"),
+			helpers._with_click_sfx(lambda b: self.set_state("playing"), self.audio),
 			radius=10
 		)
 
@@ -214,10 +232,11 @@ class RhythmDodgerGame:
 		self.mascot.x = self.left_margin
 		self.mascot.y = self.top_margin
 
-		# title screen
+		# views
 
 		self.title_screen = models.TitleScreen(self)
 		self.song_select = models.SongSelectScreen(self)
+		self.settings_screen = models.SettingsScreen(self)
 
 	# game state
 
@@ -283,7 +302,7 @@ class RhythmDodgerGame:
 		self.audio.play_music(-1)
 		pygame.mixer.music.set_volume(0.7)
 		self.music_started = True
-		self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+		self.music_start_time = pygame.time.get_ticks() / 1000.0 + self.music_latency
 		self.beat_tracker = models.BeatTracker(60.0 / track["bpm"])
 
 		# play UI decide sfx
@@ -327,10 +346,7 @@ class RhythmDodgerGame:
 		if self.state == "title":
 			self.title_screen.handle_input(events)
 		elif self.state == "options":
-			# simple options: press escape to return
-			for e in events:
-				if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
-					self.set_state("title")
+			self.settings_screen.handle_input(events)
 		elif self.state == "playing":
 			for e in events:
 				if self.pause_button.handle_event(e):
@@ -377,6 +393,7 @@ class RhythmDodgerGame:
 
 		# options screen (placeholder)
 		if self.state == "options":
+			self.settings_screen.update(dt)
 			return
 
 		# song select screen
@@ -409,8 +426,8 @@ class RhythmDodgerGame:
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 		if beat_triggered:
-			# play soft metronome (use good sound) TODO: add this back via a feature switch in settings
-			# self.audio.play_sfx("good", 0.6)
+			if self.beat_sound:
+				self.audio.play_sfx("ui_1", 1)
 
 			# count down until next obstacle
 			self.beats_until_next_obstacle -= 1
@@ -663,7 +680,10 @@ class RhythmDodgerGame:
 
 		# small label under the bar (tiny, unobtrusive)
 		if self.current_track:
-			label = f"{self.current_track['bpm']} BPM"
+			label = ""
+			if self.debug:
+				label = f"{int(self.clock.get_fps())} FPS - "
+			label += f"{self.current_track['bpm']} BPM"
 			lbl = self.font_small.render(label, True, (120, 110, 100))
 			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(WINDOW_HEIGHT * 0.006)))
 
@@ -684,7 +704,7 @@ class RhythmDodgerGame:
 		if not self.current_track:
 			return
 		
-		text = f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
+		text = f"{self.current_track['path']}.ogg" if self.debug else f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
 		surf_text = self.font_small.render(text, True, TEXT_COLOUR)
 
 		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
@@ -803,10 +823,7 @@ class RhythmDodgerGame:
 			return
 
 		if self.state == "options":
-			self.screen.fill(BACKGROUND_COLOUR)
-			ui.draw_panel(self.screen, pygame.Rect(int(WINDOW_WIDTH*0.15), int(WINDOW_HEIGHT*0.15), int(WINDOW_WIDTH*0.7), int(WINDOW_HEIGHT*0.7)), (40,36,44), (120,100,90), subtitle="Press ESC to return", subtitle_font=self.font_small)
-			title = self.font_large.render("Options", True, TEXT_COLOUR)
-			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.2)))
+			self.settings_screen.draw()
 			pygame.display.flip()
 			return
 		
@@ -873,6 +890,16 @@ class RhythmDodgerGame:
 		# HUD (incl. mascot)
 		self.draw_hud(scene)
 
+		if self.debug:
+			debug_colour = (255, 0, 0)
+			pygame.draw.rect(scene, debug_colour, self.player.rect, 1)
+			if self.obstacles:
+				for o in self.obstacles:
+					pygame.draw.rect(scene, debug_colour, o.rect, 1)
+			#if self.particles:
+			#	for p in self.particles:
+			#		pygame.draw.rect(self.screen, debug_colour, p.rect, 1)
+
 		# subtle judgement flash on perfect
 		if "Perfect" in self.last_judgement and self.judgement_timer > 0:
 			flash = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
@@ -928,7 +955,7 @@ class RhythmDodgerGame:
 		if self.current_track:
 			try:
 				self.audio.play_music(-1)
-				self.music_start_time = pygame.time.get_ticks() / 1000.0 + MUSIC_LATENCY
+				self.music_start_time = pygame.time.get_ticks() / 1000.0 + self.music_latency
 				self.music_started = True
 			except Exception:
 				self.music_started = False

@@ -67,6 +67,7 @@ MUSIC_DIR = os.path.join(ASSET_DIR, "music")
 SFX_DIR = os.path.join(ASSET_DIR, "sfx")
 SPRITES_DIR = os.path.join(ASSET_DIR, "sprites")
 ART_DIR = os.path.join(ASSET_DIR, "art")
+DATA_DIR = "build"
 
 FONT_NAME = "PixelifySans"
 
