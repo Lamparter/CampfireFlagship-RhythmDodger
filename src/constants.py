@@ -107,22 +107,24 @@ SFX = [
 	("wind"),
 ]
 
+# to adjust
+
 TRACKS = [
-	("BackToBlack", "Amy Winehouse", "Back to Black", 123),
-	("DJGotUsFallinInLove", "Usher", "DJ Got Us Fallin' In Love", 120),
-	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme!", 120),
-	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121),
-	("ShizumeruMachi", "YOEKO", "Sinking Town", 125),
-	("AmericanBoy", "Estelle", "American Boy", 118),
-	("CaliforniaGurls", "Katy Perry", "California Gurls", 125),
-	("Golden", "HUNTR/X", "Golden", 123),
-	("Illegal", "PinkPantheress", "Illegal", 141),
-	("ItsRainingMen", "The Weather Girls", "It's Raining Men", 137),
-	("MoneyMoneyMoney", "ABBA", "Money, Money, Money", 120),
-	("MurderOnTheDancefloor", "Sophie Ellis-Bextor", "Murder On The Dancefloor", 117),
-	("PartyInTheUSA", "Miley Cyrus", "Party In The U.S.A.", 96),
-	("Rasputin", "Boney M.", "Rasputin", 126),
-	("WhereIsMyHusband", "RAYE", "WHERE IS MY HUSBAND!", 116),
+	("BackToBlack", "Amy Winehouse", "Back to Black", 123, 16.0), # approx
+	("DJGotUsFallinInLove", "Usher", "DJ Got Us Fallin' In Love", 120, 8.0), # approx
+	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme!", 120, 16.0), # approx
+	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121, 15.0), # approx
+	("ShizumeruMachi", "YOEKO", "Sinking Town", 125, 15.0), # approx
+	("AmericanBoy", "Estelle", "American Boy", 118, 16.0), # approx
+	("CaliforniaGurls", "Katy Perry", "California Gurls", 125, 8.0), # approx
+	("Golden", "HUNTR/X", "Golden", 123, 15.0), # approx
+	("Illegal", "PinkPantheress", "Illegal", 141, 14.0), # approx
+	("ItsRainingMen", "The Weather Girls", "It's Raining Men", 137, 15.0), # approx
+	("MoneyMoneyMoney", "ABBA", "Money, Money, Money", 120, 7.5), # approx
+	("MurderOnTheDancefloor", "Sophie Ellis-Bextor", "Murder On The Dancefloor", 117, 21.0), # approx
+	("PartyInTheUSA", "Miley Cyrus", "Party In The U.S.A.", 96, 10.0), # approx
+	("Rasputin", "Boney M.", "Rasputin", 126, 12.5), # approx
+	("WhereIsMyHusband", "RAYE", "WHERE IS MY HUSBAND!", 116, 21.6), # approx
 ]
 
 # Colours

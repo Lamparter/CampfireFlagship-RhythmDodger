@@ -153,9 +153,9 @@ class RhythmDodgerGame:
 		# load tracks list
 
 		self.available_tracks = []
-		for fn, artist, name, bpm in TRACKS:
+		for fn, artist, name, bpm, intro in TRACKS:
 			path = os.path.join(MUSIC_DIR, fn)
-			self.available_tracks.append((path, artist, name, bpm))
+			self.available_tracks.append((path, artist, name, bpm, intro))
 
 		# start a random track
 
@@ -291,7 +291,8 @@ class RhythmDodgerGame:
 		self.max_combo = 0
 		self.total_jumps = 0
 		self.accurate_jumps = 0
-
+		self.countin_active = False
+		self.countin_timer = 0.0
 		self.player_invulnerable_time = 0.6
 
 		self.audio.load_music(track["path"] + ".ogg")
@@ -307,11 +308,19 @@ class RhythmDodgerGame:
 		except Exception:
 			pass
 
+		intro = float(track["intro"])
+		if intro > 0.0:
+			self.countin_active = True
+			self.countin_timer = intro
+			self._suspend_obstacles = True
+		else:
+			self._suspend_obstacles = False
+
 	def start_random_track(self):
 		if not self.available_tracks:
 			return
-		path, artist, name, bpm = random.choice(self.available_tracks)
-		self.current_track = {"path": path, "artist": artist, "name": name, "bpm": bpm}
+		path, artist, name, bpm, intro = random.choice(self.available_tracks)
+		self.current_track = {"path": path, "artist": artist, "name": name, "bpm": bpm, "intro": intro}
 		self.start_track(self.current_track)
 
 	# input handling
@@ -328,14 +337,14 @@ class RhythmDodgerGame:
 					self.running = False
 				elif event.key == pygame.K_ESCAPE:
 					# behave contextually: if playing -> pause; if title -> do nothing; if options -> back
-					if self.state == "playing":
+					if self.state == "playing" and not self.countin_active:
 						self.set_state("paused")
 					elif self.state == "paused":
 						self.set_state("playing")
 					elif self.state == "options":
 						self.set_state("title")
 				# only allow gameplay jump when playing
-				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP):
+				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP) and not self.countin_active:
 					jump_pressed = True
 
 		# route events to state-specific handlers
@@ -412,12 +421,20 @@ class RhythmDodgerGame:
 		if getattr(self, "player_invulnerable_time", 0.0) > 0.0:
 			self.player_invulnerable_time = max(0.0, self.player_invulnerable_time - dt)
 
+		if self.countin_active:
+			self.countin_timer -= dt
+			if self.countin_timer <= 0.0:
+				self.countin_active = False
+				self.countin_timer = 0.0
+				self._suspend_obstacles = False
+
 		# compute absolute time if music started
 		absolute_time = None
 		if self.music_started and self.current_track:
 			absolute_time = (pygame.time.get_ticks() / 1000.0) - self.music_start_time
 			# keep absolute_time positive
 			if absolute_time < 0: absolute_time = 0.0
+			print(absolute_time)
 
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
@@ -428,7 +445,7 @@ class RhythmDodgerGame:
 			# count down until next obstacle
 			self.beats_until_next_obstacle -= 1
 
-			if self.beats_until_next_obstacle <= 0:
+			if self.beats_until_next_obstacle <= 0 and (self._suspend_obstacles == False):
 				# spawn obstacle
 				spawn_x = WINDOW_WIDTH + int(WINDOW_WIDTH * 0.05)
 				sprite = random.choice(self.obstacle_sprites)
@@ -542,7 +559,8 @@ class RhythmDodgerGame:
 		self.obstacles = [o for o in self.obstacles if not o.offscreen()]
 		
 		# passive score over time
-		self.score += dt * 2 * SPRITE_SCALE # small survival score
+		if self.countin_active is False:
+			self.score += dt * 2 * SPRITE_SCALE # small survival score
 
 		# particles and mascot update
 		self.particles.update(dt)
@@ -881,6 +899,29 @@ class RhythmDodgerGame:
 		
 		# HUD (incl. mascot)
 		self.draw_hud(scene)
+
+		if self.countin_active:
+			# dim the whole screen
+			dim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), flags=pygame.SRCALPHA)
+			dim.fill((0, 0, 0, 160))
+
+			scene.blit(dim, (0, 0))
+
+			remaining = max(0.0, self.countin_timer)
+			display_num = int(math.ceil(remaining)) if remaining > 0 else 0
+			if display_num == 0:
+				text = "GO!"
+			else:
+				text = str(display_num)
+
+			font = self.font_large
+
+			txt_surf = font.render(text, True, (250, 250, 250))
+			shadow = font.render(text, True, (20, 20, 20))
+			cx = WINDOW_WIDTH // 2
+			cy = WINDOW_HEIGHT // 2
+			scene.blit(shadow, (cx - shadow.get_width()//2 + 4, cy - shadow.get_height()//2 + 4))
+			scene.blit(txt_surf, (cx - txt_surf.get_width()//2, cy - txt_surf.get_height()//2))
 
 		if self.debug:
 			debug_colour = (255, 0, 0)

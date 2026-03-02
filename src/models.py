@@ -211,7 +211,7 @@ class TitleScreen:
 		# initial keyboard focus on first button
 		if self.menu_buttons:
 			self.menu_buttons[0].focus = True
-	
+
 	def enter_title_music(self):
 		if os.path.exists(TITLE_MUSIC):
 			try:
@@ -394,8 +394,8 @@ class SongSelectScreen:
 
 	def _select_track(self, track):
 		# set current track and go to playing state (but show confirm menu)
-		filename, artist, title, bpm = track
-		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(ART_DIR, filename)}
+		filename, artist, title, bpm, intro = track
+		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(ART_DIR, filename), "intro": intro}
 
 		# play decide sfx
 		try: self.game.audio.play_sfx("ui_decide_title")
@@ -488,7 +488,7 @@ class SongSelectScreen:
 		surf.set_clip(clip_rect)
 
 		for i, (btn, track) in enumerate(self.tiles):
-			filename, artist, title_text, bpm = track
+			filename, artist, title_text, bpm, intro = track
 			art_path = os.path.join(ART_DIR, filename + ".jpg")
 
 			draw_rect = btn.base_rect.move(0, -self.scroll_y)
