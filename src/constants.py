@@ -117,7 +117,7 @@ TRACKS = [
 	("GimmeGimmeGimme", "ABBA", "Gimme! Gimme! Gimme!", 120, 16.4),
 	("Golden", "HUNTR/X", "Golden", 123, 15.25),
 	("Illegal", "PinkPantheress", "Illegal", 141, 13.89),
-	("ItsRainingMen", "The Weather Girls", "It's Raining Men", 137, 15.35),
+	("ItsRainingMen", "The Weather Girls", "It's Raining Men", 137, 15.5),
 	("MoneyMoneyMoney", "ABBA", "Money, Money, Money", 120, 8.62),
 	("MurderOnTheDancefloor", "Sophie Ellis-Bextor", "Murder On The Dancefloor", 117, 20.93),
 	("OnlySoMuchOilInTheGround", "Stefanie Heinzmann ", "Only So Much Oil In The Ground", 121, 15.3),
