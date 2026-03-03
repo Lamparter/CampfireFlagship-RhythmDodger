@@ -436,7 +436,7 @@ class RhythmDodgerGame:
 			absolute_time = (pygame.time.get_ticks() / 1000.0) - self.music_start_time
 			# keep absolute_time positive
 			if absolute_time < 0: absolute_time = 0.0
-			print(absolute_time)
+			print(f"[DEBUG] Absolute time in game: {absolute_time}")
 
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
