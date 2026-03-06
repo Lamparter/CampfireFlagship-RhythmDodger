@@ -35,6 +35,7 @@ class RhythmDodgerGame:
 		self.music_latency = float(self.settings.get("music_latency"))
 		self.debug = bool(self.settings.get("debug"))
 		self.beat_sound = bool(self.settings.get("beat_sound"))
+		self.idle = bool(self.settings.get("idle"))
 
 		# audio
 
@@ -247,7 +248,9 @@ class RhythmDodgerGame:
 					self.title_screen.enter_title_music()
 			except: pass
 		if new_state == "gameover" and prev != "gameover":
-			try: 
+			try:
+				if self.idle:
+					self._play_again()
 				pygame.mixer.music.set_volume(0.12)
 				self.gameover_title_btn.focus = True
 				self.gameover_again_btn.focus = False
@@ -441,20 +444,24 @@ class RhythmDodgerGame:
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 		if beat_triggered:
-			if self.beat_sound:
-				self.audio.play_sfx("ui_1", 1)
+			if self._suspend_obstacles == False:
+				if self.beat_sound:
+					self.audio.play_sfx("ui_1", 1)
 
-			# count down until next obstacle
-			self.beats_until_next_obstacle -= 1
+				if self.beats_until_next_obstacle == 0:
+					# spawn obstacle
+					spawn_x = WINDOW_WIDTH + int(WINDOW_WIDTH * 0.05)
+					sprite = random.choice(self.obstacle_sprites)
+					self.obstacles.append(models.Obstacle(spawn_x, sprite))
 
-			if self.beats_until_next_obstacle <= 0 and (self._suspend_obstacles == False):
-				# spawn obstacle
-				spawn_x = WINDOW_WIDTH + int(WINDOW_WIDTH * 0.05)
-				sprite = random.choice(self.obstacle_sprites)
-				self.obstacles.append(models.Obstacle(spawn_x, sprite))
-
-				# reset spacing
-				self.beats_until_next_obstacle = helpers.space_obstacle()
+				if (self.beats_until_next_obstacle > -1):
+					# count down until next obstacle
+					self.beats_until_next_obstacle -= 1
+				else:
+					if self.idle:
+						jump_pressed = True
+					# reset spacing
+					self.beats_until_next_obstacle = helpers.space_obstacle()
 
 			# cute beat bar reactions
 

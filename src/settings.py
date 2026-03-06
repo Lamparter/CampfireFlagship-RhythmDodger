@@ -12,6 +12,7 @@ class SettingsManager:
 		"debug": False,
 		"music_latency": MUSIC_LATENCY,
 		"master_volume": 0.7,
+		"idle": False,
 	}
 
 	def __init__(self, path):

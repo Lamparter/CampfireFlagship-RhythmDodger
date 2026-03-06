@@ -574,6 +574,7 @@ class SettingsScreen:
 			("debug", "Debug UI", "Show debug overlay and FPS", "toggle", {}),
 			("music_latency", "Music Latency", "Adjust audio timing (seconds)", "slider", {"min": -1.0, "max": 1.0, "step": 0.01}),
 			("master_volume", "Master Volume", "Overall music volume", "slider", {"min": 0.0, "max": 1.0, "step": 0.01}),
+			("idle", "Idle Player Mode", "Play the game automatically", "toggle", {}),
 		]
 
 		self.tiles = []
@@ -632,6 +633,8 @@ class SettingsScreen:
 			self.game.debug = bool(value)
 		if key == "beat_sound":
 			self.game.beat_sound = bool(value)
+		if key == "idle":
+			self.game.idle = bool(value)
 	
 	def _apply_focus(self):
 		for i, (_, _, _, ctrl, _) in enumerate(self.tiles):
@@ -658,6 +661,7 @@ class SettingsScreen:
 		self.game.music_latency = self.settings.get("music_latency")
 		self.game.debug = self.settings.get("debug")
 		self.game.beat_sound = self.settings.get("beat_sound")
+		self.game.idle = self.settings.get("idle")
 		pygame.mixer.music.set_volume(self.settings.get("master_volume"))
 
 		# update controls visually
