@@ -996,7 +996,7 @@ class RhythmDodgerGame:
 			self.screen.blit(overlay, (0, 0))
 			
 			# draw options panel centred
-			ui.draw_panel(self.screen, pygame.Rect(constants.WINDOW_WIDTH()*0.2, constants.WINDOW_HEIGHT()*0.2, constants.WINDOW_WIDTH()*0.6,  constants.WINDOW_HEIGHT()*0.6), (40, 36, 44), (120, 100, 90), subtitle="Press ESC to return", subtitle_font=self.font_small())
+			ui.draw_panel(self.screen, pygame.Rect(constants.WINDOW_WIDTH()*0.2, constants.WINDOW_HEIGHT()*0.2, constants.WINDOW_WIDTH()*0.6,  constants.WINDOW_HEIGHT()*0.6), (40, 36, 44), (120, 100, 90), subtitle="Press ESC to return", subtitle_font=self.font_small)
 			title = self.font_large().render("Paused", True, constants.TEXT_COLOUR)
 			self.screen.blit(title, (constants.WINDOW_WIDTH()//2 - title.get_width()//2, int(constants.WINDOW_HEIGHT()*0.3)))
 
