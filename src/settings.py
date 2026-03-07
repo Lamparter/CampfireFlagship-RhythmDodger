@@ -3,14 +3,14 @@ Game settings
 """
 
 import json, os
-from constants import *
+import constants
 
 class SettingsManager:
 	DEFAULTS = {
-		"theme": DEFAULT_THEME,
+		"theme": constants.DEFAULT_THEME,
 		"beat_sound": False,
 		"debug": False,
-		"music_latency": MUSIC_LATENCY,
+		"music_latency": constants.MUSIC_LATENCY,
 		"master_volume": 0.7,
 		"idle": False,
 		"intro": True,

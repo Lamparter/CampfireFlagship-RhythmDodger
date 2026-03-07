@@ -2,20 +2,19 @@
 Helper functions
 """
 
-import pygame, math, random, glob, numpy
-import models, audio
-from constants import *
+import pygame, math, random, glob, numpy, os
+import models, audio, constants
 
 def space_obstacle() -> int:
-	return random.randint(OBSTACLE_SPACING_MIN, OBSTACLE_SPACING_MAX)
+	return random.randint(constants.OBSTACLE_SPACING_MIN, constants.OBSTACLE_SPACING_MAX)
 
 def get_timing_judgement(clock: models.BeatTracker): # returns a string judgement based on how close the jump was to the beat
 	t = clock.last_beat_time
 	dist = min(abs(t), abs(clock.interval - t))
 
-	if dist <= BEAT_TOLERANCE_PERFECT:
+	if dist <= constants.BEAT_TOLERANCE_PERFECT:
 		return "Perfect!"
-	elif dist <= BEAT_TOLERANCE_GOOD:
+	elif dist <= constants.BEAT_TOLERANCE_GOOD:
 		return "Good!"
 	else:
 		# early vs late
@@ -38,10 +37,10 @@ def get_rank(accuracy):
 def play_ui_sound(audioManager: audio.AudioManager):
 	audioManager.play_sfx("ui_" + str(random.randint(1, 5)))
 
-def get_themed(asset, theme = DEFAULT_THEME.lower(), folder = SPRITES_DIR):
+def get_themed(asset, theme = constants.DEFAULT_THEME.lower(), folder = constants.SPRITES_DIR):
 	return os.path.join(folder, theme, asset)
 
-def load_parallax_layers(folder=os.path.join(SPRITES_DIR, DEFAULT_THEME.lower()), pattern="bg_*", max_value=0.60):
+def load_parallax_layers(folder=os.path.join(constants.SPRITES_DIR, constants.DEFAULT_THEME.lower()), pattern="bg_*", max_value=0.60):
 	files = sorted(
 		glob.glob(os.path.join(folder, pattern)),
 		key=lambda f: int(os.path.basename(f).split("_")[1].split(".")[0])

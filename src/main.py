@@ -3,24 +3,24 @@ Main game class
 """
 
 import pygame, sys, os, math, random, asyncio, glob, numpy
-import helpers, models, sprites, particles, audio, ui, settings; from constants import *
+import helpers, models, sprites, particles, audio, ui, settings, constants
 
 class RhythmDodgerGame:
 	def __init__(self):
 		pygame.init()
-		self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-		pygame.display.set_caption(NAME)
+		self.screen = pygame.display.set_mode((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.RESIZABLE)
+		pygame.display.set_caption(constants.NAME)
 		self.clock = pygame.time.Clock()
 
 		# fonts (scale with window height)
 
-		self.font_small = pygame.font.Font(FONT_PATH, FONT_SMALL)
-		self.font_large = pygame.font.Font(FONT_PATH, FONT_LARGE)
+		self.font_small = lambda: pygame.font.Font(constants.FONT_PATH, constants.FONT_SMALL())
+		self.font_large = lambda: pygame.font.Font(constants.FONT_PATH, constants.FONT_LARGE())
 
 		# settings
 
 		# settings file path
-		settings_path = os.path.join(DATA_DIR, "settings.json")
+		settings_path = os.path.join(constants.DATA_DIR, "settings.json")
 		self.settings = settings.SettingsManager(settings_path)
 
 		# apply immediately to audio and game state
@@ -44,62 +44,62 @@ class RhythmDodgerGame:
 
 		# preload sfx
 		
-		for sfx in SFX:
-			self.audio.load_sfx(sfx, os.path.join(SFX_DIR, f"{sfx}.wav"))
+		for sfx in constants.SFX:
+			self.audio.load_sfx(sfx, os.path.join(constants.SFX_DIR, f"{sfx}.wav"))
 
 		# sprites
 
-		self.player_sheet = sprites.SpriteSheet(helpers.get_themed(PLAYER, self.theme))
-		self.player = models.Player(self.player_sheet, self.font_small)
+		self.player_sheet = sprites.SpriteSheet(helpers.get_themed(constants.PLAYER, self.theme))
+		self.player = models.Player(self.player_sheet, self.font_small())
 
-		self.tileset_native = pygame.image.load(helpers.get_themed(TILESET, self.theme)).convert_alpha()
+		self.tileset_native = pygame.image.load(helpers.get_themed(constants.TILESET, self.theme)).convert_alpha()
 		self.tiles_native = []
-		native_tiles_count = max(3, self.tileset_native.get_width() // NATIVE_TILE)
+		native_tiles_count = max(3, self.tileset_native.get_width() // constants.NATIVE_TILE)
 		for i in range(native_tiles_count):
-			surf = pygame.Surface((NATIVE_TILE, NATIVE_TILE), pygame.SRCALPHA)
-			surf.blit(self.tileset_native, (0,0), (i * NATIVE_TILE, 0, NATIVE_TILE, NATIVE_TILE))
-			self.tiles_native.append(pygame.transform.scale(surf, (TILE_SIZE, TILE_SIZE))) # scale to TILE_SIZE
+			surf = pygame.Surface((constants.NATIVE_TILE, constants.NATIVE_TILE), pygame.SRCALPHA)
+			surf.blit(self.tileset_native, (0,0), (i * constants.NATIVE_TILE, 0, constants.NATIVE_TILE, constants.NATIVE_TILE))
+			self.tiles_native.append(pygame.transform.scale(surf, (constants.TILE_SIZE(), constants.TILE_SIZE()))) # scale to constants.TILE_SIZE()
 		
 		# obstacles
 
-		self.obstacles_img = pygame.image.load(helpers.get_themed(OBSTACLES, self.theme)).convert_alpha()
+		self.obstacles_img = pygame.image.load(helpers.get_themed(constants.OBSTACLES, self.theme)).convert_alpha()
 
 		# split obstacles into frames (assume horizontal strip)
 		self.obstacle_sprites = []
-		count = max(1, self.obstacles_img.get_width() // NATIVE_OBS)
+		count = max(1, self.obstacles_img.get_width() // constants.NATIVE_OBS)
 		for i in range(count):
-			surf = pygame.Surface((NATIVE_OBS, NATIVE_OBS), pygame.SRCALPHA)
-			surf.blit(self.obstacles_img, (0,0), (i * NATIVE_OBS, 0, NATIVE_OBS, NATIVE_OBS))
+			surf = pygame.Surface((constants.NATIVE_OBS, constants.NATIVE_OBS), pygame.SRCALPHA)
+			surf.blit(self.obstacles_img, (0,0), (i * constants.NATIVE_OBS, 0, constants.NATIVE_OBS, constants.NATIVE_OBS))
 			self.obstacle_sprites.append(surf)
 		
 		# mascot
 
-		self.mascot_sheet = sprites.SpriteSheet(helpers.get_themed(MASCOT, self.theme))
-		self.mascot = models.Mascot(self.mascot_sheet, self.font_small, self.theme)
+		self.mascot_sheet = sprites.SpriteSheet(helpers.get_themed(constants.MASCOT, self.theme))
+		self.mascot = models.Mascot(self.mascot_sheet, self.font_small(), self.theme)
 
 		# beat bar
 
 		self.beat_icon_img = None
 		self.beat_marker_img = None
 
-		if os.path.exists(helpers.get_themed(HEARTBEAT, self.theme)):
+		if os.path.exists(helpers.get_themed(constants.HEARTBEAT, self.theme)):
 			try:
-				img = pygame.image.load(helpers.get_themed(HEARTBEAT, self.theme)).convert_alpha()
-				target = HEARTBEAT_SIZE
+				img = pygame.image.load(helpers.get_themed(constants.HEARTBEAT, self.theme)).convert_alpha()
+				target = constants.HEARTBEAT_SIZE()
 				self.beat_icon_img = pygame.transform.scale(img, (target, target))
 			except Exception:
 				self.beat_icon_img = None
 		
 		# beat bar animation state
-		self.beat_icon_scale = BEAT_ICON_SCALE_DEFAULT
-		self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
+		self.beat_icon_scale = constants.BEAT_ICON_SCALE_DEFAULT
+		self.beat_icon_target_scale = constants.BEAT_ICON_SCALE_DEFAULT
 		self.beat_icon_anim_time = 0.0
 		self.beat_icon_anim_duration = 0.22
 		self.beat_bar_pulse = 0.0
 
 		# parallax
 
-		self.bg_layers = helpers.load_parallax_layers(os.path.join(SPRITES_DIR, self.theme))
+		self.bg_layers = helpers.load_parallax_layers(os.path.join(constants.SPRITES_DIR, self.theme))
 
 		# particles
 
@@ -108,7 +108,7 @@ class RhythmDodgerGame:
 		# beat / music
 
 		self.current_track = None
-		self.beat_tracker = models.BeatTracker(60.0 / DEFAULT_BPM)
+		self.beat_tracker = models.BeatTracker(60.0 / constants.DEFAULT_BPM)
 		self.music_started = False
 		self.music_start_time = 0.0
 		self.beats_until_next_obstacle = helpers.space_obstacle()
@@ -154,8 +154,8 @@ class RhythmDodgerGame:
 		# load tracks list
 
 		self.available_tracks = []
-		for fn, artist, name, bpm, intro in TRACKS:
-			path = os.path.join(MUSIC_DIR, fn)
+		for fn, artist, name, bpm, intro in constants.TRACKS:
+			path = os.path.join(constants.MUSIC_DIR, fn)
 			self.available_tracks.append((path, artist, name, bpm, intro))
 
 		# start a random track
@@ -164,70 +164,71 @@ class RhythmDodgerGame:
 
 		# hud
 
-		self.left_margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		self.top_margin = int(WINDOW_HEIGHT * UI_MARGIN_FRAC)
-
-		pause_size = max(32, int(WINDOW_WIDTH * 0.04))
-		pause_x = int(WINDOW_WIDTH * 0.02)
-		pause_y = WINDOW_HEIGHT - pause_size - int(WINDOW_HEIGHT * 0.02)
+		pause_size = lambda: max(32, int(constants.WINDOW_WIDTH() * 0.04))
+		pause_x = lambda: int(constants.WINDOW_WIDTH() * 0.02)
+		pause_y = lambda: constants.WINDOW_HEIGHT() - pause_size() - int(constants.WINDOW_HEIGHT() * 0.02)
 
 		self.pause_button = ui.Button(
-			(pause_x, pause_y, pause_size, pause_size),
+			(pause_x(), pause_y(), pause_size(), pause_size()),
 			"",
-			self.font_small,
+			self.font_small(),
 			helpers._with_click_sfx(lambda b: self.toggle_pause(), self.audio),
 			radius=8
 		)
 
 		# pause overlay buttons
-		btn_w = 96 * SPRITE_SCALE
-		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
-		centre_x = WINDOW_WIDTH // 2
-		panel_w = int(WINDOW_WIDTH * 0.6)
-		panel_x = WINDOW_WIDTH//2 - panel_w//2
+		btn_w = lambda: 96 * constants.SPRITE_SCALE()
+		btn_h = lambda: max(48, int(constants.WINDOW_HEIGHT() * 0.07))
+		centre_x = lambda: constants.WINDOW_WIDTH() // 2
+		btn_x = lambda: centre_x() - btn_w()//2
+		prb_y = lambda: int(constants.WINDOW_HEIGHT() * 0.55)
+		ptb_y = lambda: int(constants.WINDOW_HEIGHT() * 0.65)
+		panel_w = lambda: int(constants.WINDOW_WIDTH() * 0.6)
+		panel_x = lambda: constants.WINDOW_WIDTH()//2 - panel_w//2
 
 		# resume button (from pause overlay)
 		self.pause_resume_btn = ui.Button(
-			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.55), btn_w, btn_h),
+			(btn_x(), prb_y(), btn_w(), btn_h()),
 			"Resume",
-			self.font_large,
+			self.font_large(),
 			helpers._with_click_sfx(lambda b: self.set_state("playing"), self.audio),
 			radius=10
 		)
 
 		# back to title button (from pause overlay)
 		self.pause_title_btn = ui.Button(
-			(centre_x - btn_w//2, int(WINDOW_HEIGHT*0.65), btn_w, btn_h),
+			(btn_x(), ptb_y(), btn_w(), btn_h()),
 			"Back to Title",
-			self.font_large,
+			self.font_large(),
 			lambda b: self.set_state("title"),
 			radius=10
 		)
 
 		# game over buttons (from gameover)
-		go_btn_w = 96 * SPRITE_SCALE
-		go_btn_h = max(48, int(WINDOW_HEIGHT * 0.06))
-		go_x = WINDOW_WIDTH//2 - go_btn_w//2
+		go_btn_w = lambda: 96 * constants.SPRITE_SCALE()
+		go_btn_h = lambda: max(48, int(constants.WINDOW_HEIGHT() * 0.06))
+		go_x = lambda: constants.WINDOW_WIDTH()//2 - go_btn_w()//2
+		go_y = lambda: int(constants.WINDOW_HEIGHT()*0.6)
 
 		self.gameover_again_btn = ui.Button(
-			(go_x, int(WINDOW_HEIGHT*0.6), go_btn_w, go_btn_h),
+			(go_x(), go_y(), go_btn_w(), go_btn_h()),
 			"Play Again",
-			self.font_small,
+			self.font_small(),
 			lambda b: self._play_again(),
 			radius=8
 		)
 
 		self.gameover_title_btn = ui.Button(
-			(go_x, int(WINDOW_HEIGHT*0.6) + go_btn_h + 12, go_btn_w, go_btn_h),
+			(go_x(), go_y() + go_btn_h() + 12, go_btn_w(), go_btn_h()),
 			"Title Screen",
-			self.font_small,
+			self.font_small(),
 			lambda b: self.set_state("title"),
 			radius=8
 		)
 
 		# mascot position in top-left near HUD
-		self.mascot.x = self.left_margin
-		self.mascot.y = self.top_margin
+		self.mascot.x = constants.LEFT_MARGIN()
+		self.mascot.y = constants.TOP_MARGIN()
 
 		# views
 
@@ -241,6 +242,12 @@ class RhythmDodgerGame:
 		prev = self.state
 		self.state = new_state
 		# play return sound when going back to title
+		#if new_state == "options" and prev != "options":
+		#	self.settings_screen = models.SettingsScreen(self)
+		#if new_state == "title" and prev != "title":
+		#	self.title_screen = models.TitleScreen(self)
+		#if new_state == "song_select" and prev != "song_select":
+		#	self.song_select = models.SongSelectScreen(self)
 		if new_state == "title" and prev not in ("title", "song_select", "options"):
 			try:
 				self.audio.play_sfx("ui_return_title", 0.9)
@@ -359,6 +366,10 @@ class RhythmDodgerGame:
 				# only allow gameplay jump when playing
 				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP) and not self.countin_active:
 					jump_pressed = True
+			elif event.type == pygame.VIDEORESIZE:
+				constants.window_width___internal = event.w
+				constants.window_height___internal = event.h
+				self.render()
 
 		# route events to state-specific handlers
 		if self.state == "title":
@@ -407,16 +418,19 @@ class RhythmDodgerGame:
 	def update(self, dt, jump_pressed):
 		# title screen update
 		if self.state == "title":
+			#self.title_screen = models.TitleScreen(self)
 			self.title_screen.update(dt)
 			return
 
 		# options screen (placeholder)
 		if self.state == "options":
+			#self.settings_screen = models.SettingsScreen(self)
 			self.settings_screen.update(dt)
 			return
 
 		# song select screen
 		if self.state == "song_select":
+			#self.song_select = models.SongSelectScreen(self)
 			#self.song_select.update(dt)
 			return
 
@@ -465,7 +479,7 @@ class RhythmDodgerGame:
 
 				if self.beats_until_next_obstacle == 0:
 					# spawn obstacle
-					spawn_x = WINDOW_WIDTH + int(WINDOW_WIDTH * 0.05)
+					spawn_x = constants.WINDOW_WIDTH() + int(constants.WINDOW_WIDTH() * 0.05)
 					sprite = random.choice(self.obstacle_sprites)
 					self.obstacles.append(models.Obstacle(spawn_x, sprite))
 
@@ -481,7 +495,7 @@ class RhythmDodgerGame:
 			# cute beat bar reactions
 
 			# icon bounce: set target scale and reset anim timer
-			self.beat_icon_target_scale = BEAT_ICON_SCALE_BEAT # pop scale on beat
+			self.beat_icon_target_scale = constants.BEAT_ICON_SCALE_BEAT # pop scale on beat
 			self.beat_icon_anim_time = 0.0
 
 			# small pulse for the bar background
@@ -512,7 +526,7 @@ class RhythmDodgerGame:
 				self.mascot.react("happy")
 
 				# small extra icon pop
-				self.beat_icon_target_scale = BEAT_ICON_SCALE_PERFECT
+				self.beat_icon_target_scale = constants.BEAT_ICON_SCALE_PERFECT
 				self.beat_icon_anim_time = 0.0
 			elif judgement == "Good!":
 				self.combo += 1
@@ -584,7 +598,7 @@ class RhythmDodgerGame:
 		
 		# passive score over time
 		if self.countin_active is False:
-			self.score += dt * 2 * SPRITE_SCALE # small survival score
+			self.score += dt * 2 * constants.SPRITE_SCALE() # small survival score
 
 		# particles and mascot update
 		self.particles.update(dt)
@@ -604,7 +618,7 @@ class RhythmDodgerGame:
 			self.rain_timer = random.uniform(8.0, 20.0)
 			self.raining = random.random() < 0.25
 			if self.raining:
-				self.particles.emit_rain(WINDOW_WIDTH, WINDOW_HEIGHT, count = 60)
+				self.particles.emit_rain(constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT(), count = 60)
 		
 		# advance beat icon animation
 
@@ -614,16 +628,16 @@ class RhythmDodgerGame:
 			if self.beat_icon_anim_time >= self.beat_icon_anim_duration:
 				self.beat_icon_scale = self.beat_icon_target_scale
 				# schedule return to normal
-				self.beat_icon_target_scale = BEAT_ICON_SCALE_DEFAULT
+				self.beat_icon_target_scale = constants.BEAT_ICON_SCALE_DEFAULT
 				self.beat_icon_anim_time = 0.0
 		else:
 			# small decay to ensure scale returns to default
-			self.beat_icon_scale += (BEAT_ICON_SCALE_DEFAULT - self.beat_icon_scale) * min(1.0, dt * 8.0)
+			self.beat_icon_scale += (constants.BEAT_ICON_SCALE_DEFAULT - self.beat_icon_scale) * min(1.0, dt * 8.0)
 		
 		# beat bar pulse decay
 
 		if self.beat_bar_pulse > 0:
-			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * BEAT_BAR_PULSE_DECAY)
+			self.beat_bar_pulse = max(0.0, self.beat_bar_pulse - dt * constants.BEAT_BAR_PULSE_DECAY)
 	
 	# rendering
 
@@ -642,22 +656,22 @@ class RhythmDodgerGame:
 		if len(tiles) > 1:
 			grass = tiles[1]
 			x = 0
-			while x < WINDOW_WIDTH:
-				surf.blit(grass, (x, GROUND_Y))
-				x += TILE_SIZE
+			while x < constants.WINDOW_WIDTH():
+				surf.blit(grass, (x, constants.GROUND_Y()))
+				x += constants.TILE_SIZE()
 
 		# draw tiles below ground to bottom of screen
 		if len(tiles) > 2:
 			ground = tiles[0]
-			y = GROUND_Y + TILE_SIZE
-			while y < WINDOW_HEIGHT:
+			y = constants.GROUND_Y() + constants.TILE_SIZE()
+			while y < constants.WINDOW_HEIGHT():
 				x = 0
-				while x < WINDOW_WIDTH:
+				while x < constants.WINDOW_WIDTH():
 					surf.blit(ground, (x, y))
-					x += TILE_SIZE
-				y += TILE_SIZE
+					x += constants.TILE_SIZE()
+				y += constants.TILE_SIZE()
 		else:
-			pygame.draw.rect(surf, (40, 36, 32), pygame.Rect(0, GROUND_Y + TILE_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT - (GROUND_Y + TILE_SIZE))) # fallback
+			pygame.draw.rect(surf, (40, 36, 32), pygame.Rect(0, constants.GROUND_Y() + constants.TILE_SIZE(), constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT() - (constants.GROUND_Y() + constants.TILE_SIZE()))) # fallback
 		
 	def draw_beat_bar(self, surf):
 		"""
@@ -669,14 +683,14 @@ class RhythmDodgerGame:
 		- Compact layout so it fits UI
 		"""
 		# layout
-		bar_w = BEAT_BAR_WIDTH
-		bar_h = BEAT_BAR_HEIGHT
-		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		x = WINDOW_WIDTH - bar_w - margin
+		bar_w = constants.BEAT_BAR_WIDTH()
+		bar_h = constants.BEAT_BAR_HEIGHT()
+		margin = int(constants.WINDOW_WIDTH() * constants.UI_MARGIN_FRAC)
+		x = constants.WINDOW_WIDTH() - bar_w - margin
 		y = margin
 
 		# apply pulse scale (cute pop)
-		pulse_scale = 1.0 + BEAT_BAR_PULSE_SCALE * self.beat_bar_pulse
+		pulse_scale = 1.0 + constants.BEAT_BAR_PULSE_SCALE * self.beat_bar_pulse
 		scaled_w = int(bar_w * pulse_scale)
 		scaled_h = int(bar_h * pulse_scale)
 
@@ -691,17 +705,17 @@ class RhythmDodgerGame:
 		self.beat_bar_y = y
 
 		# base pill background (soft pastel)
-		pygame.draw.rect(surf, BEAT_BAR_BORDER_COLOUR, pygame.Rect(x-2, y-2, bar_w+4, bar_h+4), border_radius=bar_h//2)
-		pygame.draw.rect(surf, BEAT_BAR_BG_COLOUR, pygame.Rect(x, y, bar_w, bar_h), border_radius=bar_h//2)
+		pygame.draw.rect(surf, constants.BEAT_BAR_BORDER_COLOUR, pygame.Rect(x-2, y-2, bar_w+4, bar_h+4), border_radius=bar_h//2)
+		pygame.draw.rect(surf, constants.BEAT_BAR_BG_COLOUR, pygame.Rect(x, y, bar_w, bar_h), border_radius=bar_h//2)
 
 		phase = self.beat_tracker.normalised_phase()
 		fill_w = int(bar_w * phase)
-		colour = (82, 82, 82) if self.theme == "dinosaur" else BEAT_BAR_COLOUR
+		colour = (82, 82, 82) if self.theme == "dinosaur" else constants.BEAT_BAR_COLOUR
 		pygame.draw.rect(surf, colour, pygame.Rect(x, y, fill_w, bar_h), border_radius = 6)
 
 		# centre marker
 		cx = x + bar_w // 2
-		pygame.draw.line(surf, BEAT_MARKER_COLOUR, (cx, y-4), (cx, y+bar_h+4), max(1, int(WINDOW_WIDTH * 0.0015)))
+		pygame.draw.line(surf, constants.BEAT_MARKER_COLOUR, (cx, y-4), (cx, y+bar_h+4), max(1, int(constants.WINDOW_WIDTH() * 0.0015)))
 		
 		# animated beat icon (left side of fill, or if no fill, at left edge)
 		icon_x = x + max(6, int(bar_h * 0.2))
@@ -721,22 +735,22 @@ class RhythmDodgerGame:
 		if self.current_track:
 			label = ""
 			if self.debug:
-				label = f"{int(self.clock.get_fps())} FPS - "
+				label = f"{int(self.clock.get_fps())} constants.FPS - "
 			label += f"{self.current_track['bpm']} BPM"
-			lbl = self.font_small.render(label, True, (120, 110, 100))
-			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(WINDOW_HEIGHT * 0.006)))
+			lbl = self.font_small().render(label, True, (120, 110, 100))
+			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(constants.WINDOW_HEIGHT() * 0.006)))
 
 	def draw_judgement(self, surf):
 		if self.judgement_timer > 0 and self.last_judgement:
-			surf_text = self.font_small.render(self.last_judgement, True, TEXT_COLOUR)
+			surf_text = self.font_small().render(self.last_judgement, True, constants.TEXT_COLOUR)
 			bar_width = self.beat_bar_w
 			bar_height = self.beat_bar_h
 			bar_x = self.beat_bar_x
 			bar_y = self.beat_bar_y
 			x = bar_x + bar_width - surf_text.get_width()
-			y = bar_y + bar_height + int(WINDOW_HEIGHT * 0.05)
+			y = bar_y + bar_height + int(constants.WINDOW_HEIGHT() * 0.05)
 			colour = (200, 255, 200) if "Perfect" in self.last_judgement else (220, 220, 180) if "Good" in self.last_judgement else (255, 200, 180) # colour code
-			surf_text = self.font_small.render(self.last_judgement, True, colour)
+			surf_text = self.font_small().render(self.last_judgement, True, colour)
 			surf.blit(surf_text, (x, y))
 
 	def draw_track_info(self, surf):
@@ -744,37 +758,37 @@ class RhythmDodgerGame:
 			return
 		
 		text = f"{self.current_track['path']}.ogg" if self.debug else f"{self.current_track['artist']} - {self.current_track['name']} ({self.current_track['bpm']} BPM)"
-		surf_text = self.font_small.render(text, True, TEXT_COLOUR)
+		surf_text = self.font_small().render(text, True, constants.TEXT_COLOUR)
 
-		margin = int(WINDOW_WIDTH * UI_MARGIN_FRAC)
-		bottom_tile_top = GROUND_Y + TILE_SIZE
+		margin = int(constants.WINDOW_WIDTH() * constants.UI_MARGIN_FRAC)
+		bottom_tile_top = constants.GROUND_Y() + constants.TILE_SIZE()
 
 		# position: above bottom shadow tiles, aligned to bottom-right tile grid
 
-		x = WINDOW_WIDTH - surf_text.get_width() - margin
-		y = max(bottom_tile_top - surf_text.get_height() - int(WINDOW_HEIGHT * 0.01), WINDOW_HEIGHT - surf_text.get_height() - margin)
+		x = constants.WINDOW_WIDTH() - surf_text.get_width() - margin
+		y = max(bottom_tile_top - surf_text.get_height() - int(constants.WINDOW_HEIGHT() * 0.01), constants.WINDOW_HEIGHT() - surf_text.get_height() - margin)
 		surf.blit(surf_text, (x, y))
 
 	def draw_hud(self, surf):
 		# mascot, scaled to match text height (left)
-		mascot_size = max(MASCOT_SIZE, int(self.font_small.get_height() * 1.2))
-		mascot_x = self.left_margin
-		mascot_y = self.top_margin
+		mascot_size = max(constants.MASCOT_SIZE(), int(self.font_small().get_height() * 1.2))
+		mascot_x = constants.LEFT_MARGIN()
+		mascot_y = constants.TOP_MARGIN()
 		self.mascot.draw(surf, x=mascot_x, y=mascot_y, size=mascot_size)
 
 		# info cluster (left)
-		text_x = mascot_x + mascot_size + int(WINDOW_WIDTH * 0.01)
-		line_h = self.font_small.get_height() + int(WINDOW_HEIGHT * 0.008)
+		text_x = mascot_x + mascot_size + int(constants.WINDOW_WIDTH() * 0.01)
+		line_h = self.font_small().get_height() + int(constants.WINDOW_HEIGHT() * 0.008)
 		y0 = mascot_y
 
 		# score
-		score_surf = self.font_small.render(f"Score: {int(self.score)}", True, TEXT_COLOUR)
+		score_surf = self.font_small().render(f"Score: {int(self.score)}", True, constants.TEXT_COLOUR)
 		surf.blit(score_surf, (text_x, y0))
 		# combo
-		combo_surf = self.font_small.render(f"Combo: {self.combo}", True, TEXT_COLOUR)
+		combo_surf = self.font_small().render(f"Combo: {self.combo}", True, constants.TEXT_COLOUR)
 		surf.blit(combo_surf, (text_x, y0 + line_h))
 		# best
-		best_surf = self.font_small.render(f"Best: {int(self.best_score)}", True, TEXT_COLOUR)
+		best_surf = self.font_small().render(f"Best: {int(self.best_score)}", True, constants.TEXT_COLOUR)
 		surf.blit(best_surf, (text_x, y0 + line_h * 2))
 
 		# beat cluster (right)
@@ -800,8 +814,8 @@ class RhythmDodgerGame:
 			left_bar.center = (cx - gap // 2 - bar_w // 2, cy)
 			right_bar.center = (cx + gap // 2 + bar_w // 2, cy)
 
-			pygame.draw.rect(surf, BEAT_BAR_BG_COLOUR, left_bar, border_radius=2)
-			pygame.draw.rect(surf, BEAT_BAR_BG_COLOUR, right_bar, border_radius=2)
+			pygame.draw.rect(surf, constants.BEAT_BAR_BG_COLOUR, left_bar, border_radius=2)
+			pygame.draw.rect(surf, constants.BEAT_BAR_BG_COLOUR, right_bar, border_radius=2)
 
 	def apply_screen_shake(self, intensity = 4, duration = 0.12):
 		self.shake_time = duration
@@ -809,34 +823,34 @@ class RhythmDodgerGame:
 
 	def draw_game_over(self, surf):
 		# dim background
-		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+		overlay = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.SRCALPHA)
 		overlay.fill((8, 8, 10, 200))
 		surf.blit(overlay, (0, 0))
 
-		panel_w = int(WINDOW_WIDTH * 0.6) # centre panel in the middle of the window
-		panel_h = int(WINDOW_HEIGHT * 0.45)
-		panel_x = (WINDOW_WIDTH - panel_w) // 2
-		panel_y = (WINDOW_HEIGHT - panel_h) // 2
+		panel_w = int(constants.WINDOW_WIDTH() * 0.6) # centre panel in the middle of the window
+		panel_h = int(constants.WINDOW_HEIGHT() * 0.45)
+		panel_x = (constants.WINDOW_WIDTH() - panel_w) // 2
+		panel_y = (constants.WINDOW_HEIGHT() - panel_h) // 2
 		ui.draw_panel(surf, pygame.Rect(panel_x, panel_y, panel_w, panel_h), (40,36,44), (120,100,90))
-		title = self.font_large.render("GAME OVER", True, TEXT_COLOUR)
-		surf.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, panel_y + int(panel_h * 0.06)))
-		score_info = self.font_small.render(f"Score: {int(self.score)}   Best: {int(self.best_score)}   Max Combo: {self.max_combo}", True, TEXT_COLOUR)
-		surf.blit(score_info, (WINDOW_WIDTH//2 - score_info.get_width()//2, panel_y + int(panel_h * 0.22)))
+		title = self.font_large().render("GAME OVER", True, constants.TEXT_COLOUR)
+		surf.blit(title, (constants.WINDOW_WIDTH()//2 - title.get_width()//2, panel_y + int(panel_h * 0.06)))
+		score_info = self.font_small().render(f"Score: {int(self.score)}   Best: {int(self.best_score)}   Max Combo: {self.max_combo}", True, constants.TEXT_COLOUR)
+		surf.blit(score_info, (constants.WINDOW_WIDTH()//2 - score_info.get_width()//2, panel_y + int(panel_h * 0.22)))
 		accuracy = helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)
-		acc_text = self.font_small.render(f"Beat Accuracy: {accuracy}%", True, TEXT_COLOUR)
-		surf.blit(acc_text, (WINDOW_WIDTH//2 - acc_text.get_width()//2, panel_y + int(panel_h * 0.34)))
+		acc_text = self.font_small().render(f"Beat Accuracy: {accuracy}%", True, constants.TEXT_COLOUR)
+		surf.blit(acc_text, (constants.WINDOW_WIDTH()//2 - acc_text.get_width()//2, panel_y + int(panel_h * 0.34)))
 		rank = helpers.get_rank(accuracy)
-		rank_text = self.font_small.render(f"Rank: {rank}", True, TEXT_COLOUR)
-		surf.blit(rank_text, (WINDOW_WIDTH//2 - rank_text.get_width()//2, panel_y + int(panel_h * 0.44)))
-		#hint = self.font_small.render("Press R / Enter / Space to restart", True, TEXT_COLOUR)
-		#surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
+		rank_text = self.font_small().render(f"Rank: {rank}", True, constants.TEXT_COLOUR)
+		surf.blit(rank_text, (constants.WINDOW_WIDTH()//2 - rank_text.get_width()//2, panel_y + int(panel_h * 0.44)))
+		#hint = self.font_small().render("Press R / Enter / Space to restart", True, constants.TEXT_COLOUR)
+		#surf.blit(hint, (constants.WINDOW_WIDTH()//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
-		btn_w = 96 * SPRITE_SCALE
-		btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		btn_w = 96 * constants.SPRITE_SCALE()
+		btn_h = max(44, int(constants.WINDOW_HEIGHT() * 0.06))
 		gap = 24
 		total_w = btn_w * 2 + gap
-		start_x = WINDOW_WIDTH//2 - total_w//2
+		start_x = constants.WINDOW_WIDTH()//2 - total_w//2
 		y = panel_y + int(panel_h * 0.77)
 
 		self.gameover_again_btn.rect.topleft = (start_x, y)
@@ -875,26 +889,26 @@ class RhythmDodgerGame:
 		tint = (t, t, t)
 
 		# draw to scene surface for shake
-		scene = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+		scene = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()))
 		scene.fill((t, t, t))
 
 		# camera_dx: use obstacle speed as camera reference (pixels/sec)
-		camera_dx = OBSTACLE_SPEED
+		camera_dx = constants.OBSTACLE_SPEED()
 
 		for layer in self.bg_layers:
 			alpha = (255 * ((1 - (t / 255)) ** 4)) if layer.night else None
-			layer.update(1.0 / FPS, camera_dx)
+			layer.update(1.0 / constants.FPS, camera_dx)
 			layer.draw(scene, alpha)
 
 		# day/night tint
-		overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+		overlay = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()))
 		overlay.fill(tint)
 		overlay.set_alpha(50)
 		scene.blit(overlay, (0, 0))
 
 		# player squash/stretch micro-animations
 		scale_x, scale_y = 1.0, 1.0
-		if self.player.vy < -50 * SPRITE_SCALE:
+		if self.player.vy < -50 * constants.SPRITE_SCALE():
 			scale_y = 1.06; scale_x = 0.96
 		elif self.player.on_ground and self.player.recently_landed:
 			scale_y = 0.9; scale_x = 1.12
@@ -915,7 +929,7 @@ class RhythmDodgerGame:
 
 		# subtle rain overlay
 		if self.raining:
-			rain_overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			rain_overlay = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.SRCALPHA)
 			rain_overlay.fill((180, 200, 230, 20))
 			scene.blit(rain_overlay, (0, 0))
 		
@@ -924,7 +938,7 @@ class RhythmDodgerGame:
 
 		if self.countin_active:
 			# dim the whole screen
-			dim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), flags=pygame.SRCALPHA)
+			dim = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), flags=pygame.SRCALPHA)
 			dim.fill((0, 0, 0, 160))
 
 			scene.blit(dim, (0, 0))
@@ -936,12 +950,12 @@ class RhythmDodgerGame:
 			else:
 				text = str(display_num)
 
-			font = self.font_large
+			font = self.font_large()
 
 			txt_surf = font.render(text, True, (250, 250, 250))
 			shadow = font.render(text, True, (20, 20, 20))
-			cx = WINDOW_WIDTH // 2
-			cy = WINDOW_HEIGHT // 2
+			cx = constants.WINDOW_WIDTH() // 2
+			cy = constants.WINDOW_HEIGHT() // 2
 			scene.blit(shadow, (cx - shadow.get_width()//2 + 4, cy - shadow.get_height()//2 + 4))
 			scene.blit(txt_surf, (cx - txt_surf.get_width()//2, cy - txt_surf.get_height()//2))
 
@@ -957,14 +971,14 @@ class RhythmDodgerGame:
 
 		# subtle judgement flash on perfect
 		if "Perfect" in self.last_judgement and self.judgement_timer > 0:
-			flash = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			flash = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.SRCALPHA)
 			alpha = int(120 * (self.judgement_timer / 0.6))
 			flash.fill((220, 255, 200, alpha))
 			scene.blit(flash, (0, 0))
 
 		# screen shake
 		if self.shake_time > 0:
-			self.shake_time -= 1.0 / FPS
+			self.shake_time -= 1.0 / constants.FPS
 			dx = random.uniform(-1, 1) * self.shake_intensity
 			dy = random.uniform(-1, 1) * self.shake_intensity
 			self.screen.blit(scene, (int(dx), int(dy)))
@@ -977,14 +991,14 @@ class RhythmDodgerGame:
 
 		if self.state == "paused":
 			# then dim
-			overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+			overlay = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.SRCALPHA)
 			overlay.fill((8, 8, 10, 200))
 			self.screen.blit(overlay, (0, 0))
 			
 			# draw options panel centred
-			ui.draw_panel(self.screen, pygame.Rect(WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, WINDOW_WIDTH*0.6,  WINDOW_HEIGHT*0.6), (40, 36, 44), (120, 100, 90), subtitle="Press ESC to return", subtitle_font=self.font_small)
-			title = self.font_large.render("Paused", True, TEXT_COLOUR)
-			self.screen.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, int(WINDOW_HEIGHT*0.3)))
+			ui.draw_panel(self.screen, pygame.Rect(constants.WINDOW_WIDTH()*0.2, constants.WINDOW_HEIGHT()*0.2, constants.WINDOW_WIDTH()*0.6,  constants.WINDOW_HEIGHT()*0.6), (40, 36, 44), (120, 100, 90), subtitle="Press ESC to return", subtitle_font=self.font_small())
+			title = self.font_large().render("Paused", True, constants.TEXT_COLOUR)
+			self.screen.blit(title, (constants.WINDOW_WIDTH()//2 - title.get_width()//2, int(constants.WINDOW_HEIGHT()*0.3)))
 
 			# buttons
 			self.pause_resume_btn.draw(self.screen)
@@ -997,7 +1011,7 @@ class RhythmDodgerGame:
 	def reset(self):
 		self.player.reset()
 		self.obstacles.clear()
-		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else DEFAULT_BPM))
+		self.beat_tracker = models.BeatTracker(60.0 / (self.current_track['bpm'] if self.current_track else constants.DEFAULT_BPM))
 		self.set_state("playing")
 		self.score = 0
 		self.combo = 0
@@ -1022,7 +1036,7 @@ class RhythmDodgerGame:
 			if self.restarting:
 				self.__init__()
 				self.set_state(self.restart_screen)
-			dt_ms = self.clock.tick(FPS)
+			dt_ms = self.clock.tick(constants.FPS)
 			dt = dt_ms / 1000.0
 
 			jump_pressed = self.handle_events()

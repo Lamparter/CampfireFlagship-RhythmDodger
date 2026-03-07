@@ -3,16 +3,15 @@ Game objects
 """
 
 import os, pygame, random
-import sprites, particles, ui, helpers, settings
-from constants import *
+import sprites, particles, ui, helpers, settings, constants
 
 # Game objects
 
 class Player: # player
 	def __init__(self, spritesheet: sprites.SpriteSheet, font):
 		# store native frames then scale for rendering
-		self.x = PLAYER_X
-		self.y = float(GROUND_Y - PLAYER_H)
+		self.x = constants.PLAYER_X()
+		self.y = float(constants.GROUND_Y() - constants.PLAYER_SIZE())
 		self.vy = 0.0
 		self.on_ground = True
 		self.land_time_remaining = 0.0
@@ -28,17 +27,17 @@ class Player: # player
 			(2, "land", 8),
 		]
 
-		# load native frames (24x24) and scale them to PLAYER_W/PLAYER_H
+		# load native frames (24x24) and scale them to constants.PLAYER_SIZE()/constants.PLAYER_SIZE()
 		for row, name, fps in anim_rows:
-			native_frames = spritesheet.load_strip((0, row * NATIVE_PLAYER, NATIVE_PLAYER, NATIVE_PLAYER), frames)
-			scaled_frames = [pygame.transform.scale(f, (PLAYER_W, PLAYER_H)) for f in native_frames]
+			native_frames = spritesheet.load_strip((0, row * constants.NATIVE_PLAYER, constants.NATIVE_PLAYER, constants.NATIVE_PLAYER), frames)
+			scaled_frames = [pygame.transform.scale(f, (constants.PLAYER_SIZE(), constants.PLAYER_SIZE())) for f in native_frames]
 			self.animations[name] = sprites.AnimatedSprite(scaled_frames, fps=fps, loop=True)
 			self.anim_durations[name] = frames / float(fps)
 
 		self.state = "idle"
 		self.font = font
-		self.width = PLAYER_W
-		self.height = PLAYER_H
+		self.width = constants.PLAYER_SIZE()
+		self.height = constants.PLAYER_SIZE()
 
 		self._mask_cache = {}
 
@@ -47,7 +46,7 @@ class Player: # player
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 	
 	def reset(self):
-		self.y = float(GROUND_Y - PLAYER_H)
+		self.y = float(constants.GROUND_Y() - constants.PLAYER_SIZE())
 		self.vy = 0.0
 		self.on_ground = True
 		self.recently_landed = False
@@ -55,7 +54,7 @@ class Player: # player
 	
 	def try_jump(self):
 		if self.on_ground:
-			self.vy = JUMP_VELOCITY
+			self.vy = constants.JUMP_VELOCITY()
 			self.on_ground = False
 			self.state = "jump"
 			self.land_time_remaining = 0.0
@@ -73,9 +72,9 @@ class Player: # player
 		return mask
 	
 	def update(self, dt):
-		self.vy += GRAVITY * dt
+		self.vy += constants.GRAVITY() * dt
 		self.y += self.vy * dt
-		ground_y = GROUND_Y - self.height
+		ground_y = constants.GROUND_Y() - self.height
 		if self.y >= ground_y:
 			if not self.on_ground:
 				self.recently_landed = True
@@ -103,7 +102,7 @@ class Player: # player
 
 	def draw(self, surf, scale_x = 1.0, scale_y = 1.0):
 		img = self.animations[self.state].get_image()
-		# img already scaled to PLAYER_W/PLAYER_H; apply micro squash/stretch via transform
+		# img already scaled to constants.PLAYER_SIZE()/constants.PLAYER_SIZE(); apply micro squash/stretch via transform
 		w,h = img.get_size()
 		sw = max(1, int(w * scale_x))
 		sh = max(1, int(h * scale_y))
@@ -114,14 +113,14 @@ class Player: # player
 
 class Obstacle:
 	def __init__(self, x, sprite):
-		# sprite is native 24x24; scale to OBS_W/OBS_H
+		# sprite is native 24x24; scale to OBS_SIZE()/OBS_SIZE()
 		self.x = x
-		self.sprite = pygame.transform.scale(sprite, (OBS_W, OBS_H))
+		self.sprite = pygame.transform.scale(sprite, (constants.OBS_SIZE(), constants.OBS_SIZE()))
 		self.width = self.sprite.get_width()
 		self.height = self.sprite.get_height()
-		self.y = GROUND_Y - self.height
+		self.y = constants.GROUND_Y() - self.height
 		if random.random() < 0.25: # random vertical offset for variety (floating obstacles)
-			self.y -= random.choice([24 * SPRITE_SCALE, 40 * SPRITE_SCALE])
+			self.y -= random.choice([24 * constants.SPRITE_SCALE(), 40 * constants.SPRITE_SCALE()])
 		self.passed = False
 
 		# create a mask from the scaled surface for pixel-perfect collision
@@ -132,7 +131,7 @@ class Obstacle:
 		return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 	
 	def update(self, dt):
-		self.x -= OBSTACLE_SPEED * dt
+		self.x -= constants.OBSTACLE_SPEED() * dt
 	
 	def draw(self, surf):
 		surf.blit(self.sprite, (int(self.x), int(self.y)))
@@ -142,13 +141,13 @@ class Obstacle:
 
 class Mascot:
 	def __init__(self, sheet: sprites.SpriteSheet, font_small, theme):
-		# load native frames and scale to MASCOT_SIZE
+		# load native frames and scale to constants.MASCOT_SIZE()
 		sheet_count = 2 if theme == "dinosaur" else 3
-		native_frames = sheet.load_strip((0,0,NATIVE_MASCOT,NATIVE_MASCOT), sheet_count)
-		scaled = [pygame.transform.scale(f, (MASCOT_SIZE,MASCOT_SIZE)) for f in native_frames]
+		native_frames = sheet.load_strip((0,0,constants.NATIVE_MASCOT,constants.NATIVE_MASCOT), sheet_count)
+		scaled = [pygame.transform.scale(f, (constants.MASCOT_SIZE(),constants.MASCOT_SIZE())) for f in native_frames]
 		self.anim = sprites.AnimatedSprite(scaled, fps=3) # slower default fps so it doesn't animate too fast
-		self.x = int(WINDOW_WIDTH * 0.02)
-		self.y = int(WINDOW_HEIGHT * 0.02)
+		self.x = int(constants.WINDOW_WIDTH() * 0.02)
+		self.y = int(constants.WINDOW_HEIGHT() * 0.02)
 		self.font_small = font_small
 
 	def react(self, mood):
@@ -183,13 +182,13 @@ class TitleScreen:
 
 		# load logo if present
 		self.logo = None
-		if os.path.exists(TITLE_LOGO):
+		if os.path.exists(constants.TITLE_LOGO):
 			try:
-				logo_img = pygame.image.load(TITLE_LOGO).convert_alpha()
-				target_w = int(WINDOW_WIDTH * 0.3)
-				scale = target_w / logo_img.get_width()
+				logo_img = pygame.image.load(constants.TITLE_LOGO).convert_alpha()
+				target_w = lambda: int(constants.WINDOW_WIDTH() * 0.3)
+				scale = target_w() / logo_img.get_width()
 				target_h = int(logo_img.get_height() * scale)
-				self.logo = pygame.transform.smoothscale(logo_img, (target_w, target_h))
+				self.logo = pygame.transform.smoothscale(logo_img, (target_w(), target_h))
 			except Exception:
 				self.logo = None
 
@@ -200,7 +199,7 @@ class TitleScreen:
 		self.menu_buttons = []
 		self._create_menu_buttons()
 
-		self.press_text_y = int(WINDOW_HEIGHT * 0.88)
+		self.press_text_y = lambda: int(constants.WINDOW_HEIGHT() * 0.88)
 
 		# pulse for 'press key'
 		self.pulse = 0.0
@@ -214,9 +213,9 @@ class TitleScreen:
 			self.menu_buttons[0].focus = True
 
 	def enter_title_music(self):
-		if os.path.exists(TITLE_MUSIC):
+		if os.path.exists(constants.TITLE_MUSIC):
 			try:
-				pygame.mixer.music.load(TITLE_MUSIC)
+				pygame.mixer.music.load(constants.TITLE_MUSIC)
 				pygame.mixer.music.set_volume(0.32)
 				pygame.mixer.music.play(-1)
 				self.title_music_loaded = True
@@ -225,17 +224,18 @@ class TitleScreen:
 	
 	def _create_menu_buttons(self):
 		# compute size and positions
-		btn_w = int(WINDOW_WIDTH * 0.28)
-		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
-		centre_x = WINDOW_WIDTH // 2
-		base_y = int(WINDOW_HEIGHT * 0.48)
-		spacing = btn_h + int(WINDOW_HEIGHT * 0.02)
+		btn_w = lambda: int(constants.WINDOW_WIDTH() * 0.28)
+		btn_h = lambda: max(48, int(constants.WINDOW_HEIGHT() * 0.07))
+		centre_x = lambda: constants.WINDOW_WIDTH() // 2
+		base_y = lambda: int(constants.WINDOW_HEIGHT() * 0.48)
+		spacing = lambda: btn_h() + int(constants.WINDOW_HEIGHT() * 0.02)
 
 		def make_btn(text, idx, cb):
-			rect = (centre_x - btn_w // 2, base_y + idx * spacing, btn_w, btn_h)
-			b = ui.Button(rect, text, self.font_large, cb)
+			rect = (centre_x() - btn_w() // 2, base_y() + idx * spacing(), btn_w(), btn_h())
+			b = ui.Button(rect, text, self.font_large(), cb)
 			return b
 		
+		self.menu_buttons.clear()
 		self.menu_buttons.append(make_btn("Start", 0, helpers._with_click_sfx(lambda b: self.open_song_select(), self.game.audio)))
 		self.menu_buttons.append(make_btn("Settings", 1, helpers._with_click_sfx(lambda b: self.game.set_state("options"), self.game.audio)))
 		self.menu_buttons.append(make_btn("Quit", 2, lambda b: setattr(self.game, "running", False)))
@@ -296,15 +296,16 @@ class TitleScreen:
 		
 		# ambient particles
 		if random.random() < 0.02:
-			x = random.uniform(WINDOW_WIDTH*0.2, WINDOW_WIDTH*0.8)
-			y = random.uniform(WINDOW_HEIGHT*0.2, WINDOW_HEIGHT*0.6)
-			self.particles.emit(x,y, count=4, colour=(255,240,200))
+			x = lambda: random.uniform(constants.WINDOW_WIDTH()*0.2, constants.WINDOW_WIDTH()*0.8)
+			y = lambda: random.uniform(constants.WINDOW_HEIGHT()*0.2, constants.WINDOW_HEIGHT()*0.6)
+			self.particles.emit(x(),y(), count=4, colour=(255,240,200))
 		self.particles.update(dt)
 		self.mascot.update(dt)
+		self._create_menu_buttons()
 
 	def draw(self):
 		surf = self.screen
-		surf.fill(BACKGROUND_COLOUR)
+		surf.fill(constants.BACKGROUND_COLOUR)
 
 		# draw background layers (static)
 		for layer in self.bg_layers:
@@ -312,29 +313,29 @@ class TitleScreen:
 				layer.draw(surf)
 
 		# dim background to focus UI
-		dim = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+		dim = pygame.Surface((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.SRCALPHA)
 		dim.fill((10, 10, 12, 180))
 		surf.blit(dim, (0, 0))
 		
 		# logo or fallback text (because i haven't designed logo yet)
 		if self.logo:
-			logo_x = WINDOW_WIDTH // 2 - self.logo.get_width() // 2
-			logo_y = int(WINDOW_HEIGHT * 0.15)
-			surf.blit(self.logo, (logo_x, logo_y))
+			logo_x = lambda: constants.WINDOW_WIDTH() // 2 - self.logo.get_width() // 2
+			logo_y = lambda: int(constants.WINDOW_HEIGHT() * 0.15)
+			surf.blit(self.logo, (logo_x(), logo_y()))
 		else:
-			title_text = self.font_large.render(NAME, True, TEXT_COLOUR)
-			surf.blit(title_text, (WINDOW_WIDTH//2 - title_text.get_width()//2, int(WINDOW_HEIGHT * 0.10)))
+			title_text = self.font_large().render(constants.NAME, True, constants.TEXT_COLOUR)
+			surf.blit(title_text, (constants.WINDOW_WIDTH()//2 - title_text.get_width()//2, int(constants.WINDOW_HEIGHT() * 0.10)))
 
 		# menu
 		for b in self.menu_buttons:
 			b.draw(surf)
 		
 		# press key text (pulsing alpha)
-		press_text = self.font_small.render("Press Enter or Space to select", True, TEXT_COLOUR)
+		press_text = self.font_small().render("Press Enter or Space to select", True, constants.TEXT_COLOUR)
 		alpha = int(160 + 95 * self.pulse)
 		press_surf = press_text.copy()
 		press_surf.set_alpha(alpha)
-		surf.blit(press_surf, (WINDOW_WIDTH//2 - press_text.get_width()//2, self.press_text_y))
+		surf.blit(press_surf, (constants.WINDOW_WIDTH()//2 - press_text.get_width()//2, self.press_text_y()))
 
 		# particles
 		self.particles.draw(surf)
@@ -347,10 +348,10 @@ class SongSelectScreen:
 		self.font_large = game.font_large
 		self.tracks = game.available_tracks
 
-		self.panel_x = int(WINDOW_WIDTH * 0.08)
-		self.panel_y = int(WINDOW_HEIGHT * 0.12)
-		self.panel_w = int(WINDOW_WIDTH * 0.84)
-		self.panel_h = int(WINDOW_HEIGHT * 0.76)
+		self.panel_x = int(constants.WINDOW_WIDTH() * 0.08)
+		self.panel_y = int(constants.WINDOW_HEIGHT() * 0.12)
+		self.panel_w = int(constants.WINDOW_WIDTH() * 0.84)
+		self.panel_h = int(constants.WINDOW_HEIGHT() * 0.76)
 
 		self.visible_top = self.panel_y + int(self.panel_h * 0.18)
 		self.visible_h = int(self.panel_h * 0.72)
@@ -358,10 +359,10 @@ class SongSelectScreen:
 
 		self.scroll_y = 0
 		self.max_scroll = 0
-		self.tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
-		self.spacing = self.tile_h + int(WINDOW_HEIGHT * 0.03)
+		self.tile_h = max(80, int(constants.WINDOW_HEIGHT() * 0.12))
+		self.spacing = self.tile_h + int(constants.WINDOW_HEIGHT() * 0.03)
 
-		# build tiles from TRACKS constant
+		# build tiles from constants.TRACKS constant
 		self.tiles = []
 		self.selected_index = 0
 		self._build_tiles()
@@ -370,18 +371,18 @@ class SongSelectScreen:
 	
 	def _build_tiles(self):
 		# tile layout: horizontal stretching tiles stacked vertically
-		tile_w = int(WINDOW_WIDTH * 0.7)
-		tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
-		margin_x = int(WINDOW_WIDTH * 0.15)
-		base_y = int(WINDOW_HEIGHT * 0.28)
-		spacing = tile_h + int(WINDOW_HEIGHT * 0.03)
+		tile_w = int(constants.WINDOW_WIDTH() * 0.7)
+		tile_h = max(80, int(constants.WINDOW_HEIGHT() * 0.12))
+		margin_x = int(constants.WINDOW_WIDTH() * 0.15)
+		base_y = int(constants.WINDOW_HEIGHT() * 0.28)
+		spacing = tile_h + int(constants.WINDOW_HEIGHT() * 0.03)
 
-		for i, t in enumerate(TRACKS):
+		for i, t in enumerate(constants.TRACKS):
 			rect = pygame.Rect(margin_x, base_y + i * spacing, tile_w, tile_h)
 			btn = ui.Button(
 				rect,
 				"",
-				self.font_large,
+				self.font_large(),
 				lambda b, track=t: self._select_track(track),
 				radius=12
 			)
@@ -397,7 +398,7 @@ class SongSelectScreen:
 	def _select_track(self, track):
 		# set current track and go to playing state (but show confirm menu)
 		filename, artist, title, bpm, intro = track
-		self.game.current_track = {"path": os.path.join(MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(ART_DIR, filename), "intro": intro}
+		self.game.current_track = {"path": os.path.join(constants.MUSIC_DIR, filename), "name": title, "bpm": bpm, "artist": artist, "art": os.path.join(constants.ART_DIR, filename), "intro": intro}
 
 		# play decide sfx
 		try: self.game.audio.play_sfx("ui_decide_title")
@@ -459,10 +460,10 @@ class SongSelectScreen:
 		surf = self.screen
 		surf.fill((20, 20, 24))
 
-		panel_x = int(WINDOW_WIDTH * 0.08)
-		panel_y = int(WINDOW_HEIGHT * 0.12)
-		panel_w = int(WINDOW_WIDTH * 0.84)
-		panel_h = int(WINDOW_HEIGHT * 0.76)
+		panel_x = int(constants.WINDOW_WIDTH() * 0.08)
+		panel_y = int(constants.WINDOW_HEIGHT() * 0.12)
+		panel_w = int(constants.WINDOW_WIDTH() * 0.84)
+		panel_h = int(constants.WINDOW_HEIGHT() * 0.76)
 		panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
 
 		ui.draw_panel(
@@ -474,11 +475,11 @@ class SongSelectScreen:
 			subtitle_font=self.font_small
 		)
 
-		title = self.font_large.render("Choose a Song", True, TEXT_COLOUR)
-		surf.blit(title, (WINDOW_WIDTH//2 - title.get_width()//2, panel_y + 12))
+		title = self.font_large().render("Choose a Song", True, constants.TEXT_COLOUR)
+		surf.blit(title, (constants.WINDOW_WIDTH()//2 - title.get_width()//2, panel_y + 12))
 
-		subtitle = self.font_small.render("Select a track to begin playing", True, (180,170,160))
-		surf.blit(subtitle, (WINDOW_WIDTH//2 - subtitle.get_width()//2,
+		subtitle = self.font_small().render("Select a track to begin playing", True, (180,170,160))
+		surf.blit(subtitle, (constants.WINDOW_WIDTH()//2 - subtitle.get_width()//2,
 					   		panel_y + 12 + title.get_height() + 4))
 		
 		visible_top = panel_y + int(panel_h * 0.18)
@@ -491,7 +492,7 @@ class SongSelectScreen:
 
 		for i, (btn, track) in enumerate(self.tiles):
 			filename, artist, title_text, bpm, intro = track
-			art_path = os.path.join(ART_DIR, filename + ".jpg")
+			art_path = os.path.join(constants.ART_DIR, filename + ".jpg")
 
 			draw_rect = btn.base_rect.move(0, -self.scroll_y)
 			btn.rect = draw_rect
@@ -516,12 +517,12 @@ class SongSelectScreen:
 			# text positions
 			text_x = art_rect.right + pad
 			title_y = draw_rect.y
-			artist_y = title_y + self.font_large.get_height() + 4
+			artist_y = title_y + self.font_large().get_height() + 4
 	
-			title_surf = self.font_large.render(title_text, True, (40, 34, 40))
+			title_surf = self.font_large().render(title_text, True, (40, 34, 40))
 			surf.blit(title_surf, (text_x, title_y))
 	
-			sub_surf = self.font_small.render(f"{artist} - {bpm} BPM", True, (100, 90, 80))
+			sub_surf = self.font_small().render(f"{artist} - {bpm} BPM", True, (100, 90, 80))
 			surf.blit(sub_surf, (text_x, artist_y))
 
 		# restore clipping
@@ -536,13 +537,13 @@ class SettingsScreen:
 		self.settings = game.settings
 
 		# layout
-		self.panel_x = int(WINDOW_WIDTH * 0.08)
-		self.panel_y = int(WINDOW_HEIGHT * 0.12)
-		self.panel_w = int(WINDOW_WIDTH * 0.84)
-		self.panel_h = int(WINDOW_HEIGHT * 0.76)
+		self.panel_x = int(constants.WINDOW_WIDTH() * 0.08)
+		self.panel_y = int(constants.WINDOW_HEIGHT() * 0.12)
+		self.panel_w = int(constants.WINDOW_WIDTH() * 0.84)
+		self.panel_h = int(constants.WINDOW_HEIGHT() * 0.76)
 
 		# reset button
-		btn_w = 40 * SPRITE_SCALE
+		btn_w = 40 * constants.SPRITE_SCALE()
 		btn_h = 40
 		self.reset_button = ui.Button(
 			(self.panel_x + self.panel_w - btn_w - 12,
@@ -550,7 +551,7 @@ class SettingsScreen:
 			btn_w,
 			btn_h),
 			"Reset",
-			self.font_small,
+			self.font_small(),
 			helpers._with_click_sfx(lambda b: self._reset_settings(), self.game.audio),
 			radius=8
 		)
@@ -561,8 +562,8 @@ class SettingsScreen:
 		self.visible_bottom = self.visible_top + self.visible_h
 
 		# tile geometry
-		self.tile_h = max(80, int(WINDOW_HEIGHT * 0.12))
-		self.spacing = self.tile_h + int(WINDOW_HEIGHT * 0.03)
+		self.tile_h = max(80, int(constants.WINDOW_HEIGHT() * 0.12))
+		self.spacing = self.tile_h + int(constants.WINDOW_HEIGHT() * 0.03)
 		self.tile_w = int(self.panel_w * 0.90)
 		self.margin_x = self.panel_x + int(self.panel_w * 0.05)
 		self.base_y = self.visible_top
@@ -582,20 +583,20 @@ class SettingsScreen:
 		for i, (key, label, desc, ctype, args) in enumerate(self.schema):
 			base_rect = pygame.Rect(self.margin_x, self.base_y + i * self.spacing, self.tile_w, self.tile_h)
 			if ctype == "toggle":
-				ctrl_rect = (0, 0, 30 * SPRITE_SCALE, 15 * SPRITE_SCALE)
+				ctrl_rect = (0, 0, 30 * constants.SPRITE_SCALE(), 15 * constants.SPRITE_SCALE())
 				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key), font=self.font_small)
 				# bind on_change to persist
 				ctrl.on_change = (lambda k: helpers._with_click_sfx(lambda v: self._on_change(k, v), self.game.audio))(key)
 			elif ctype == "slider":
-				ctrl_rect = (0, 0, 80 * SPRITE_SCALE, 9 * SPRITE_SCALE)
+				ctrl_rect = (0, 0, 80 * constants.SPRITE_SCALE(), 9 * constants.SPRITE_SCALE())
 				minv = args.get("min", 0.0)
 				maxv = args.get("max", 1.0)
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "input":
-				ctrl_rect = (0, 0, 70 * SPRITE_SCALE, 12 * SPRITE_SCALE)
+				ctrl_rect = (0, 0, 70 * constants.SPRITE_SCALE(), 12 * constants.SPRITE_SCALE())
 				initial = str(self.settings.get(key))
-				ctrl = ui.TextInput(ctrl_rect, text=initial, font=self.game.font_small, placeholder=DEFAULT_THEME)
+				ctrl = ui.TextInput(ctrl_rect, text=initial, font=self.game.font_small, placeholder=constants.DEFAULT_THEME)
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			else:
 				ctrl = None
@@ -726,9 +727,9 @@ class SettingsScreen:
 		ui.draw_panel(surf, panel_rect, (30,28,32), (80,70,60), subtitle="Press ESC to return", subtitle_font=self.font_small)
 
 		# header
-		title = self.font_large.render("Settings", True, TEXT_COLOUR)
+		title = self.font_large().render("Settings", True, constants.TEXT_COLOUR)
 		surf.blit(title, (panel_rect.centerx - title.get_width()//2, panel_rect.y + 12))
-		subtitle = self.font_small.render("Configure gameplay and audio", True, (180,170,160))
+		subtitle = self.font_small().render("Configure gameplay and audio", True, (180,170,160))
 		surf.blit(subtitle, (panel_rect.centerx - subtitle.get_width()//2, panel_rect.y + 12 + title.get_height() + 4))
 
 		# reset button
@@ -751,19 +752,19 @@ class SettingsScreen:
 			pygame.draw.rect(surf, tile_bg, draw_rect, border_radius=10)
 
 			# text
-			lbl = self.font_large.render(label, True, (40,34,30))
+			lbl = self.font_large().render(label, True, (40,34,30))
 			surf.blit(lbl, (draw_rect.x + 12, draw_rect.y + 4))
-			d = self.font_small.render(desc, True, (110,100,90))
+			d = self.font_small().render(desc, True, (110,100,90))
 			surf.blit(d, (draw_rect.x + 12, draw_rect.y + 2 + lbl.get_height()))
 
 			# control positioning
 			if ctrl:
 				if isinstance(ctrl, ui.ToggleSwitch):
-					ctrl.rect.topleft = (draw_rect.right - (36 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (36 * constants.SPRITE_SCALE()), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.Slider):
-					ctrl.rect.topleft = (draw_rect.right - (86 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (86 * constants.SPRITE_SCALE()), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.TextInput):
-					ctrl.rect.topleft = (draw_rect.right - (74 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (74 * constants.SPRITE_SCALE()), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
 		surf.set_clip(prev_clip)
 
@@ -774,7 +775,7 @@ class ParallaxLayer:
 		self.image = pygame.image.load(path).convert_alpha()
 		self.speed = speed
 		self.offset = 0.0
-		self.w = WINDOW_WIDTH
+		self.w = constants.WINDOW_WIDTH()
 		self.night = True if "night" in path else False
 
 	def update(self, dt, camera_dx):
@@ -783,7 +784,7 @@ class ParallaxLayer:
 
 	def draw(self, surf : pygame.Surface, alpha : int = None):
 		img = self.image.copy()
-		img = pygame.transform.scale(img, (WINDOW_WIDTH, WINDOW_HEIGHT))
+		img = pygame.transform.scale(img, (constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()))
 		if self.night:
 			img.set_alpha(alpha)
 		x = -int(self.offset)
@@ -830,7 +831,7 @@ class BeatTracker: # internal clock
 
 		return beat_triggered
 	
-	def is_on_beat(self, tolerance: float = BEAT_TOLERANCE_GOOD) -> bool:
+	def is_on_beat(self, tolerance: float = constants.BEAT_TOLERANCE_GOOD) -> bool:
 		# ~close to the beat moment
 		return abs(self.last_beat_time) <= tolerance or \
 			abs(self.interval - self.last_beat_time) <= tolerance

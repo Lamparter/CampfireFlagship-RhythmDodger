@@ -8,15 +8,18 @@ NAME = "Rhythm Dodger"
 
 # Responsive UI
 
-WINDOW_WIDTH = 1280
-WINDOW_HEIGHT = 720
+window_width___internal = 1280
+window_height___internal = 720
+
+def WINDOW_WIDTH(): return window_width___internal
+def WINDOW_HEIGHT(): return window_height___internal
 FPS = 60
 
 # Derived layout values (relative)
 
 GROUND_FRACTION = 0.82 # fraction of window height where ground top sits
 
-GROUND_Y = int(WINDOW_HEIGHT * GROUND_FRACTION)
+def GROUND_Y(): return int(WINDOW_HEIGHT() * GROUND_FRACTION)
 
 # Base sprite frame sizes (pixel-art native sizes)
 
@@ -28,27 +31,36 @@ NATIVE_BEAT = 48
 
 # Sprite scale factor (integer) derived from window height to keep pixel-art crisp
 
-SPRITE_SCALE = max(1, int(WINDOW_HEIGHT / 240))
+def SPRITE_SCALE(): return max(1, int(WINDOW_HEIGHT() / 240))
 
 # Scaled sizes used for rendering
 
-TILE_SIZE = NATIVE_TILE * SPRITE_SCALE
-PLAYER_W = PLAYER_H = NATIVE_PLAYER * SPRITE_SCALE * 1.5
-MASCOT_SIZE = NATIVE_MASCOT * SPRITE_SCALE
-OBS_W = OBS_H = NATIVE_OBS * SPRITE_SCALE * 1.5
-HEARTBEAT_SIZE = NATIVE_BEAT * (SPRITE_SCALE / 3)
+def TILE_SIZE(): return NATIVE_TILE * SPRITE_SCALE()
+def PLAYER_SIZE(): return NATIVE_PLAYER * SPRITE_SCALE() * 1.5
+def MASCOT_SIZE(): return NATIVE_MASCOT * SPRITE_SCALE()
+def OBS_SIZE(): return NATIVE_OBS * SPRITE_SCALE() * 1.5
+def HEARTBEAT_SIZE(): return NATIVE_BEAT * (SPRITE_SCALE() / 3)
 
-PLAYER_X = int(WINDOW_WIDTH * 0.12) # relative horizontal player position
+def PLAYER_X(): return int(WINDOW_WIDTH() * 0.12) # relative horizontal player position
 
-GRAVITY = 2000.0 * SPRITE_SCALE
-JUMP_VELOCITY = -800.0 * SPRITE_SCALE
+def GRAVITY(): return 2000.0 * SPRITE_SCALE()
+def JUMP_VELOCITY(): return -800.0 * SPRITE_SCALE()
 
-OBSTACLE_SPEED = 400.0 * SPRITE_SCALE
-OBSTACLE_SPACING_MIN = 3 # * SPRITE_SCALE
-OBSTACLE_SPACING_MAX = 5 # * SPRITE_SCALE
+def OBSTACLE_SPEED(): return 400.0 * SPRITE_SCALE()
+OBSTACLE_SPACING_MIN = 3 # * SPRITE_SCALE()
+OBSTACLE_SPACING_MAX = 5 # * SPRITE_SCALE()
 
-FONT_SMALL = max(14, int(WINDOW_HEIGHT * 0.035))
-FONT_LARGE = max(28, int(WINDOW_HEIGHT * 0.06))
+def FONT_SMALL(): return max(14, int(WINDOW_HEIGHT() * 0.035))
+def FONT_LARGE(): return max(28, int(WINDOW_HEIGHT() * 0.06))
+
+# UI relative sizes
+
+def BEAT_BAR_WIDTH(): return int(WINDOW_WIDTH() * 0.28)
+def BEAT_BAR_HEIGHT(): return max(14, int(WINDOW_HEIGHT() * 0.028))
+
+UI_MARGIN_FRAC = 0.025 # fraction of window width for margins
+def LEFT_MARGIN(): return int(WINDOW_WIDTH() * UI_MARGIN_FRAC)
+def TOP_MARGIN(): return int(WINDOW_HEIGHT() * UI_MARGIN_FRAC)
 
 BEAT_ICON_SCALE_DEFAULT = 1
 BEAT_ICON_SCALE_BEAT = 1.25
@@ -139,61 +151,3 @@ BEAT_BAR_BG_COLOUR = (60, 50, 40) # (245, 235, 230) very light cream
 BEAT_BAR_BORDER_COLOUR = (220, 200, 190)
 BEAT_BAR_COLOUR = (212, 163, 115)
 BEAT_MARKER_COLOUR = (255, 255, 255)
-
-# UI relative sizes
-
-BEAT_BAR_WIDTH = int(WINDOW_WIDTH * 0.28)
-BEAT_BAR_HEIGHT = max(14, int(WINDOW_HEIGHT * 0.028))
-
-UI_MARGIN_FRAC = 0.025 # fraction of window width for margins
-
-# CAPTION = "One-Button Rhythm Dodger"
-# GROUND_Y = WINDOW_HEIGHT - 80
-# PLAYER_WIDTH = 40
-# PLAYER_HEIGHT = 60
-# PLAYER_X = 120
-
-# GRAVITY = 2000.0
-# JUMP_VELOCITY = -900.0
-
-# OBSTACLE_WIDTH = 40
-# OBSTACLE_MIN_HEIGHT = 40
-# OBSTACLE_MAX_HEIGHT = 120
-# OBSTACLE_SPEED = 400.0
-
-# OBSTACLE_SPACING_MIN = 3
-# OBSTACLE_SPACING_MAX = 5
-
-# BPM = 90
-# BEAT_INTERVAL = 60.0 / BPM
-# BEAT_TOLERANCE = 0.12 # the time window for 'on beat'/perfect timing
-
-# PERFECT_WINDOW = 0.05
-# GOOD_WINDOW = 0.10
-
-# FONT = "PixelifySans"
-
-# BACKGROUND_COLOUR = (15, 15, 15)
-# GROUND_COLOUR = (40, 40, 40)
-# PLAYER_COLOUR = (80, 200, 255)
-# OBSTACLE_COLOUR = (255, 80, 120)
-# TEXT_COLOUR = (230, 230, 240)
-# BEAT_BAR_COLOUR = (120, 255, 160)
-# BEAT_BAR_BG = (40, 70, 60)
-# FLASH_COLOUR_PERFECT = (255, 185, 0)
-# FLASH_COLOUR_GOOD = (120, 255, 160)
-# FLASH_COLOUR_BAD = (231, 72, 86)
-# FLASH_ALPHA = 50
-
-# # Music / track selection
-
-# MUSIC_FOLDER = "music"
-# TRACKS = [
-# 	("BackToBlack.ogg", "Amy Winehouse - Back to Black", 123),
-# 	("DJGotUsFallinInLove.ogg", "Usher - DJ Got Us Fallin' In Love", 120),
-# 	("GimmeGimmeGimme.ogg", "ABBA - Gimme Gimme Gimme!", 120),
-# 	("OnlySoMuchOilInTheGround.ogg", "Stefanie Heinzmann - Only So Much Oil In The Ground", 121),
-# 	("ShizumeruMachi.ogg", "YOEKO - Sinking Town", 125),
-# ]
-# # small calibration offset to compensate for audio playback latency
-# MUSIC_LATENCY = 0.0 # to tune

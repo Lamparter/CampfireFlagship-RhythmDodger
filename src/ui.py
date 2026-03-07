@@ -31,7 +31,7 @@ def draw_panel(
 
 	# optional subtitle
 	if subtitle and subtitle_font:
-		subtitle_surf = subtitle_font.render(subtitle, True, subtitle_colour)
+		subtitle_surf = subtitle_font().render(subtitle, True, subtitle_colour)
 		subtitle_x = rect.centerx - subtitle_surf.get_width() // 2
 		subtitle_y = rect.bottom + subtitle_offset
 		surf.blit(subtitle_surf, (subtitle_x, subtitle_y))
@@ -164,7 +164,7 @@ class ToggleSwitch:
 		# ON/OFF text
 		if self.font:
 			txt = "ON" if self.value else "OFF"
-			txt_surf = self.font.render(txt, True, self.text_colour)
+			txt_surf = self.font().render(txt, True, self.text_colour)
 			txt_rect = txt_surf.get_rect(center=self.rect.center)
 			surf.blit(txt_surf, txt_rect)
 
@@ -484,7 +484,7 @@ class TextInput:
 		acc = 0
 		for i in range(len(self.text) + 1):
 			seg = self.text[:i]
-			w = self.font.size(seg)[0]
+			w = self.font().size(seg)[0]
 			if w >= rel_x:
 				pos = i
 				break
@@ -507,7 +507,7 @@ class TextInput:
 		inner_w = max(4, self.rect.w - 16)
 		text_to_draw = self.text if self.text else self.placeholder
 		colour = (40, 34, 30) if self.text else (140, 130, 120)
-		txt_surf = self.font.render(text_to_draw, True, colour)
+		txt_surf = self.font().render(text_to_draw, True, colour)
 
 		# clip and blit
 		prev_clip = surf.get_clip()
@@ -518,7 +518,7 @@ class TextInput:
 		if self.focus:
 			self._update_blink()
 			if self._show_caret:
-				caret_x = inner_x + self.font.size(self.text[:self.cursor])[0]
+				caret_x = inner_x + self.font().size(self.text[:self.cursor])[0]
 				caret_rect = pygame.Rect(caret_x, self.rect.y + 6, 2, self.rect.h - 12)
 				pygame.draw.rect(surf, (40, 34, 30), caret_rect)
 		
