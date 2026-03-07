@@ -542,7 +542,7 @@ class SettingsScreen:
 		self.panel_h = int(WINDOW_HEIGHT * 0.76)
 
 		# reset button
-		btn_w = 120
+		btn_w = 40 * SPRITE_SCALE
 		btn_h = 40
 		self.reset_button = ui.Button(
 			(self.panel_x + self.panel_w - btn_w - 12,
@@ -582,18 +582,18 @@ class SettingsScreen:
 		for i, (key, label, desc, ctype, args) in enumerate(self.schema):
 			base_rect = pygame.Rect(self.margin_x, self.base_y + i * self.spacing, self.tile_w, self.tile_h)
 			if ctype == "toggle":
-				ctrl_rect = (0, 0, 90, 40)
+				ctrl_rect = (0, 0, 30 * SPRITE_SCALE, 15 * SPRITE_SCALE)
 				ctrl = ui.ToggleSwitch(ctrl_rect, value=self.settings.get(key), font=self.font_small)
 				# bind on_change to persist
 				ctrl.on_change = (lambda k: helpers._with_click_sfx(lambda v: self._on_change(k, v), self.game.audio))(key)
 			elif ctype == "slider":
-				ctrl_rect = (0, 0, 240, 28)
+				ctrl_rect = (0, 0, 80 * SPRITE_SCALE, 9 * SPRITE_SCALE)
 				minv = args.get("min", 0.0)
 				maxv = args.get("max", 1.0)
 				ctrl = ui.Slider(ctrl_rect, minv=minv, maxv=maxv, value=self.settings.get(key))
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
 			elif ctype == "input":
-				ctrl_rect = (0, 0, 200, 36)
+				ctrl_rect = (0, 0, 70 * SPRITE_SCALE, 12 * SPRITE_SCALE)
 				initial = str(self.settings.get(key))
 				ctrl = ui.TextInput(ctrl_rect, text=initial, font=self.game.font_small, placeholder=DEFAULT_THEME)
 				ctrl.on_change = (lambda k: (lambda v: self._on_change(k, v)))(key)
@@ -759,11 +759,11 @@ class SettingsScreen:
 			# control positioning
 			if ctrl:
 				if isinstance(ctrl, ui.ToggleSwitch):
-					ctrl.rect.topleft = (draw_rect.right - 110, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (36 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.Slider):
-					ctrl.rect.topleft = (draw_rect.right - 260, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (86 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				elif isinstance(ctrl, ui.TextInput):
-					ctrl.rect.topleft = (draw_rect.right - 220, draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
+					ctrl.rect.topleft = (draw_rect.right - (74 * SPRITE_SCALE), draw_rect.y + (draw_rect.h - ctrl.rect.h)//2)
 				ctrl.draw(surf)
 		surf.set_clip(prev_clip)
 

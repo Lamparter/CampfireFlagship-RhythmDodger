@@ -180,7 +180,7 @@ class RhythmDodgerGame:
 		)
 
 		# pause overlay buttons
-		btn_w = 280
+		btn_w = 96 * SPRITE_SCALE
 		btn_h = max(48, int(WINDOW_HEIGHT * 0.07))
 		centre_x = WINDOW_WIDTH // 2
 		panel_w = int(WINDOW_WIDTH * 0.6)
@@ -205,8 +205,8 @@ class RhythmDodgerGame:
 		)
 
 		# game over buttons (from gameover)
-		go_btn_w = 220
-		go_btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
+		go_btn_w = 96 * SPRITE_SCALE
+		go_btn_h = max(48, int(WINDOW_HEIGHT * 0.06))
 		go_x = WINDOW_WIDTH//2 - go_btn_w//2
 
 		self.gameover_again_btn = ui.Button(
@@ -833,7 +833,7 @@ class RhythmDodgerGame:
 		#surf.blit(hint, (WINDOW_WIDTH//2 - hint.get_width()//2, panel_y + int(panel_h * 0.62)))
 
 		# buttons
-		btn_w = 220
+		btn_w = 96 * SPRITE_SCALE
 		btn_h = max(44, int(WINDOW_HEIGHT * 0.06))
 		gap = 24
 		total_w = btn_w * 2 + gap
