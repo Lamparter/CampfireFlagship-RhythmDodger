@@ -735,7 +735,7 @@ class RhythmDodgerGame:
 		if self.current_track:
 			label = ""
 			if self.debug:
-				label = f"{int(self.clock.get_fps())} constants.FPS - "
+				label = f"{int(self.clock.get_fps())} FPS - "
 			label += f"{self.current_track['bpm']} BPM"
 			lbl = self.font_small().render(label, True, (120, 110, 100))
 			surf.blit(lbl, (x + bar_w - lbl.get_width(), y + bar_h + int(constants.WINDOW_HEIGHT() * 0.006)))
