@@ -255,6 +255,13 @@ class RhythmDodgerGame:
 				pygame.mixer.music.set_volume(0.12)
 				self.gameover_again_btn.focus = True
 				self.gameover_title_btn.focus = False
+
+				print(f"[REPORT] Score: {self.score}")
+				print(f"[REPORT] Best score: {self.best_score}")
+				print(f"[REPORT] Max combo: {self.max_combo}")
+				print(f"[REPORT] Beat accuracy: {helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)}%")
+				print(f"[REPORT] Rank: {helpers.get_rank(helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps))}")
+				print("\n")
 			except: pass
 		if new_state == "playing" and prev != "playing":
 			self.title_screen.title_music_loaded = False
