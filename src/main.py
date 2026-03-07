@@ -36,6 +36,7 @@ class RhythmDodgerGame:
 		self.debug = bool(self.settings.get("debug"))
 		self.beat_sound = bool(self.settings.get("beat_sound"))
 		self.idle = bool(self.settings.get("idle"))
+		self.intro = bool(self.settings.get("intro"))
 
 		# audio
 
@@ -312,7 +313,7 @@ class RhythmDodgerGame:
 			pass
 
 		intro = float(track["intro"])
-		if intro > 0.0:
+		if intro > 0.0 and self.intro:
 			self.countin_active = True
 			self.countin_timer = intro
 			self._suspend_obstacles = True
