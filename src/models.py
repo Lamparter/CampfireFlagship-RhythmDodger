@@ -774,7 +774,7 @@ class ParallaxLayer:
 		self.image = pygame.image.load(path).convert_alpha()
 		self.speed = speed
 		self.offset = 0.0
-		self.w = self.image.get_width()
+		self.w = WINDOW_WIDTH
 		self.night = True if "night" in path else False
 
 	def update(self, dt, camera_dx):
@@ -783,6 +783,7 @@ class ParallaxLayer:
 
 	def draw(self, surf : pygame.Surface, alpha : int = None):
 		img = self.image.copy()
+		img = pygame.transform.scale(img, (WINDOW_WIDTH, WINDOW_HEIGHT))
 		if self.night:
 			img.set_alpha(alpha)
 		x = -int(self.offset)

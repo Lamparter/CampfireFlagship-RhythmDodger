@@ -452,8 +452,6 @@ class RhythmDodgerGame:
 		# update beat tracker with absolute time if available
 		beat_triggered = self.beat_tracker.update(dt, absolute_time)
 
-
-
 		if beat_triggered:
 			print()
 			print(f"[DEBUG] Time of day: {self.time_of_day}")
