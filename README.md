@@ -123,12 +123,27 @@ Most of the controls from Campfire Sandwich's built-in UI library can be found i
 
 These controls include:
 - `Button`: flexible button control
+
+  <img width="240" height="126" alt="image" src="https://github.com/user-attachments/assets/5e31c320-2649-4cf5-88d1-3766cec902ff" />
+
 - `ToggleSwitch`: a toggle control that allows switching between "YES" and "NO" enumeration state
+
+  <img width="113" height="70" alt="image" src="https://github.com/user-attachments/assets/05397d25-ab76-424c-9b9b-e9db4b2589ac" />
+
 - `Slider`: a slider control that allows choosing a value within a selected range
+
+  <img width="260" height="53" alt="image" src="https://github.com/user-attachments/assets/2045fa1d-cef0-446d-94fb-dd9a736b9e6b" />
+
 - `TextInput`: a dynamic text input control with full Unicode integration
-- `Panel`: smart content dialogue, used to present the pause and game-over overlays, as well as the settings screen
+
+  <img width="253" height="112" alt="image" src="https://github.com/user-attachments/assets/02710edf-f08e-4621-b3e4-e3f5c6d82c7c" />
+
 - `TileLayout`: a horizontally stacked layout (used in the settings screen) that allows encapsulating controls
+
+  <img width="288" height="73" alt="image" src="https://github.com/user-attachments/assets/2bf00fc0-f3f5-4088-b73a-507cf6be7c41" />
+
 - `ParallaxLayout`: an image view that overlays multiple images on top of eachother and applies a parallax scrolling effect
+- `Panel`: smart content dialogue, used to present the pause and game-over overlays, as well as the settings screen
 
 These controls are custom written for this game, but are detached from the actual game UI and can be reused in any pygame project.
 Every UI control accepts input from both the pointer and the keyboard.
