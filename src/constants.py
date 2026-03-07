@@ -4,7 +4,7 @@ Configuration/constants
 
 import os
 
-NAME = "Rhythm Dodger"
+NAME = "Campfire Sandwich"
 
 # Responsive UI
 

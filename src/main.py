@@ -5,7 +5,7 @@ Main game class
 import pygame, sys, os, math, random, asyncio, glob, numpy
 import helpers, models, sprites, particles, audio, ui, settings, constants
 
-class RhythmDodgerGame:
+class CampfireSandwich:
 	def __init__(self):
 		pygame.init()
 		self.screen = pygame.display.set_mode((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.RESIZABLE)
@@ -1047,5 +1047,5 @@ class RhythmDodgerGame:
 		sys.exit()
 
 if __name__ == "__main__": # one of the things i hate most about python
-	game = RhythmDodgerGame()
+	game = CampfireSandwich()
 	game.run()
