@@ -271,9 +271,12 @@ class CampfireSandwich:
 				print()
 			except: pass
 		if new_state == "playing" and prev != "playing":
+			self.screen = pygame.display.set_mode((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()))
 			self.title_screen.title_music_loaded = False
 			try: pygame.mixer.music.set_volume(self.master_vol)
 			except: pass
+		if new_state not in ("playing", "paused", "gameover") and prev in ("playing", "paused", "gameover"):
+			self.screen = pygame.display.set_mode((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()), pygame.RESIZABLE)
 		if new_state == "paused" and prev != "paused":
 			try:
 				pygame.mixer.music.set_volume(0.12)
@@ -367,9 +370,22 @@ class CampfireSandwich:
 				if self.state == "playing" and event.key in (pygame.K_SPACE, pygame.K_UP) and not self.countin_active:
 					jump_pressed = True
 			elif event.type == pygame.VIDEORESIZE:
-				constants.window_width___internal = event.w
-				constants.window_height___internal = event.h
-				self.render()
+				#target_ratio = 16 / 9
+				#h_from_w = event.w / target_ratio
+				#w_from_h = event.h * target_ratio
+				#if abs(event.h - h_from_w) < abs(event.w - w_from_h):
+				#	coord = (event.w, h_from_w)
+				#else:
+				#	coord = (w_from_h, event.h)
+
+				from constants import window_width___internal as default_w
+				from constants import window_height___internal as default_h
+
+				constants.window_width___internal = max(default_w, event.w)
+				constants.window_height___internal = max(default_h, event.h)
+
+				self.restart_screen = self.state
+				self.restarting = True
 
 		# route events to state-specific handlers
 		if self.state == "title":
