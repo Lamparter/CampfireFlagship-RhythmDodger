@@ -122,7 +122,7 @@ Campfire Sandwich uses a custom written UI library that I have spent a long time
 Most of the controls from Campfire Sandwich's built-in UI library can be found in [`ui.py`](https://github.com/Lamparter/CampfireSandwich/blob/main/src/ui.py).
 
 These controls include:
-- `Button`: flexible button control
+- `Button`: a flexible button control
 
   <img width="240" height="126" alt="image" src="https://github.com/user-attachments/assets/5e31c320-2649-4cf5-88d1-3766cec902ff" />
 
@@ -143,7 +143,8 @@ These controls include:
   <img width="288" height="73" alt="image" src="https://github.com/user-attachments/assets/2bf00fc0-f3f5-4088-b73a-507cf6be7c41" />
 
 - `ParallaxLayout`: an image view that overlays multiple images on top of eachother and applies a parallax scrolling effect
-- `Panel`: smart content dialogue, used to present the pause and game-over overlays, as well as the settings screen
+- `Panel`: a smart content dialogue, used to present the pause and game-over overlays, as well as the settings screen
+- `ScrollViewer`: a content container (built-in to `TileLayout`) that allows scrolling and navigation by both mouse and keyboard
 
 These controls are custom written for this game, but are detached from the actual game UI and can be reused in any pygame project.
 Every UI control accepts input from both the pointer and the keyboard.
