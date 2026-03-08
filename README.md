@@ -1,5 +1,8 @@
 > [!IMPORTANT]
 > Campfire Sandwich is currently in active development for Hack Club's **Campfire Flagship** programme.
+>
+> The deadline for the completion of this project is *Sunday 22nd March 2026*.
+> There is no guarantee for support or continued development after this date.
 
 <p align="left">
   <img src="https://raw.githubusercontent.com/Lamparter/CampfireSandwich/main/sprites/title_logo.png" alt="Campfire Sandwich Logo" width="240">
