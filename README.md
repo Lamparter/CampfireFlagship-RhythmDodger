@@ -2,7 +2,7 @@
 > Campfire Sandwich is currently in active development for Hack Club's **Campfire Flagship** programme.
 
 <p align="left">
-  <img src="https://raw.githubusercontent.com/Lamparter/CampfireFlagship-RhythmDodger/main/sprites/title_logo.png" alt="Campfire Sandwich Logo" width="240">
+  <img src="https://raw.githubusercontent.com/Lamparter/CampfireSandwich/main/sprites/title_logo.png" alt="Campfire Sandwich Logo" width="240">
 </p>
 <h4>A nostalgic, fast-paced endless-scroller rhythm game built with Python & Pygame.</h4>
 
@@ -33,8 +33,8 @@ This game was initially created for **Hackclub's [Campfire Flagship](https://fla
 #### 2. Clone the repository
 
 ```bash
-git clone https://github.com/Lamparter/CampfireFlagship-RhythmDodger
-cd CampfireFlagship-RhythmDodger
+git clone https://github.com/Lamparter/CampfireSandwich
+cd CampfireSandwich
 ```
 
 #### 3. Run the game
@@ -119,7 +119,7 @@ This MVVM practice *also* applies to the game's theming system, which requires t
 ### Custom UI library
 
 Campfire Sandwich uses a custom written UI library that I have spent a long time working on.
-Most of the controls from Campfire Sandwich's built-in UI library can be found in [`ui.py`](https://github.com/Lamparter/CampfireFlagship-RhythmDodger/blob/main/src/ui.py).
+Most of the controls from Campfire Sandwich's built-in UI library can be found in [`ui.py`](https://github.com/Lamparter/CampfireSandwich/blob/main/src/ui.py).
 
 These controls include:
 - `Button`: flexible button control
