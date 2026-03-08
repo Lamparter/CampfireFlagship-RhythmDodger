@@ -256,12 +256,6 @@ class CampfireSandwich:
 			except: pass
 		if new_state == "gameover" and prev != "gameover":
 			try:
-				if self.idle:
-					self._play_again()
-				pygame.mixer.music.set_volume(0.12)
-				self.gameover_again_btn.focus = True
-				self.gameover_title_btn.focus = False
-
 				print()
 				print(f"[REPORT] Score: {self.score}")
 				print(f"[REPORT] Best score: {self.best_score}")
@@ -269,6 +263,12 @@ class CampfireSandwich:
 				print(f"[REPORT] Beat accuracy: {helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps)}%")
 				print(f"[REPORT] Rank: {helpers.get_rank(helpers.get_accuracy_percent(self.accurate_jumps, self.total_jumps))}")
 				print()
+				if self.idle:
+					self._play_again()
+					return
+				pygame.mixer.music.set_volume(0.12)
+				self.gameover_again_btn.focus = True
+				self.gameover_title_btn.focus = False
 			except: pass
 		if new_state == "playing" and prev != "playing":
 			self.screen = pygame.display.set_mode((constants.WINDOW_WIDTH(), constants.WINDOW_HEIGHT()))
