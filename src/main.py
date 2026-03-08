@@ -378,11 +378,8 @@ class CampfireSandwich:
 				#else:
 				#	coord = (w_from_h, event.h)
 
-				from constants import window_width___internal as default_w
-				from constants import window_height___internal as default_h
-
-				constants.window_width___internal = max(default_w, event.w)
-				constants.window_height___internal = max(default_h, event.h)
+				constants.window_width___internal = max(1280, event.w)
+				constants.window_height___internal = max(720, event.h)
 
 				self.restart_screen = self.state
 				self.restarting = True
