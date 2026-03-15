@@ -88,13 +88,19 @@ Some songs have a higher BPM than others: a **higher BPM generally means a more 
 
 ### Themes
 
-Campfire Sandwich has multiple custom themes that allow you to experience the game in unique ways, including:
-- *Stardew Valley* (classic theme), the original pixel-art theme of Campfire Sandwich
-- *Below the Surface*, the theme designed at Hackclub's Campfire London event on Saturday 28th February 2026 at Ada, the National College for Digital Skills in Victoria, London
-- *Santa Monica*, a theme inspired by Campfire Sandwich's sister project, *Grand Throw Auto V*, which is set by the Santa Monica pier
-- *Chrome Dinosaur*, a theme inspired by the [Chrome dinosaur endless runner game](https://pwa-dino.github.io/) (scroll down to see a demo of this theme at the bottom of the page!)
-- *Campfire Flagship*, a creative theme inspired by the art and branding used by Hackclub for its Campfire event series
-- *Go Go! Pogo Cat*, a theme inspired by the endless runner game of the same name by the Japanese indie game studio PONOS
+Campfire Sandwich has multiple custom themes that allow you to experience the game in unique ways, including: *(themes that are crossed out are not yet available)*
+- <kbd>Classic</kbd> *Stardew Valley* (classic theme), the original pixel-art theme of Campfire Sandwich
+- <kbd>Dinosaur</kbd> *Chrome Dinosaur*, a theme inspired by the [Chrome dinosaur endless runner game](https://pwa-dino.github.io/) (scroll down to see a demo of this theme at the bottom of the page!)
+- <kbd>London</kbd> ~~*Below the Surface*, the theme designed at Hackclub's Campfire London event on Saturday 28th February 2026 at Ada, the National College for Digital Skills in Victoria, London~~
+- <kbd>GTAV</kbd> ~~*Santa Monica*, a theme inspired by Campfire Sandwich's sister project, *Grand Throw Auto V*, which is set by the Santa Monica pier~~
+- <kbd>Flagship</kbd> ~~*Campfire Flagship*, a creative theme inspired by the art and branding used by Hackclub for its Campfire event series~~
+- <kbd>Cat</kbd> ~~*Go Go! Pogo Cat*, a theme inspired by the endless runner game of the same name by the Japanese indie game studio PONOS~~
+
+In order to select a theme for playing in-game, you must enter its code in the settings, for example:
+
+<img width="505" height="60" alt="Image" src="https://github.com/user-attachments/assets/83884061-3ecb-4e61-81f8-1c27d10de764" />
+
+If you enter a valid theme name, the game will instantly reload and you can enjoy playing with the new theme!
 
 ## Contributing
 
@@ -107,6 +113,18 @@ And of course, open as many issues or pull requests as you like. *Every contribu
 > **(this problem would not exist if the game was written in an *Actually Good* programming language like C#...)**
 
 *If you're a member of Hackclub, hello! Enjoy playing my game :)*
+
+By the way, all time spent working on this project was tracked using [Hackatime](https://hackatime.hackclub.com), Hackclub's software for tracking time spent working on projects.
+While the work on this game is split across numerous different Hackatime projects, you can see the main two clocks here (the sum of both being the full time spent on Campfire Sandwich):
+
+<p align="left">
+  <a href="">
+    <img src="https://hackatime-badge.hackclub.com/U0A9B38F413/CampfireFlagship-RhythmDodger" alt="Campfire Flagship Rhythm Dodger">
+  </a>
+  <a href="">
+    <img src="https://hackatime-badge.hackclub.com/U0A9B38F413/CampfireSandwich" alt="Campfire Sandwich">
+  </a>
+</p>
 
 ### Project structure
 
@@ -162,6 +180,20 @@ These controls include:
 
 These controls are custom written for this game, but are detached from the actual game UI and can be reused in any pygame project.
 Every UI control accepts input from both the pointer and the keyboard.
+
+### Dependencies
+
+Campfire Sandwich is made possible by *a lot of work from my end*, but also lots of work from others.
+
+Campfire Sandwich relies on the following projects:
+
+- [CPython](https://github.com/python/cpython)
+- [IronPython](https://github.com/IronLanguages/ironpython3)
+- [`pygame`](https://github.com/pygame/pygame)
+- [`pygbag`](https://github.com/pygame-web/pygbag)
+- [`numpy`](https://github.com/numpy/numpy)
+
+as well as various microservices from Hackclub!
 
 ## License
 
